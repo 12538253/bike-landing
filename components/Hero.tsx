@@ -69,7 +69,7 @@ export default function Hero() {
                         href="http://pf.kakao.com/_MzgSn/chat"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="animate-pulse-custom group relative inline-flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-brand-orange px-8 text-lg font-bold text-white transition-transform active:scale-95 md:w-auto"
+                        className="shadow-glow animate-pulse-custom group relative inline-flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-brand-orange px-8 text-lg font-bold text-white transition-transform active:scale-95 md:w-auto"
                     >
                         <span className="relative z-10">내 바이크 견적, 1분 만에 확인하기</span>
                         <ArrowRight className="relative z-10 h-5 w-5 transition-transform group-hover:translate-x-1" />

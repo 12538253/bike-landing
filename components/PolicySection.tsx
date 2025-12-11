@@ -38,7 +38,7 @@ export default function PolicySection() {
                             <span className="mt-1 text-brand-orange">✓</span>
                             260cc 초과 차량도 OK! 복잡한 사용검사/폐지 업무 100% 대행
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-2 py-1">
                             <span className="mt-1 text-brand-orange">✓</span>
                             <span className="text-white font-bold">감정 소모 0%</span>. 쿨하고 깔끔한 당일 현금 지급
                         </li>

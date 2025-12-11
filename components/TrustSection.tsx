@@ -44,7 +44,7 @@ export default function TrustSection() {
                                 <feature.icon className="h-7 w-7" />
                             </div>
                             <h3 className="mb-3 text-xl font-bold text-white">{feature.title}</h3>
-                            <p className="text-sm leading-relaxed text-gray-400">{feature.desc}</p>
+                            <p className="text-sm leading-relaxed text-gray-300">{feature.desc}</p>
                         </div>
                     ))}
                 </div>
