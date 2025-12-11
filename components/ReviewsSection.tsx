@@ -1,42 +1,8 @@
 "use client";
 
-import { Star, User } from "lucide-react";
+import Image from "next/image";
 
-const reviews = [
-    {
-        user: "냥펀치",
-        rating: 5,
-        desc: "중고 바이크 구매후 점검과 엔진오일 교환으로 매장에 방문했습니다. 사장님 친절하시고 설명도 잘해주셔서 믿음이 가네요. 다음에 또 방문하겠습니다!",
-        date: "최근 방문"
-    },
-    {
-        user: "돼랑이",
-        rating: 5,
-        desc: "포르자750 판매하고 왔습니다. 다른곳보다 견적도 잘쳐주시고 입금도 바로바로 해주셔서 기분좋게 거래했습니다. 번창하세요~",
-        date: "최근 방문"
-    },
-    {
-        user: "김민재",
-        rating: 5,
-        desc: "첫 바이크라 모르는게 많았는데 하나하나 친절하게 알려주셔서 감사합니다. 탁송도 빠르고 바이크 상태도 너무 좋아요!",
-        date: "최근 방문"
-    }
-];
-
-const NaverLogo = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-        <rect width="24" height="24" rx="4" fill="#03C75A" />
-        <path d="M7 6v12h3.5l6.5-9v9h3.5V6h-3.5L10.5 15V6H7z" fill="white" />
-    </svg>
-);
-
-const DaangnLogo = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#FF6F0F" />
-        <circle cx="12" cy="9" r="2.5" fill="white" />
-        <path d="M12 2c-1.5 0-2.5-1.5-2.5-1.5S10.5 0 12 0s2.5.5 2.5 1.5S13.5 2 12 2z" fill="#00A05B" />
-    </svg>
-);
+// ... reviews array ...
 
 export default function ReviewsSection() {
     return (
@@ -57,11 +23,25 @@ export default function ReviewsSection() {
                     </div>
                     <div className="flex flex-col items-center md:items-end gap-3">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 transition-colors hover:bg-white/10">
-                            <NaverLogo className="w-5 h-5" />
+                            <div className="relative w-5 h-5 rounded overflow-hidden">
+                                <Image
+                                    src="/images/naver-icon.png"
+                                    alt="Naver"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
                             <span className="text-sm font-bold text-gray-300">네이버 인증 업체</span>
                         </div>
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 transition-colors hover:bg-white/10">
-                            <DaangnLogo className="w-5 h-5" />
+                            <div className="relative w-5 h-5 rounded overflow-hidden">
+                                <Image
+                                    src="/images/daangn-icon.png"
+                                    alt="Daangn"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
                             <span className="text-sm font-bold text-gray-300">당근마켓 인증 업체</span>
                         </div>
                     </div>
