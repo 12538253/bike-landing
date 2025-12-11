@@ -24,18 +24,25 @@ export default function ServicesSection() {
                     {services.map((service, idx) => (
                         <div
                             key={idx}
-                            className={`flex items-center justify-between p-6 rounded-2xl border transition-colors ${service.highlight
+                            className={`flex flex-col items-start gap-2 p-6 rounded-2xl border transition-colors md:flex-row md:items-center md:justify-between ${service.highlight
                                 ? "bg-brand-orange/10 border-brand-orange/50"
                                 : "bg-black border-white/10 hover:border-white/30"
                                 }`}
                         >
                             <div className="flex items-center gap-3">
-                                <Wrench className={`w-5 h-5 ${service.highlight ? "text-brand-orange" : "text-gray-500"}`} />
-                                <span className="font-bold text-white text-lg">{service.name}</span>
+                                <Wrench className={`w-5 h-5 flex-shrink-0 ${service.highlight ? "text-brand-orange" : "text-gray-500"}`} />
+                                <span className="font-bold text-white text-lg break-keep text-left">{service.name}</span>
                             </div>
-                            <span className={`font-medium ${service.highlight ? "text-brand-orange" : "text-gray-400"}`}>
-                                {service.price}
-                            </span>
+                            <div className="flex flex-col items-end w-full md:w-auto">
+                                <span className={`font-medium ${service.highlight ? "text-brand-orange" : "text-gray-400"}`}>
+                                    {service.price}
+                                </span>
+                                {service.desc && (
+                                    <span className="text-xs text-gray-500 mt-1 text-right break-keep">
+                                        {service.desc}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
