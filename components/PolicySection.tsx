@@ -33,18 +33,27 @@ export default function PolicySection() {
 
                 <div className="rounded-3xl border border-brand-orange/30 bg-brand-orange/10 p-8 text-left backdrop-blur-sm">
                     <h3 className="mb-4 text-xl font-bold text-white">바이크 매니저는!</h3>
-                    <ul className="space-y-3 text-gray-300">
-                        <li className="flex items-start gap-2">
-                            <span className="mt-1 text-brand-orange">✓</span>
-                            260cc 초과 차량도 OK! 복잡한 사용검사/폐지 업무 100% 대행
+                    <ul className="space-y-4 text-gray-300">
+                        <li className="flex items-start gap-3">
+                            <span className="mt-0.5 text-brand-orange shrink-0">✓</span>
+                            <span>
+                                260cc 초과 차량도 OK! <br className="md:hidden" />
+                                복잡한 사용검사/폐지 업무 100% 대행
+                            </span>
                         </li>
-                        <li className="flex items-start gap-2 py-1">
-                            <span className="mt-1 text-brand-orange">✓</span>
-                            <span className="text-white font-bold">감정 소모 0%</span>. 쿨하고 깔끔한 당일 현금 지급
+                        <li className="flex items-start gap-3">
+                            <span className="mt-0.5 text-brand-orange shrink-0">✓</span>
+                            <span>
+                                <span className="text-white font-bold">감정 소모 0%</span>. <br className="md:hidden" />
+                                쿨하고 깔끔한 당일 현금 지급
+                            </span>
                         </li>
-                        <li className="flex items-start gap-2">
-                            <span className="mt-1 text-brand-orange">✓</span>
-                            매입 후 모든 법적 책임은 업체가 집니다. (A/S 분쟁 없음)
+                        <li className="flex items-start gap-3">
+                            <span className="mt-0.5 text-brand-orange shrink-0">✓</span>
+                            <span>
+                                매입 후 모든 법적 책임은 업체가 집니다. <br className="md:hidden" />
+                                (A/S 분쟁 없음)
+                            </span>
                         </li>
                     </ul>
                 </div>

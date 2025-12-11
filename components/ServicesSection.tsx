@@ -3,12 +3,12 @@
 import { Wrench, CheckCircle } from "lucide-react";
 
 const services = [
+    { name: "260cc초과 사용검사+등록", price: "330,000원", highlight: true, desc: "검사+등록+번호판+배송 원스톱 (취등록세 별도)" },
+    { name: "스캐너 진단", price: "35,000원", highlight: true },
     { name: "배터리/소모품 교환", price: "별도 문의" },
     { name: "엔진오일/정비", price: "별도 문의" },
     { name: "사고 견인/출장", price: "별도 문의" },
     { name: "환경검사 대행", price: "별도 문의" },
-    { name: "스캐너 진단", price: "35,000원", highlight: true },
-    { name: "260cc초과 사용검사+등록", price: "330,000원", highlight: true, desc: "검사+등록+번호판+배송 원스톱 (취등록세 별도)" },
 ];
 
 export default function ServicesSection() {
