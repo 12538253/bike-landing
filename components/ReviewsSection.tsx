@@ -40,8 +40,13 @@ export default function ReviewsSection() {
                             <span className="text-gray-400">(후기 89개)</span>
                         </div>
                     </div>
-                    <div className="inline-block px-4 py-2 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-sm font-medium">
-                        당근마켓 인증 업체 🥕
+                    <div className="flex flex-col items-center md:items-end gap-2">
+                        <div className="inline-block px-4 py-2 rounded-full border border-[#03C75A]/30 bg-[#03C75A]/10 text-[#03C75A] text-sm font-medium">
+                            네이버 인증 업체 ✅
+                        </div>
+                        <div className="inline-block px-4 py-2 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-sm font-medium">
+                            당근마켓 인증 업체 🥕
+                        </div>
                     </div>
                 </div>
 
