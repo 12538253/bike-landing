@@ -23,6 +23,20 @@ const reviews = [
     }
 ];
 
+const NaverLogo = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M16 16.5V6.6L8 18.2V6.6H3.6v11.8h4.4l8-11.6v11.6h4.4V6.6H16v9.9z" />
+    </svg>
+);
+
+const DaangnLogo = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M19.8 11.2c-.3 1.1-1.3 2-2.4 2.1-.2 1.3-1.6 2.3-1.7 2.4-1.2 1.1-2.9 1.7-4.6 1.7-3.2 0-5.8-2.6-5.8-5.8 0-.3.2-.5.5-.5s.5.2.5.5c0 2.6 2.1 4.7 4.7 4.7 1.4 0 2.8-.5 3.8-1.5.1-.1 1.2-.9 1.3-1.8H5c-.3 0-.5-.2-.5-.5s.2-.5.5-.5h12.1c.1-.8.2-1.6.2-2.4 0-1.7-.8-3.3-2.2-4.2-1.2-.8-2.7-1-4.1-.6-.2.1-.5 0-.6-.2-.1-.2 0-.5.2-.6 1.7-.6 3.6-.3 5.1.7 1.7 1.1 2.7 3.1 2.7 5.2 0 .5-.1.9-.1 1.3h.9c.3 0 .5.2.5.5s-.1.4-.4.4z" />
+        <path d="M8.5 12c-1.9 0-3.5-1.6-3.5-3.5 0-1.9 1.6-3.5 3.5-3.5s3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm0-6c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5-1.1-2.5-2.5-2.5z" />
+        <path d="M13.5 6c-1.4 0-2.5-1.1-2.5-2.5S12.1 1 13.5 1s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm0-4C12.7 2 12 2.7 12 3.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5S14.3 2 13.5 2z" />
+    </svg>
+);
+
 export default function ReviewsSection() {
     return (
         <section className="bg-black py-20 px-6 border-t border-white/5">
@@ -40,12 +54,14 @@ export default function ReviewsSection() {
                             <span className="text-gray-400">(후기 89개)</span>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center md:items-end gap-2">
-                        <div className="inline-block px-4 py-2 rounded-full border border-[#03C75A]/30 bg-[#03C75A]/10 text-[#03C75A] text-sm font-medium">
-                            네이버 인증 업체 ✅
+                    <div className="flex flex-col items-center md:items-end gap-3">
+                        <div className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#03C75A]/30 bg-[#03C75A]/10 text-[#03C75A] transition-colors hover:bg-[#03C75A]/20">
+                            <NaverLogo className="w-4 h-4 fill-current" />
+                            <span className="text-sm font-bold">네이버 인증 업체</span>
                         </div>
-                        <div className="inline-block px-4 py-2 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-sm font-medium">
-                            당근마켓 인증 업체 🥕
+                        <div className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#ff6f0f]/30 bg-[#ff6f0f]/10 text-[#ff6f0f] transition-colors hover:bg-[#ff6f0f]/20">
+                            <DaangnLogo className="w-5 h-5 fill-current" />
+                            <span className="text-sm font-bold">당근마켓 인증 업체</span>
                         </div>
                     </div>
                 </div>
