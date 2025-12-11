@@ -1,0 +1,50 @@
+# Project: Bike Manager Landing Page (Official Brand Site)
+
+## Role & Persona
+- You are an expert **UI/UX Designer** and **Frontend Developer** specializing in high-conversion landing pages.
+- **Design Concept**: "Premium & Speed". Use a **Dark Theme** (Black/Dark Grey background) with **Vibrant Orange (#FF6B00)** accents (inspired by Harley/Sports bikes).
+- **Tone**: Professional, Trustworthy, Fast.
+
+## Tech Stack
+- **Framework**: Next.js 14+ (App Router).
+- **Styling**: Tailwind CSS.
+- **Components**: Lucide React (Icons), Framer Motion (Subtle entrance animations).
+- **Deployment**: Vercel ready.
+
+## Content & Copywriting Strategy (Based on Ad Data)
+
+### 1. Header (Sticky)
+- **Logo**: "BIKE MANAGER" (Bold, Sans-serif).
+- **Right Action**: "24시 문의 010-7616-4949" (Clickable Tel link).
+
+### 2. Hero Section (The Hook)
+- **Background**: High-quality dark motorcycle image or abstract speed lines.
+- **Headline**: "내 바이크, 헐값에 넘기지 마세요. 전국 최고가 당일 매입."
+- **Sub-headline**: "수도권 2시간 내 방문 | 100% 현장 계좌 이체 | 무료 폐지 대행"
+- **CTA Button**: [ 무료 견적 받기 (1분 소요) ]
+
+### 3. Why Choose Us (Trust Factors - From Ad Image)
+*Use Icons for each point*
+- **Speed**: "급하신가요? 24시간, 공휴일, 날씨 상관없이 1시간 내 마무리를 약속합니다."
+- **Convenience**: "번호판이 있어도 OK. 구청 업무부터 세금 납부까지 완벽하게 대리 폐지해드립니다."
+- **Equipment**: "매장 소유 1톤 대형 리프트 차량 보유. 고장난 바이크도 안전하게 픽업합니다."
+- **Scope**: "50cc 스쿠터부터 1800cc 할리데이비슨/골드윙까지 전 기종 매입."
+
+### 4. Buying Process (Simplicity)
+1. **문의**: 문자/전화/카톡으로 모델명과 사진 전송.
+2. **견적**: 1분 내 매입가 제시.
+3. **출장**: 계신 곳으로 1톤 트럭 즉시 출동.
+4. **지급**: 현장에서 100% 송금 후 픽업.
+
+### 5. Honest Policy (Filtering Logic)
+- **Section Title**: "솔직하게 말씀드립니다."
+- **Text**: "시세(소매가)를 원하시는 분은 개인 거래를 추천드립니다. 저희는 업계 마진을 고려한 '최고의 도매가'를 제시합니다. 대신, 개인 거래의 스트레스(네고, 서류, 뒷말)를 0으로 만들어 드립니다."
+
+### 6. SEO & Footer
+- **Running Ticker (Marquee)**: List all models from the ad image (PCX125, NMAX, XMAX, R3, Iron883, Goldwing, etc.) to boost SEO.
+- **Footer Info**: 업체명(BIKE MANAGER), 대표자, 사업자번호(임의), 주소(간석동).
+
+## Immediate Goal
+- Setup Next.js project structure.
+- Implement the "Hero" and "Why Choose Us" sections using the copy above.
+- Create a `Floating Action Button` (FAB) for KakaoTalk & Phone Call that stays visible on scroll.

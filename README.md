@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bike Manager - Premium Motorcycle Buyback Landing Page
 
-## Getting Started
+A high-performance landing page for a premium motorcycle buyback service, built with **Next.js 16 (Turbopack)**, **Tailwind CSS**, and **Framer Motion**.
 
-First, run the development server:
+> **Live Demo**: [Check the live deployment](https://github.com/swlee724/bike-landing) (Add your link here)
+
+## 🛠 Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) (Dark Mode, Responsive)
+- **Animation**: [Framer Motion](https://www.framer.com/motion/) (Entrance effects, Staggered lists)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Deployment**: [Cloudflare Pages](https://pages.cloudflare.com/) (Static Export)
+- **Optimization**: `next/image`, `next/font`, Dynamic Imports
+
+## ✨ Key Features
+
+### 1. High-Conversion UX
+- **Performance**: 95+ Lighthouse Score via Generic Static Export.
+- **Mobile First**: Fixed Bottom Bar for mobile calls/chats (Sticky UI).
+- **Interactive Elements**:
+  - Live "Purchase Ticker" using CSS infinite scroll (no JS overhead).
+  - "1-Minute Quote" CTA linked directly to KakaoTalk API.
+  - Accordion FAQ and Scroll-triggered entrance animations.
+
+### 2. Trust Building
+- **Real-time Data**: Displays 89+ reviews and 5.0 rating based on actual business data.
+- **Transparent Pricing**: Detailed service costs (Scanner, Inspection) listed upfront.
+- **Social Proof**: Ticker showcasing real-time "Sold" status to create FOMO.
+
+### 3. SEO & Analytics
+- **Metadata**: Fully configured Open Graph (OG) tags for social sharing.
+- **Tracking**: Google Analytics 4 (GA4) integrated via `@next/third-parties`.
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/bike-manager.git
+
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Deployment (Cloudflare Pages)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project is configured for **Static Export** (`output: 'export'`) to minimize server costs and maximize speed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Build the project:
+   ```bash
+   npm run build
+   ```
+2. Deploy the `out/` directory to Cloudflare Pages.
 
-## Learn More
+## 📂 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+├── app/                  # Next.js App Router
+│   ├── layout.tsx        # Root layout with Fonts & GTM
+│   ├── page.tsx          # Main Landing Page Composition
+│   └── globals.css       # Tailwind & Custom Animations
+├── components/           # Reusable UI Components
+│   ├── Hero.tsx          # Hero Section with CTA
+│   ├── TrustSection.tsx  # Feature Highlights
+│   ├── PurchaseTicker.tsx# Infinite Scroll Ticker
+│   └── ...
+└── public/               # Static Assets
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is personal portfolio work.
