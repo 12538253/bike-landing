@@ -1,8 +1,28 @@
 "use client";
 
+import { Star, User } from "lucide-react";
 import Image from "next/image";
 
-// ... reviews array ...
+const reviews = [
+    {
+        user: "냥펀치",
+        rating: 5,
+        desc: "중고 바이크 구매후 점검과 엔진오일 교환으로 매장에 방문했습니다. 사장님 친절하시고 설명도 잘해주셔서 믿음이 가네요. 다음에 또 방문하겠습니다!",
+        date: "최근 방문"
+    },
+    {
+        user: "돼랑이",
+        rating: 5,
+        desc: "포르자750 판매하고 왔습니다. 다른곳보다 견적도 잘쳐주시고 입금도 바로바로 해주셔서 기분좋게 거래했습니다. 번창하세요~",
+        date: "최근 방문"
+    },
+    {
+        user: "김민재",
+        rating: 5,
+        desc: "첫 바이크라 모르는게 많았는데 하나하나 친절하게 알려주셔서 감사합니다. 탁송도 빠르고 바이크 상태도 너무 좋아요!",
+        date: "최근 방문"
+    }
+];
 
 export default function ReviewsSection() {
     return (
