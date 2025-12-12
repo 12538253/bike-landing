@@ -23,6 +23,11 @@ export const metadata: Metadata = {
     "naver-site-verification": "", // 추후 값 입력 필요
     "google-site-verification": "", // 추후 값 입력 필요
   },
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 
   openGraph: {
     title: "바이크매니저 | 전국 중고 오토바이 최고가 당일 매입",
