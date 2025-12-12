@@ -6,7 +6,17 @@
 제가 프로젝트 설정을 **'정적 내보내기 (Static Export)'** 모드로 변경해 두었습니다.
 - 덕분에 서버비용 0원, 속도는 가장 빠른 상태입니다.
 
-## 2. 배포 방법 (GitHub 연동 방식 - 추천)
+
+### (선택) 3. 커스텀 도메인 연결 (www.bike-manager.com & bike-manager.com)
+1. Cloudflare Pages 대시보드 → `bike-landing` 프로젝트 클릭
+2. **Custom domains** 탭 클릭 → **Set up a custom domain** 버튼 클릭
+3. 도메인 두 개를 모두 등록해야 합니다:
+   - `www.bike-manager.com` (메인)
+   - `bike-manager.com` (서브)
+4. Cloudflare가 안내하는 대로 DNS 레코드(CNAME/A) 설정
+5. **(중요)** 두 도메인 모두 `Active` 상태가 되어야 접속이 원활합니다.
+
+## 🔄 업데이트 방법 (유지보수)GitHub 연동 방식 - 추천)
 
 가장 권장하는 방식입니다. 소스 코드를 수정하고 저장하면 자동으로 사이트도 업데이트됩니다.
 
