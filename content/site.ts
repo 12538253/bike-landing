@@ -122,6 +122,7 @@ export const site = {
     } satisfies ContactLink,
   },
   trustPoints: [
+    // Public source for the confirmed career claim: https://m.blog.naver.com/bikemanager4949
     {
       title: "경력 10년 이상",
       description: "현장에서 쌓은 바이크 거래 경험을 바탕으로 상담합니다.",

@@ -1,5 +1,29 @@
 import { expect, test, type Locator } from "@playwright/test";
 
+type Rgb = readonly [number, number, number];
+
+function parseCssColor(color: string): Rgb {
+  if (color.startsWith("#")) {
+    return [1, 3, 5].map((offset) => Number.parseInt(color.slice(offset, offset + 2), 16)) as unknown as Rgb;
+  }
+
+  const channels = color.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+  expect(channels, `expected an RGB color, received ${color}`).toHaveLength(3);
+  return channels as unknown as Rgb;
+}
+
+function contrastRatio(left: Rgb, right: Rgb) {
+  const luminance = (color: Rgb) => {
+    const [red, green, blue] = color.map((channel) => {
+      const normalized = channel / 255;
+      return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const [lighter, darker] = [luminance(left), luminance(right)].sort((a, b) => b - a);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 async function renderedLines(locator: Locator) {
   return locator.evaluate((element) => {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
@@ -76,6 +100,58 @@ test("desktop process story follows the active scroll step", async ({ page }) =>
   await thirdStep.scrollIntoViewIfNeeded();
   await expect(story).toHaveAttribute("data-active-step", "2");
   await expect(page.getByTestId("process-stage-label")).toContainText("현장 검수");
+});
+
+test("desktop process keeps inactive articles readable while distinguishing the active step", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const story = page.getByTestId("process-story");
+  await story.scrollIntoViewIfNeeded();
+  await expect(story).toHaveAttribute("data-enhanced", "true");
+
+  const activeIndex = Number(await story.getAttribute("data-active-step"));
+  const activeStep = page.getByTestId(`process-step-${activeIndex}`);
+  const inactiveStep = page.getByTestId(`process-step-${activeIndex === 0 ? 1 : 0}`);
+  await expect(activeStep).toHaveCSS("opacity", "1");
+  await expect(inactiveStep).toHaveCSS("opacity", "1");
+  expect(await activeStep.evaluate((element) => getComputedStyle(element).transform)).not.toBe(
+    await inactiveStep.evaluate((element) => getComputedStyle(element).transform),
+  );
+});
+
+test("visual process stage remains hidden from assistive technology after enhancement", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "true");
+  await expect(page.locator(".process-stage")).toHaveAttribute("aria-hidden", "true");
+});
+
+test("focus indicator maintains 3:1 contrast on the approved light and dark surfaces", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const target = page.locator('[data-cta="header-phone"]');
+  await target.focus();
+  const styles = await target.evaluate((element) => {
+    const targetStyles = getComputedStyle(element);
+    const rootStyles = getComputedStyle(document.documentElement);
+    return {
+      focusVisible: element.matches(":focus-visible"),
+      outlineColor: targetStyles.outlineColor,
+      outlineWidth: Number.parseFloat(targetStyles.outlineWidth),
+      shadowColors: targetStyles.boxShadow.match(/rgba?\([^)]+\)/g) ?? [],
+      surfaces: [rootStyles.getPropertyValue("--paper").trim(), rootStyles.getPropertyValue("--ink").trim()],
+    };
+  });
+
+  expect(styles.focusVisible).toBe(true);
+  expect(styles.outlineWidth).toBeGreaterThanOrEqual(2);
+  const indicatorColors = [styles.outlineColor, ...styles.shadowColors].map(parseCssColor);
+  for (const surface of styles.surfaces.map(parseCssColor)) {
+    expect(Math.max(...indicatorColors.map((color) => contrastRatio(color, surface)))).toBeGreaterThanOrEqual(3);
+  }
 });
 
 test("case cards load distinct local images", async ({ page }) => {

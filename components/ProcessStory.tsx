@@ -83,7 +83,7 @@ export default function ProcessStory({ steps }: ProcessStoryProps) {
       data-enhanced={String(enhanced)}
       data-active-step={activeStep}
     >
-      <div className="process-stage" aria-hidden={!enhanced}>
+      <div className="process-stage" aria-hidden="true">
         <div className="process-stage__frame">
           <Image
             src={active.image}

@@ -91,8 +91,9 @@ address {
 }
 
 :focus-visible {
-  outline: 3px solid var(--orange);
-  outline-offset: 4px;
+  outline: 3px solid white;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px var(--ink);
 }
 
 ::selection {
@@ -828,9 +829,9 @@ address {
 }
 
 .process-story[data-enhanced="true"] .process-step {
-  opacity: 0.42;
+  opacity: 1;
   transform: translateX(0);
-  transition: opacity 0.24s ease, transform 0.24s ease;
+  transition: transform 0.24s ease;
 }
 
 .process-story[data-enhanced="true"] .process-step.is-active {

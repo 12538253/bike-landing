@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const html = await readFile(new URL("../out/index.html", import.meta.url), "utf8");
 const stylesheetHref = html.match(/href="([^"]+\.css)"/)?.[1];
@@ -52,18 +54,45 @@ test("orders case studies around the core scooter customer", () => {
   assert.match(casesSection, /224362894515/);
 });
 
-test("exports distinct local images for each case study", () => {
+test("binds each case model to its official post and budgeted local image", async () => {
   const casesSection = html.match(/<section[^>]+id="cases"[\s\S]*?<\/section>/)?.[0];
   assert.ok(casesSection, "expected the case studies section");
 
-  for (const imagePath of [
-    "/images/cases/adv350.webp",
-    "/images/cases/pcx125.webp",
-    "/images/cases/iron883.webp",
-  ]) {
+  const expectedCases = [
+    { model: "ADV350", postId: "224355424035", imagePath: "/images/cases/adv350.webp" },
+    { model: "PCX125", postId: "224362894515", imagePath: "/images/cases/pcx125.webp" },
+    { model: "아이언883", postId: "224351926598", imagePath: "/images/cases/iron883.webp" },
+  ];
+  const cards = [...casesSection.matchAll(/<article class="case-card">([\s\S]*?)<\/article>/g)].map(
+    ([, card]) => card,
+  );
+  assert.equal(cards.length, expectedCases.length);
+
+  for (const { model, postId, imagePath } of expectedCases) {
+    const matchingCard = cards.find((card) => card.includes(`<h3>${model}</h3>`));
+    assert.ok(matchingCard, `expected a case card for ${model}`);
+    assert.match(matchingCard, new RegExp(`href="https://m\\.blog\\.naver\\.com/bikemanager4949/${postId}"`));
+    assert.match(matchingCard, new RegExp(`src="${imagePath.replaceAll("/", "\\/")}"`));
     assert.equal(casesSection.split(imagePath).length - 1, 1, `expected one ${imagePath} image`);
+
+    const imageUrl = new URL(`../public${imagePath}`, import.meta.url);
+    const [{ size }, metadata] = await Promise.all([stat(imageUrl), sharp(fileURLToPath(imageUrl)).metadata()]);
+    assert.ok(metadata.width && metadata.height, `expected dimensions for ${imagePath}`);
+    assert.ok(Math.max(metadata.width, metadata.height) <= 800, `${imagePath} longest edge must be <=800px`);
+    assert.ok(size < 180 * 1024, `${imagePath} must be smaller than 180KB`);
   }
   assert.doesNotMatch(casesSection, /pstatic\.net/);
+});
+
+test("declares image tooling as a direct development dependency", async () => {
+  const [packageJson, packageLock] = await Promise.all([
+    readFile(new URL("../package.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../package-lock.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
+  const sharpVersion = packageJson.devDependencies?.sharp ?? "";
+  assert.match(sharpVersion, /^\d+\.\d+\.\d+$/);
+  assert.equal(packageLock.packages?.[""]?.devDependencies?.sharp, sharpVersion);
+  assert.equal(packageLock.packages?.["node_modules/sharp"]?.version, sharpVersion);
 });
 
 test("keeps JSON-LD factual and free of unverified hours", () => {
