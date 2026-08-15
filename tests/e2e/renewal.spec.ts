@@ -78,6 +78,26 @@ test("desktop process story follows the active scroll step", async ({ page }) =>
   await expect(page.getByTestId("process-stage-label")).toContainText("현장 검수");
 });
 
+test("case cards load distinct local images", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const images = page.locator(".case-card__media img");
+  await expect(images).toHaveCount(3);
+  const imageStates = await images.evaluateAll((elements) =>
+    elements.map((element) => {
+      const image = element as HTMLImageElement;
+      return { src: image.src, complete: image.complete, naturalWidth: image.naturalWidth };
+    }),
+  );
+
+  expect(new Set(imageStates.map(({ src }) => src)).size).toBe(3);
+  for (const { complete, naturalWidth } of imageStates) {
+    expect(complete).toBe(true);
+    expect(naturalWidth).toBeGreaterThan(0);
+  }
+});
+
 test("mobile keeps every process step visible without scroll enhancement", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

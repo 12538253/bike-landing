@@ -52,6 +52,20 @@ test("orders case studies around the core scooter customer", () => {
   assert.match(casesSection, /224362894515/);
 });
 
+test("exports distinct local images for each case study", () => {
+  const casesSection = html.match(/<section[^>]+id="cases"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(casesSection, "expected the case studies section");
+
+  for (const imagePath of [
+    "/images/cases/adv350.webp",
+    "/images/cases/pcx125.webp",
+    "/images/cases/iron883.webp",
+  ]) {
+    assert.equal(casesSection.split(imagePath).length - 1, 1, `expected one ${imagePath} image`);
+  }
+  assert.doesNotMatch(casesSection, /pstatic\.net/);
+});
+
 test("keeps JSON-LD factual and free of unverified hours", () => {
   const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   assert.equal(scripts.length, 1);
