@@ -23,6 +23,24 @@ const textContent = (markup) => markup
   .replace(/\s+/g, " ")
   .trim();
 
+const prohibitedMarketingTerms = /최고가|무조건|100%|즉시 출동|모든 차량/u;
+
+const marketingSurface = (markup) => {
+  const withoutExecutableCode = markup
+    .replace(/<script\b[\s\S]*?<\/script>/gi, "")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, "");
+  const titles = [...markup.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title>/gi)].map(([, value]) => textContent(value));
+  const metadata = [...markup.matchAll(/<meta\b[^>]*\bcontent=(?:"([^"]*)"|'([^']*)')/gi)]
+    .map(([, doubleQuoted, singleQuoted]) => doubleQuoted ?? singleQuoted);
+  const ariaLabels = [...withoutExecutableCode.matchAll(/\baria-label=(?:"([^"]*)"|'([^']*)')/gi)]
+    .map(([, doubleQuoted, singleQuoted]) => doubleQuoted ?? singleQuoted);
+  const jsonLd = [...markup.matchAll(
+    /<script\b[^>]*\btype=(?:"application\/ld\+json"|'application\/ld\+json')[^>]*>([\s\S]*?)<\/script>/gi,
+  )].map(([, value]) => value);
+
+  return [...titles, ...metadata, ...ariaLabels, textContent(withoutExecutableCode), ...jsonLd].join(" ");
+};
+
 const disclosureParts = (detailsMarkup) => {
   const match = detailsMarkup.match(/<summary\b[^>]*>([\s\S]*?)<\/summary>([\s\S]*)/i);
   if (!match) return null;
@@ -500,12 +518,28 @@ test("keeps JSON-LD factual and free of unverified hours", () => {
   assert.equal(data.openingHoursSpecification, undefined);
 });
 
+test("collects marketing terms from visible copy, metadata, ARIA labels, and JSON-LD", () => {
+  const fixture = [
+    "<title>최고가 안내</title>",
+    '<meta property="og:description" content="무조건 확인"/>',
+    '<main aria-label="즉시 출동 상담">모든 차량 상담</main>',
+    '<script type="application/ld+json">{"description":"100% 확인"}</script>',
+    '<script>const implementationStyle = "width:100%";</script>',
+  ].join("");
+
+  const surface = marketingSurface(fixture);
+  for (const term of ["최고가", "무조건", "100%", "즉시 출동", "모든 차량"]) {
+    assert.match(surface, new RegExp(term, "u"), `expected the marketing-surface collector to detect ${term}`);
+  }
+  assert.doesNotMatch(marketingSurface('<img style="width:100%"/>'), prohibitedMarketingTerms);
+});
+
 test("removes fabricated social proof and fake live activity", () => {
   assert.doesNotMatch(html, /후기 89개/);
   assert.doesNotMatch(html, /실시간 구매/);
   assert.doesNotMatch(html, /네이버 인증 업체/);
   assert.doesNotMatch(html, /당근마켓 인증 업체/);
-  assert.doesNotMatch(html, />[^<]*(?:최고가|1분|2시간 보장|100%|모든 차량)[^<]*</);
+  assert.doesNotMatch(marketingSurface(html), prohibitedMarketingTerms);
 });
 
 test("exports the approved petrol, ivory, brass, and copper palette", () => {

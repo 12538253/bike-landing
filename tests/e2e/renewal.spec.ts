@@ -440,6 +440,17 @@ test("390px first view exposes the seller decision facts and contact paths", asy
     expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
   }
 
+  const decisionFacts = page.locator("#top .hero__description");
+  await expect(decisionFacts).toContainText("현장에서 차량 상태와 최종 금액을 확인하고");
+  await expect(decisionFacts).toContainText("판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.");
+  const decisionFactsBox = await decisionFacts.boundingBox();
+  expect(decisionFactsBox, "the transaction facts need a rendered first-view box").not.toBeNull();
+  expect(decisionFactsBox?.y ?? -1, "the transaction facts must start inside the 390px viewport").toBeGreaterThanOrEqual(0);
+  expect(
+    (decisionFactsBox?.y ?? Number.POSITIVE_INFINITY) + (decisionFactsBox?.height ?? 0),
+    "the transaction facts must remain fully readable in the 390px viewport",
+  ).toBeLessThanOrEqual(844);
+
   for (const locator of [
     page.locator('[data-cta="hero-kakao"]'),
     page.locator('[data-cta="header-phone"]'),
@@ -970,6 +981,37 @@ test("transaction paths switch between interactive and static semantics when mot
   expect(runtimeErrors, "live media-query semantic switches must not log hydration/runtime errors").toEqual([]);
 });
 
+test("transaction paths clear a focused transient path across live mode changes", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+
+  let directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  let sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  await sendFirst.focus();
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.getByTestId("transaction-paths").getByRole("button")).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+
+  directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  await expect(directVisit, "a stale focused path must not override the pinned direct-visit path").toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+
+  await sendFirst.hover();
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.mouse.move(0, 0);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+
+  directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  await expect(directVisit, "a stale preview path must not override the pinned direct-visit path").toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+});
+
 test("case studies use the featured and portrait layout at each breakpoint", async ({ page }) => {
   const cards = (model: string) =>
     page.locator("article.case-card", { has: page.getByRole("heading", { name: model, exact: true }) });
@@ -1082,6 +1124,43 @@ test("mobile inquiry bar appears after the hero and hides at the final call to a
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
   await expect(bar).not.toHaveClass(/is-visible/);
+});
+
+test("sticky inquiry becomes inert and returns focus to visible process and contact destinations", async ({ page }) => {
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion });
+    await page.goto("/");
+
+    const bar = page.getByTestId("sticky-inquiry");
+    const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
+    await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+    await expect(bar, `${reducedMotion}: sticky inquiry should become visible before each transition`).toHaveClass(/is-visible/);
+
+    await stickyKakao.focus();
+    await page.locator("#process").scrollIntoViewIfNeeded();
+    await expect(bar, `${reducedMotion}: process transition must make the bar inert`).toHaveAttribute("inert", "");
+    await expect(bar).toHaveAttribute("aria-hidden", "true");
+    await expect(page.locator("#process"), `${reducedMotion}: process is the logical visible focus destination`).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(stickyKakao, `${reducedMotion}: the old hidden link must not regain focus through Enter`).not.toBeFocused();
+    await page.locator('[data-cta="header-phone"]').focus();
+    await expect(page.locator("#process"), `${reducedMotion}: the temporary process tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
+    await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
+
+    await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+    await expect(bar, `${reducedMotion}: sticky inquiry should reappear away from the process`).toHaveClass(/is-visible/);
+    await stickyKakao.focus();
+    await page.locator("#contact").scrollIntoViewIfNeeded();
+    await expect(bar, `${reducedMotion}: contact transition must make the bar inert`).toHaveAttribute("inert", "");
+    await expect(bar).toHaveAttribute("aria-hidden", "true");
+    await expect(page.locator("#contact"), `${reducedMotion}: contact is the logical visible focus destination`).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(stickyKakao, `${reducedMotion}: the old hidden link must not regain focus through Enter`).not.toBeFocused();
+    await page.locator('[data-cta="header-phone"]').focus();
+    await expect(page.locator("#contact"), `${reducedMotion}: the temporary contact tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
+    await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
+  }
 });
 
 test.describe("reduced motion", () => {

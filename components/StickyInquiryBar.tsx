@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Phone } from "lucide-react";
 
 import { site } from "@/content/site";
 
 export default function StickyInquiryBar() {
+  const barRef = useRef<HTMLElement>(null);
   const [heroPassed, setHeroPassed] = useState(false);
   const [processVisible, setProcessVisible] = useState(false);
   const [finalVisible, setFinalVisible] = useState(false);
@@ -16,6 +17,20 @@ export default function StickyInquiryBar() {
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
     if (!hero || !process || !finalCta) return;
 
+    const moveFocusTo = (destination: HTMLElement) => {
+      if (!barRef.current?.contains(document.activeElement)) return;
+
+      const previousTabIndex = destination.getAttribute("tabindex");
+      const restoreTabIndex = () => {
+        if (previousTabIndex === null) destination.removeAttribute("tabindex");
+        else destination.setAttribute("tabindex", previousTabIndex);
+      };
+      destination.tabIndex = -1;
+      destination.addEventListener("blur", restoreTabIndex, { once: true });
+      destination.focus({ preventScroll: true });
+      if (document.activeElement !== destination) restoreTabIndex();
+    };
+
     const heroObserver = new IntersectionObserver(
       ([entry]) => {
         setHeroPassed(!entry.isIntersecting && entry.boundingClientRect.bottom <= 0);
@@ -23,11 +38,17 @@ export default function StickyInquiryBar() {
       { threshold: 0 },
     );
     const processObserver = new IntersectionObserver(
-      ([entry]) => setProcessVisible(entry.isIntersecting),
+      ([entry]) => {
+        if (entry.isIntersecting) moveFocusTo(process);
+        setProcessVisible(entry.isIntersecting);
+      },
       { threshold: 0 },
     );
     const finalObserver = new IntersectionObserver(
-      ([entry]) => setFinalVisible(entry.isIntersecting),
+      ([entry]) => {
+        if (entry.isIntersecting) moveFocusTo(finalCta);
+        setFinalVisible(entry.isIntersecting);
+      },
       { threshold: 0.1 },
     );
 
@@ -47,10 +68,12 @@ export default function StickyInquiryBar() {
 
   return (
     <aside
+      ref={barRef}
       className={`sticky-inquiry${visible ? " is-visible" : ""}`}
       data-testid="sticky-inquiry"
       aria-label="빠른 문의"
       aria-hidden={!visible}
+      inert={!visible}
     >
       <a href={site.phone.href} tabIndex={visible ? 0 : -1}>
         <Phone aria-hidden="true" size={20} />

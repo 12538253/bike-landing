@@ -46,6 +46,17 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
   const activePath = focusedPath ?? previewPath ?? pinnedPath;
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia(enhancedQuery);
+    const resetTransientPaths = () => {
+      setPreviewPath(null);
+      setFocusedPath(null);
+    };
+
+    mediaQuery.addEventListener("change", resetTransientPaths);
+    return () => mediaQuery.removeEventListener("change", resetTransientPaths);
+  }, []);
+
+  useEffect(() => {
     const root = rootRef.current;
     const line = lineRef.current;
     if (!root || !line) return;
