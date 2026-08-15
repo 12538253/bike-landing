@@ -54,6 +54,30 @@ async function renderedLines(locator: Locator) {
   });
 }
 
+async function waitForStablePosition(locator: Locator) {
+  await locator.evaluate(
+    (element) =>
+      new Promise<void>((resolve) => {
+        let previousTop = element.getBoundingClientRect().top;
+        let stableFrames = 0;
+
+        const sample = () => {
+          const currentTop = element.getBoundingClientRect().top;
+          stableFrames = Math.abs(currentTop - previousTop) < 0.5 ? stableFrames + 1 : 0;
+          previousTop = currentTop;
+
+          if (stableFrames >= 8) {
+            resolve();
+            return;
+          }
+          requestAnimationFrame(sample);
+        };
+
+        requestAnimationFrame(sample);
+      }),
+  );
+}
+
 test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -88,44 +112,45 @@ test("wide section headings do not gain avoidable extra lines", async ({ page })
   }
 });
 
-test("desktop process story follows the active scroll step", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
+test("process renders a compact 4/2/1 static rail", async ({ page }) => {
+  for (const { width, columns } of [
+    { width: 1440, columns: 4 },
+    { width: 768, columns: 2 },
+    { width: 390, columns: 1 },
+  ]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
 
-  const story = page.getByTestId("process-story");
-  await story.scrollIntoViewIfNeeded();
-  await expect(story).toHaveAttribute("data-enhanced", "true");
+    const story = page.getByTestId("process-story");
+    await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
+    await expect(page.locator(".process-stage")).toHaveCount(0);
+    const steps = story.locator(".process-step");
+    await expect(steps).toHaveCount(4);
+    const boxes = await steps.evaluateAll((elements) =>
+      elements.map((element) => {
+        const { x, y, height } = element.getBoundingClientRect();
+        return { x, y, height };
+      }),
+    );
 
-  const thirdStep = page.getByTestId("process-step-2");
-  await thirdStep.scrollIntoViewIfNeeded();
-  await expect(story).toHaveAttribute("data-active-step", "2");
-  await expect(page.getByTestId("process-stage-label")).toContainText("현장 검수");
+    expect(new Set(boxes.map(({ x }) => Math.round(x))).size).toBe(columns);
+    if (columns === 4) {
+      expect((await story.boundingBox())?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(900);
+    }
+  }
 });
 
-test("desktop process keeps inactive articles readable while distinguishing the active step", async ({ page }) => {
+test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
 
-  const story = page.getByTestId("process-story");
-  await story.scrollIntoViewIfNeeded();
-  await expect(story).toHaveAttribute("data-enhanced", "true");
-
-  const activeIndex = Number(await story.getAttribute("data-active-step"));
-  const activeStep = page.getByTestId(`process-step-${activeIndex}`);
-  const inactiveStep = page.getByTestId(`process-step-${activeIndex === 0 ? 1 : 0}`);
-  await expect(activeStep).toHaveCSS("opacity", "1");
-  await expect(inactiveStep).toHaveCSS("opacity", "1");
-  expect(await activeStep.evaluate((element) => getComputedStyle(element).transform)).not.toBe(
-    await inactiveStep.evaluate((element) => getComputedStyle(element).transform),
-  );
-});
-
-test("visual process stage remains hidden from assistive technology after enhancement", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-
-  await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "true");
-  await expect(page.locator(".process-stage")).toHaveAttribute("aria-hidden", "true");
+  for (const id of ["faq", "contact"]) {
+    await page.goto(`/#${id}`, { waitUntil: "networkidle" });
+    const target = page.locator(`#${id}`);
+    await waitForStablePosition(target);
+    const top = await target.evaluate((element) => element.getBoundingClientRect().top);
+    expect(top, `#${id} should clear the fixed header`).toBeGreaterThanOrEqual(72);
+    expect(top, `#${id} should settle inside the viewport`).toBeLessThan(900);
+  }
 });
 
 test("focus indicator maintains 3:1 contrast on the approved light and dark surfaces", async ({ page }) => {
@@ -180,7 +205,8 @@ test("mobile keeps every process step visible without scroll enhancement", async
 
   const story = page.getByTestId("process-story");
   await story.scrollIntoViewIfNeeded();
-  await expect(story).toHaveAttribute("data-enhanced", "false");
+  await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
+  await expect(page.locator(".process-stage")).toHaveCount(0);
 
   for (let index = 0; index < 4; index += 1) {
     await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
@@ -215,9 +241,12 @@ test.describe("reduced motion", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
-    await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "false");
-    await expect(page.locator(".process-stage")).toBeHidden();
-    await expect(page.getByTestId("process-step-3")).toBeVisible();
+    const story = page.getByTestId("process-story");
+    await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
+    await expect(page.locator(".process-stage")).toHaveCount(0);
+    for (let index = 0; index < 4; index += 1) {
+      await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
+    }
     await expect(page.getByTestId("hero-copy")).toHaveCSS("animation-name", "none");
     await expect(page.getByTestId("hero-media")).toHaveCSS("animation-name", "none");
   });
@@ -231,8 +260,8 @@ test("JavaScript-off desktop falls back to four static process cards", async ({ 
   const page = await context.newPage();
 
   await page.goto("/");
-  await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "false");
-  await expect(page.locator(".process-stage")).toBeHidden();
+  await expect(page.getByTestId("process-story")).not.toHaveAttribute("data-enhanced", /.+/);
+  await expect(page.locator(".process-stage")).toHaveCount(0);
   for (let index = 0; index < 4; index += 1) {
     await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
   }
