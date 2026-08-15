@@ -27,8 +27,16 @@ test("renders the trust-first hero and trackable contact links", () => {
   assert.match(html, /https:\/\/pf\.kakao\.com\/_MzgSn\/chat/);
   assert.match(html, /https:\/\/naver\.me\/F1rPbAcV/);
   assert.match(html, /224351926598/);
-  assert.match(html, /224340255184/);
+  assert.match(html, /224355424035/);
   assert.match(html, /224347789101/);
+  assert.doesNotMatch(html, /224340255184/);
+  assert.match(html, /https:\/\/m\.blog\.naver\.com\/bikemanager4949/);
+  assert.match(html, /처음 문의할 때 이 여덟 가지가 필요합니다/);
+  assert.match(html, /하자 내역/);
+  assert.match(html, /폐지 여부/);
+  assert.match(html, /검사 여부/);
+  assert.doesNotMatch(html, /naver-proof__mark[^>]*>N</);
+  assert.doesNotMatch(html, /구독자 660/);
 });
 
 test("keeps JSON-LD factual and free of unverified hours", () => {
@@ -51,11 +59,12 @@ test("removes fabricated social proof and fake live activity", () => {
   assert.doesNotMatch(html, />[^<]*(?:최고가|1분|2시간 보장|100%|모든 차량)[^<]*</);
 });
 
-test("exports the approved petrol, ivory, and vermilion palette", () => {
+test("exports the approved petrol, ivory, brass, and copper palette", () => {
   assert.match(stylesheet, /--ink:#0c1a1c/);
   assert.match(stylesheet, /--paper:#f1ede4/);
   assert.match(stylesheet, /--card:#ded7ca/);
   assert.match(stylesheet, /--orange:#ff6645/);
+  assert.match(stylesheet, /--brass:#b88a4a/);
   assert.match(stylesheet, /--steel:#789094/);
   assert.doesNotMatch(stylesheet, /255,122,26|#10100f/);
 });

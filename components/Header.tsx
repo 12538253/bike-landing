@@ -9,11 +9,14 @@ export default function Header() {
     <header className="site-header">
       <div className="site-shell site-header__inner">
         <a className="brand-mark" href="#top">
-          <span className="sr-only">바이크매니저 홈</span>
           <span className="brand-mark__badge" aria-hidden="true">
             BM
           </span>
-          <span className="brand-mark__name">{site.englishName}</span>
+          <span className="brand-mark__copy">
+            <span className="brand-mark__name">{site.name}</span>
+            <span className="brand-mark__english">{site.englishName}</span>
+          </span>
+          <span className="sr-only">홈</span>
         </a>
 
         <nav className="site-nav" aria-label="주요 메뉴">

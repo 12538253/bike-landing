@@ -80,11 +80,13 @@ test("JavaScript-off desktop falls back to four static process cards", async ({ 
   await context.close();
 });
 
-test("small-screen brand link keeps an accessible home name", async ({ page }) => {
+test("small-screen brand lockup keeps its Korean name and accessible home name", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/");
 
   await expect(page.getByRole("link", { name: /바이크매니저 홈/ })).toBeVisible();
+  await expect(page.locator(".brand-mark__name")).toHaveText("바이크매니저");
+  await expect(page.locator(".brand-mark__name")).toBeVisible();
 });
 
 test("trust anchor clears the fixed desktop header", async ({ page }) => {

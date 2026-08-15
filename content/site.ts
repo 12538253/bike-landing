@@ -38,6 +38,8 @@ export type ProcessStep = Readonly<{
 }>;
 
 const phoneNumber = "010-7616-4949";
+const naverPlaceUrl = "https://naver.me/F1rPbAcV";
+const officialBlogUrl = "https://m.blog.naver.com/bikemanager4949";
 
 export const site = {
   name: "바이크매니저",
@@ -60,7 +62,8 @@ export const site = {
   },
   links: {
     kakao: "https://pf.kakao.com/_MzgSn/chat",
-    naverPlace: "https://naver.me/F1rPbAcV",
+    naverPlace: naverPlaceUrl,
+    officialBlog: officialBlogUrl,
   },
   metadata: {
     title: "바이크매니저 | 인천·서울·경기 중고 바이크 방문 매입",
@@ -109,8 +112,8 @@ export const site = {
       ctaId: "final-phone",
     } satisfies ContactLink,
     naverProof: {
-      label: "네이버에서 실제 리뷰 확인하기",
-      href: "https://naver.me/F1rPbAcV",
+      label: "공식 블로그에서 실제 거래 사례 보기",
+      href: officialBlogUrl,
       ctaId: "naver-proof",
       external: true,
     } satisfies ContactLink,
@@ -134,12 +137,14 @@ export const site = {
     },
   ],
   quoteItems: [
-    "모델명",
+    "기종",
     "연식",
     "주행거리",
-    "등록 상태",
-    "좌·우·계기판 사진",
-    "현재 지역",
+    "하자 내역",
+    "폐지 여부",
+    "검사 여부",
+    "지역",
+    "바이크 사진",
   ],
   cases: [
     {
@@ -153,13 +158,14 @@ export const site = {
       imagePosition: "45% center",
     },
     {
-      region: "화성",
-      model: "골드윙",
-      summary: "화성에서 골드윙을 확인한 방문 매입 사례입니다.",
-      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224340255184",
-      sourceLabel: "공식 블로그에서 화성 골드윙 매입 기록 보기",
+      region: "서울 은평구",
+      model: "ADV350",
+      summary:
+        "늦은 저녁 일정을 조율해 자택에서 차량을 함께 확인하고 현장에서 대금을 지급한 방문 매입 사례입니다.",
+      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224355424035",
+      sourceLabel: "공식 블로그에서 서울 은평구 ADV350 매입 기록 보기",
       image: "/images/hero-bg.webp",
-      imageAlt: "화성 골드윙 공식 블로그 매입 사례 연결 이미지",
+      imageAlt: "서울 은평구 ADV350 공식 블로그 매입 사례 연결 이미지",
       imagePosition: "62% center",
     },
     {
@@ -178,7 +184,7 @@ export const site = {
       number: "01",
       title: "문의",
       description:
-        "카카오톡이나 전화로 모델명, 연식, 주행거리, 차량 사진, 현재 지역을 알려주세요.",
+        "카카오톡이나 전화로 기종, 연식, 주행거리, 하자·폐지·검사 여부, 지역과 차량 사진을 알려주세요.",
       image: "/images/hero-bg.webp",
       imageAlt: "카카오톡이나 전화로 바이크 정보를 전하는 문의 단계",
       imagePosition: "25% center",

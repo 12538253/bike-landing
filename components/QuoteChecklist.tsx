@@ -13,9 +13,10 @@ export default function QuoteChecklist() {
         <div className="quote-layout__content">
           <div className="section-heading section-heading--left">
             <p>사진과 기본 정보만 준비해 주세요</p>
-            <h2 id="quote-title">처음 문의할 때 이 여섯 가지가 필요합니다</h2>
+            <h2 id="quote-title">처음 문의할 때 이 여덟 가지가 필요합니다</h2>
             <span>
-              모델명과 차량 사진을 함께 보내주시면 사진 기준 예상 견적을 안내하는 데 도움이 됩니다.
+              차량은 밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요. 정보와 사진을 함께
+              보내주시면 예상 견적을 안내하는 데 도움이 됩니다.
             </span>
           </div>
           <ul className="quote-list">

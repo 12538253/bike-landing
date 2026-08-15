@@ -12,10 +12,10 @@
   --muted: #536164;
   --muted-light: #a9b7b8;
   --orange: #ff6645;
-  --orange-deep: #943522;
+  --brass: #b88a4a;
+  --brass-deep: #765426;
   --steel: #789094;
   --yellow: #fee500;
-  --naver: #03c75a;
   --shell: 1200px;
   --header-height: 72px;
 }
@@ -144,7 +144,7 @@ address {
 }
 
 .brand-mark {
-  gap: 11px;
+  gap: 9px;
   flex: 0 0 auto;
 }
 
@@ -152,18 +152,36 @@ address {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(255, 102, 69, 0.65);
+  border: 1px solid rgba(184, 138, 74, 0.72);
   border-radius: 50%;
-  color: var(--orange);
+  color: var(--brass);
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: -0.04em;
 }
 
+.brand-mark__copy {
+  display: grid;
+  gap: 3px;
+}
+
+.brand-mark__name,
+.brand-mark__english {
+  display: block;
+  line-height: 1;
+}
+
 .brand-mark__name {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 850;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.025em;
+}
+
+.brand-mark__english {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.52rem;
+  font-weight: 760;
+  letter-spacing: 0.14em;
 }
 
 .site-nav {
@@ -211,7 +229,7 @@ address {
 }
 
 .header-phone__hours {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .hero {
@@ -276,7 +294,7 @@ address {
   align-items: center;
   gap: 10px;
   margin-bottom: 21px;
-  color: var(--orange);
+  color: var(--brass);
   font-size: clamp(0.8rem, 1.3vw, 0.94rem);
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -399,7 +417,7 @@ address {
 
 .trust-point > svg {
   flex: 0 0 auto;
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .trust-point strong,
@@ -451,7 +469,7 @@ address {
 .final-copy > p,
 .final-location > p {
   margin-bottom: 14px;
-  color: var(--orange-deep);
+  color: var(--brass-deep);
   font-size: 0.78rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -481,7 +499,7 @@ address {
 }
 
 .section-heading--light > p {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .section-heading--light > span {
@@ -499,7 +517,7 @@ address {
   height: max-content;
   align-items: center;
   gap: 8px;
-  color: var(--orange-deep);
+  color: var(--brass-deep);
   font-size: 0.8rem;
   font-weight: 820;
   letter-spacing: 0.08em;
@@ -527,7 +545,7 @@ address {
 }
 
 .quote-list__number {
-  color: var(--orange-deep);
+  color: var(--brass-deep);
   font-size: 0.7rem;
   font-weight: 850;
 }
@@ -601,7 +619,7 @@ address {
 
 .case-card__content > p {
   margin-top: 21px;
-  color: var(--orange);
+  color: var(--brass);
   font-size: 0.79rem;
   font-weight: 800;
 }
@@ -658,13 +676,13 @@ address {
   padding: 12px;
   border-radius: 50%;
   background: rgba(255, 102, 69, 0.12);
-  color: var(--orange-deep);
+  color: var(--brass-deep);
 }
 
 .method-card > p,
 .honest-grid article > p {
   margin-top: 24px;
-  color: var(--orange-deep);
+  color: var(--brass-deep);
   font-size: 0.78rem;
   font-weight: 820;
 }
@@ -714,7 +732,7 @@ address {
 
 .method-card__note svg {
   flex: 0 0 auto;
-  color: var(--orange-deep);
+  color: var(--brass-deep);
 }
 
 .process-heading {
@@ -763,14 +781,14 @@ address {
 
 .process-stage__content span,
 .process-step__body > span {
-  color: var(--orange);
+  color: var(--brass);
   font-size: 0.78rem;
   font-weight: 850;
   letter-spacing: 0.08em;
 }
 
 .process-step__body > span {
-  color: var(--orange-deep);
+  color: var(--brass-deep);
 }
 
 .process-stage__content strong {
@@ -906,11 +924,11 @@ address {
 }
 
 .honest-grid article > svg {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .honest-grid article > p {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .honest-grid h3 {
@@ -964,7 +982,7 @@ address {
 }
 
 .guide-grid svg {
-  color: var(--orange-deep);
+  color: var(--brass-deep);
 }
 
 .guide-grid h3 {
@@ -996,11 +1014,9 @@ address {
   width: 76px;
   height: 76px;
   place-items: center;
-  background: var(--naver);
-  color: white;
-  font-size: 2.8rem;
-  font-weight: 950;
-  line-height: 1;
+  border: 1px solid rgba(184, 138, 74, 0.42);
+  background: var(--ink-soft);
+  color: var(--brass);
 }
 
 .naver-proof__content .section-heading {
@@ -1030,6 +1046,30 @@ address {
 
 .button--naver:hover {
   transform: translateY(-2px);
+}
+
+.naver-proof__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+}
+
+.naver-proof__place-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 760;
+  text-decoration: underline;
+  text-decoration-color: rgba(12, 26, 28, 0.28);
+  text-underline-offset: 4px;
+}
+
+.naver-proof__place-link:hover {
+  color: var(--ink);
 }
 
 .faq-layout {
@@ -1072,7 +1112,7 @@ address {
 
 .faq-list summary svg {
   flex: 0 0 auto;
-  color: var(--orange-deep);
+  color: var(--brass-deep);
   transition: transform 0.22s ease;
 }
 
@@ -1128,11 +1168,11 @@ address {
 .final-location__icon {
   display: inline-flex;
   margin-bottom: 28px;
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .final-location > p {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .final-location address {
@@ -1161,7 +1201,7 @@ address {
 }
 
 .final-copy > p {
-  color: var(--orange);
+  color: var(--brass);
 }
 
 .final-copy > h2 {
@@ -1195,9 +1235,43 @@ address {
   align-items: end;
 }
 
-.site-footer strong {
+.footer-brand__lockup {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.footer-brand__badge {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(184, 138, 74, 0.72);
+  border-radius: 50%;
+  color: var(--brass);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.footer-brand__lockup strong,
+.footer-brand__lockup em {
+  display: block;
+  line-height: 1;
+}
+
+.footer-brand__lockup strong {
   font-size: 0.9rem;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.025em;
+}
+
+.footer-brand__lockup em {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.55rem;
+  font-style: normal;
+  font-weight: 760;
+  letter-spacing: 0.14em;
 }
 
 .site-footer p,
@@ -1207,7 +1281,7 @@ address {
   line-height: 1.8;
 }
 
-.site-footer > div > div:first-child p {
+.footer-brand > p {
   margin-top: 7px;
 }
 
@@ -1592,6 +1666,16 @@ address {
     display: grid;
   }
 
+  .naver-proof__actions {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .naver-proof__place-link {
+    justify-content: center;
+    text-align: center;
+  }
+
   .faq-list summary {
     min-height: 76px;
     font-size: 0.94rem;
@@ -1623,7 +1707,7 @@ address {
     width: min(calc(100% - 22px), var(--shell));
   }
 
-  .brand-mark__name,
+  .brand-mark__english,
   .header-phone svg {
     display: none;
   }
