@@ -225,6 +225,15 @@ test("binds each case model to its official post and budgeted local image", asyn
   assert.doesNotMatch(casesSection, /pstatic\.net/);
 });
 
+test("keys responsive case image size hints by content layout", async () => {
+  const component = await readFile(new URL("../components/CaseStudies.tsx", import.meta.url), "utf8");
+
+  assert.match(component, /featured:\s*"\(max-width: 760px\) 100vw, \(max-width: 1119px\) 67vw, 50vw"/);
+  assert.match(component, /portrait:\s*"\(max-width: 760px\) 100vw, \(max-width: 1119px\) 33vw, 25vw"/);
+  assert.match(component, /sizes=\{caseImageSizes\[caseStudy\.layout\]\}/);
+  assert.doesNotMatch(component, /sizes="\(max-width: 760px\) 100vw, 33vw"/);
+});
+
 test("declares image tooling as a direct development dependency", async () => {
   const [packageJson, packageLock] = await Promise.all([
     readFile(new URL("../package.json", import.meta.url), "utf8").then(JSON.parse),

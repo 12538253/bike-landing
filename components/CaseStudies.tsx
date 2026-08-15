@@ -3,6 +3,11 @@ import { ArrowUpRight } from "lucide-react";
 
 import { site } from "@/content/site";
 
+const caseImageSizes = {
+  featured: "(max-width: 760px) 100vw, (max-width: 1119px) 67vw, 50vw",
+  portrait: "(max-width: 760px) 100vw, (max-width: 1119px) 33vw, 25vw",
+} satisfies Record<(typeof site.cases)[number]["layout"], string>;
+
 export default function CaseStudies() {
   return (
     <section className="section section--ink" id="cases" aria-labelledby="cases-title">
@@ -32,7 +37,7 @@ export default function CaseStudies() {
                     src={caseStudy.image}
                     alt={caseStudy.imageAlt}
                     fill
-                    sizes="(max-width: 760px) 100vw, 33vw"
+                    sizes={caseImageSizes[caseStudy.layout]}
                     style={{ objectPosition: caseStudy.imagePosition }}
                   />
                 </div>
