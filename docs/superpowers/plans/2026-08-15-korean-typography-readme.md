@@ -84,7 +84,7 @@ titleLines: [
 
 - [ ] **Step 3: Tune the type scale and measures**
 
-Use a hero copy maximum of `50rem` and `font-size: clamp(2.25rem, calc(1.75rem + 2.5vw), 3.75rem)`. Give section headings an `820px` measure and size them from their own inline container with `clamp(1.9rem, calc(1.5rem + 2.6cqi), 3rem)`. Apply `text-wrap: pretty` to prose while preserving `keep-all`, and remove the discontinuous mobile heading overrides.
+Use a hero copy maximum of `58rem` and `font-size: clamp(2.25rem, calc(1.75rem + 2.5vw), 3.5rem)` so wider Korean fallback fonts still keep the desktop title compact. Give section headings an `820px` measure and size them from their own inline container with `clamp(1.9rem, calc(1.5rem + 2.6cqi), 3rem)`. Apply `text-wrap: pretty` to prose while preserving `keep-all`, and remove the discontinuous mobile heading overrides.
 
 - [ ] **Step 4: Run the focused test and verify GREEN**
 

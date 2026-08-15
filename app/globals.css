@@ -291,7 +291,7 @@ address {
 }
 
 .hero__copy {
-  width: min(100%, 50rem);
+  width: min(100%, 58rem);
   animation: heroReveal 0.7s 0.05s ease-out both;
 }
 
@@ -315,7 +315,7 @@ address {
 
 .hero h1 {
   max-width: none;
-  font-size: clamp(2.25rem, calc(1.75rem + 2.5vw), 3.75rem);
+  font-size: clamp(2.25rem, calc(1.75rem + 2.5vw), 3.5rem);
   font-weight: 850;
   line-height: 1.12;
   letter-spacing: -0.045em;
