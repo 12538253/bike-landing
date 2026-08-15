@@ -491,6 +491,7 @@ test("390px one-viewport scroll exposes the direct transaction path above the st
   const sticky = page.getByTestId("sticky-inquiry");
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(844);
   await waitForStablePosition(paths);
+  expect(await page.evaluate(() => window.scrollY), "the settled one-scroll position must remain exact").toBe(844);
 
   const directTitle = paths.locator(".transaction-path--directVisit .transaction-path__title");
   const directSteps = paths.locator(".transaction-path--directVisit .transaction-path__step");
@@ -519,6 +520,61 @@ test("390px one-viewport scroll exposes the direct transaction path above the st
   }
 
   expect(await page.evaluate(() => window.scrollX), "the one-viewport read must not move horizontally").toBe(0);
+});
+
+test("390px one-scroll path budget survives taller fallback heading metrics", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.addStyleTag({
+    content: `
+      @media (max-width: 760px) {
+        .transaction-paths-heading > h2 {
+          font-size: 34px !important;
+          line-height: 1.2 !important;
+          letter-spacing: 0 !important;
+        }
+
+        .transaction-paths-heading > span {
+          font-size: 17px !important;
+          line-height: 1.75 !important;
+          letter-spacing: 0.01em !important;
+        }
+      }
+    `,
+  });
+  await page.evaluate(() => window.scrollTo(0, 844));
+
+  const paths = page.locator('#process[data-testid="transaction-paths"]');
+  const sticky = page.getByTestId("sticky-inquiry");
+  const directSteps = paths.locator(".transaction-path--directVisit .transaction-path__step");
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(844);
+  await waitForStablePosition(paths);
+  expect(await page.evaluate(() => window.scrollY), "the settled fallback-metric scroll position must remain exact").toBe(844);
+  await expect(directSteps).toHaveCount(5);
+  await expect(sticky).toHaveAttribute("aria-hidden", "true");
+  await expect(sticky).not.toHaveClass(/is-visible/);
+
+  const targets = [
+    { label: "fallback transaction heading", locator: paths.locator("#method-title") },
+    { label: "fallback direct-visit title", locator: paths.locator(".transaction-path--directVisit .transaction-path__title") },
+    ...Array.from({ length: 5 }, (_, index) => ({
+      label: `fallback direct-visit step ${index + 1}`,
+      locator: directSteps.nth(index),
+    })),
+  ];
+
+  for (const { label, locator } of targets) {
+    const box = await locator.boundingBox();
+    expect.soft(box, `${label} must have a nonzero layout box`).not.toBeNull();
+    expect.soft(box?.width ?? 0, `${label} must have nonzero width`).toBeGreaterThan(0);
+    expect.soft(box?.height ?? 0, `${label} must have nonzero height`).toBeGreaterThan(0);
+    expect.soft(box?.x ?? -1, `${label} must not require horizontal movement`).toBeGreaterThanOrEqual(0);
+    expect.soft((box?.x ?? 0) + (box?.width ?? 0), `${label} must fit the 390px viewport`).toBeLessThanOrEqual(390);
+    expect.soft(box?.y ?? -1, `${label} must be inside the viewport`).toBeGreaterThanOrEqual(0);
+    expect.soft((box?.y ?? 0) + (box?.height ?? 0), `${label} must be inside the viewport`).toBeLessThanOrEqual(844);
+  }
+
+  expect(await page.evaluate(() => window.scrollX), "fallback metrics must not move the page horizontally").toBe(0);
 });
 
 test("390px suppresses the sticky inquiry bar throughout the intersecting transaction section", async ({ page }) => {

@@ -1414,7 +1414,7 @@ section[id] {
   }
 
   .transaction-paths__lines {
-    height: 48px;
+    height: 32px;
   }
 
   .transaction-path__media {
@@ -1461,8 +1461,16 @@ section[id] {
     padding-block: 64px;
   }
 
+  .section--paths {
+    padding-top: 48px;
+  }
+
   .section-heading {
     margin-bottom: 36px;
+  }
+
+  .transaction-paths-heading {
+    margin-bottom: 0;
   }
 
   .section-heading > span {
