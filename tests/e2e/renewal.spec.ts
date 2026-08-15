@@ -1,4 +1,68 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+async function renderedLines(locator: Locator) {
+  return locator.evaluate((element) => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const lines: Array<{ text: string; top: number }> = [];
+
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent ?? "";
+
+      for (let index = 0; index < text.length; index += 1) {
+        if (/\s/u.test(text[index])) continue;
+
+        const range = document.createRange();
+        range.setStart(node, index);
+        range.setEnd(node, index + 1);
+        const rect = range.getBoundingClientRect();
+        if (!rect.width || !rect.height) continue;
+
+        let line = lines.find((candidate) => Math.abs(candidate.top - rect.top) < 2);
+        if (!line) {
+          line = { text: "", top: rect.top };
+          lines.push(line);
+        }
+        line.text += text[index];
+      }
+    }
+
+    return lines.sort((left, right) => left.top - right.top).map((line) => line.text);
+  });
+}
+
+test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const desktopLines = await renderedLines(page.locator(".hero h1"));
+  expect(desktopLines.some((line) => line.includes("됩니다.직접"))).toBe(false);
+  expect(desktopLines.length).toBeLessThanOrEqual(3);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileLines = await renderedLines(page.locator(".hero h1"));
+  expect(mobileLines.some((line) => line.includes("됩니다.직접"))).toBe(false);
+  expect(mobileLines.length).toBeLessThanOrEqual(4);
+});
+
+test("wide section headings do not gain avoidable extra lines", async ({ page }) => {
+  const headingIds = ["quote-title", "method-title", "process-title", "honest-title", "guide-title", "naver-title"];
+
+  await page.setViewportSize({ width: 1200, height: 900 });
+  await page.goto("/");
+  const mediumLineCounts = new Map<string, number>();
+  for (const id of headingIds) {
+    mediumLineCounts.set(id, (await renderedLines(page.locator(`#${id}`))).length);
+  }
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  for (const id of headingIds) {
+    const wideLineCount = (await renderedLines(page.locator(`#${id}`))).length;
+    expect(wideLineCount, `${id} should not add lines on a wider viewport`).toBeLessThanOrEqual(
+      mediumLineCounts.get(id) ?? 0,
+    );
+  }
+});
 
 test("desktop process story follows the active scroll step", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });

@@ -26,7 +26,14 @@ export default function Hero() {
       <div className="site-shell hero__inner">
         <div className="hero__copy" data-testid="hero-copy">
           <p className="hero__eyebrow">{site.hero.eyebrow}</p>
-          <h1>{site.hero.title}</h1>
+          <h1>
+            {site.hero.titleLines.map((line, index) => (
+              <span className="hero__title-line" key={line}>
+                {line}
+                {index < site.hero.titleLines.length - 1 ? " " : null}
+              </span>
+            ))}
+          </h1>
           <p className="hero__description">{site.hero.description}</p>
 
           <div className="hero__actions">

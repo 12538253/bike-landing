@@ -82,7 +82,10 @@ export const site = {
   },
   hero: {
     eyebrow: "인천·서울·경기 중고 바이크 방문 매입",
-    title: "바이크를 먼저 보내지 않아도 됩니다. 직접 찾아가 현장에서 거래합니다.",
+    titleLines: [
+      "바이크를 먼저 보내지 않아도 됩니다.",
+      "직접 찾아가 현장에서 거래합니다.",
+    ],
     description:
       "사진을 보내주시면 예상 견적과 방문 가능 시간을 먼저 안내합니다. 현장에서 상태를 확인한 뒤 판매대금을 전액 이체하고, 입금 확인 후 상차합니다.",
     note:
@@ -148,16 +151,6 @@ export const site = {
   ],
   cases: [
     {
-      region: "부천",
-      model: "아이언883",
-      summary: "부천에서 아이언883을 확인한 방문 매입 사례입니다.",
-      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224351926598",
-      sourceLabel: "공식 블로그에서 부천 아이언883 매입 기록 보기",
-      image: "/images/hero-bg.webp",
-      imageAlt: "부천 아이언883 공식 블로그 매입 사례 연결 이미지",
-      imagePosition: "45% center",
-    },
-    {
       region: "서울 은평구",
       model: "ADV350",
       summary:
@@ -169,14 +162,24 @@ export const site = {
       imagePosition: "62% center",
     },
     {
-      region: "인천",
+      region: "인천 부평",
       model: "PCX125",
-      summary: "인천에서 PCX125를 확인한 방문 매입 사례입니다.",
-      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224347789101",
-      sourceLabel: "공식 블로그에서 인천 PCX125 매입 기록 보기",
+      summary: "인천 부평에서 PCX125를 직접 확인한 방문 매입 사례입니다.",
+      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224362894515",
+      sourceLabel: "공식 블로그에서 인천 부평 PCX125 매입 기록 보기",
       image: "/images/hero-bg.webp",
-      imageAlt: "인천 PCX125 공식 블로그 매입 사례 연결 이미지",
+      imageAlt: "인천 부평 PCX125 공식 블로그 매입 사례 연결 이미지",
       imagePosition: "78% center",
+    },
+    {
+      region: "부천",
+      model: "아이언883",
+      summary: "부천에서 아이언883을 확인한 방문 매입 사례입니다.",
+      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224351926598",
+      sourceLabel: "공식 블로그에서 부천 아이언883 매입 기록 보기",
+      image: "/images/hero-bg.webp",
+      imageAlt: "부천 아이언883 공식 블로그 매입 사례 연결 이미지",
+      imagePosition: "45% center",
     },
   ] satisfies readonly CaseStudy[],
   processSteps: [

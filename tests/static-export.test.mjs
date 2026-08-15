@@ -28,7 +28,8 @@ test("renders the trust-first hero and trackable contact links", () => {
   assert.match(html, /https:\/\/naver\.me\/F1rPbAcV/);
   assert.match(html, /224351926598/);
   assert.match(html, /224355424035/);
-  assert.match(html, /224347789101/);
+  assert.match(html, /224362894515/);
+  assert.doesNotMatch(html, /224347789101/);
   assert.doesNotMatch(html, /224340255184/);
   assert.match(html, /https:\/\/m\.blog\.naver\.com\/bikemanager4949/);
   assert.match(html, /처음 문의할 때 이 여덟 가지가 필요합니다/);
@@ -37,6 +38,18 @@ test("renders the trust-first hero and trackable contact links", () => {
   assert.match(html, /검사 여부/);
   assert.doesNotMatch(html, /naver-proof__mark[^>]*>N</);
   assert.doesNotMatch(html, /구독자 660/);
+});
+
+test("orders case studies around the core scooter customer", () => {
+  const casesSection = html.match(/<section[^>]+id="cases"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(casesSection, "expected the case studies section");
+
+  const advIndex = casesSection.indexOf("ADV350");
+  const pcxIndex = casesSection.indexOf("PCX125");
+  const ironIndex = casesSection.indexOf("아이언883");
+
+  assert.ok(advIndex >= 0 && pcxIndex > advIndex && ironIndex > pcxIndex);
+  assert.match(casesSection, /224362894515/);
 });
 
 test("keeps JSON-LD factual and free of unverified hours", () => {
