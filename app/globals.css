@@ -575,7 +575,7 @@ section[id] {
 
 .case-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 0.8fr));
   gap: 16px;
 }
 
@@ -1464,6 +1464,22 @@ section[id] {
 
   .trust-point {
     padding-inline: 18px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1119px) {
+  .case-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.8fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  .case-card--featured {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .case-card--portrait {
+    grid-column: 2;
   }
 }
 

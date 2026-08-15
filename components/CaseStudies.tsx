@@ -18,7 +18,10 @@ export default function CaseStudies() {
 
         <div className="case-grid">
           {site.cases.map((caseStudy) => (
-            <article className="case-card" key={`${caseStudy.region}-${caseStudy.model}`}>
+            <article
+              className={`case-card case-card--${caseStudy.layout}`}
+              key={`${caseStudy.region}-${caseStudy.model}`}
+            >
               <a
                 href={caseStudy.sourceUrl}
                 target="_blank"
