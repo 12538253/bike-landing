@@ -12,7 +12,7 @@
 
 - Keep the order `ADV350 → PCX125 → 아이언883`.
 - Use only matching photos from official blog posts `224355424035`, `224362894515`, and `224351926598`.
-- Keep every local case image at 800×600 and below 180KB.
+- Preserve each source aspect ratio, keep its longest edge at or below 800px, and keep the file below 180KB.
 - Do not hotlink Naver CDN URLs or generate/reshape the bikes.
 - Preserve current case-card links, copy, keyboard access, hover behavior, and responsive layout.
 - Push only `codex/trust-first-renewal`; do not change `main`, DNS, or production settings.
@@ -55,11 +55,11 @@ Expected: both new tests fail because all three cards still use `/images/hero-bg
 
 **Interfaces:**
 - Consumes: the three approved official-blog representative JPEGs
-- Produces: three 800×600 local WebP files referenced by `site.cases`
+- Produces: three aspect-ratio-preserving local WebP files referenced by `site.cases`
 
 - [ ] **Step 1: Convert the selected photos**
 
-Use Sharp with `resize(800, 600, { fit: "cover" })` and `webp({ quality: 76, effort: 6 })`. Inspect the result and lower quality only if a file exceeds 180KB.
+Use Sharp with `resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true })` and `webp({ quality: 76, effort: 6 })`. Inspect the result and lower quality only if a file exceeds 180KB.
 
 - [ ] **Step 2: Update the single content source**
 
