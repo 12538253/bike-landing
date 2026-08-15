@@ -90,4 +90,3 @@
 - [ ] 새 페이지 전용 클라이언트 JavaScript gzip이 35KB 이하인지 확인한다.
 - [ ] 독립 최종 리뷰 후 기능 브랜치만 push한다.
 - [ ] GitHub Verify와 `https://codex-trust-first-renewal.bike-manager.pages.dev/`의 HTTP 200·noindex·새 이미지 응답을 확인한다.
-
