@@ -1,5 +1,7 @@
 import { MetadataRoute } from "next";
 
+import { site } from "@/content/site";
+
 export const dynamic = "force-static";
 
 export default function robots(): MetadataRoute.Robots {
@@ -8,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://www.bike-manager.com/sitemap.xml",
-    host: "https://www.bike-manager.com",
+    sitemap: `${site.canonicalUrl}/sitemap.xml`,
+    host: site.canonicalUrl,
   };
 }

@@ -56,8 +56,6 @@ export const site = {
     country: "KR",
   },
   business: {
-    owner: "유동영",
-    registrationNumber: "341-05-00319",
     copyrightYear: "2026",
   },
   links: {
@@ -77,7 +75,7 @@ export const site = {
       "바이크매니저",
     ],
     ogImage: "/images/og-bike-manager.jpg",
-    ogImageAlt: "현장에서 직접 바이크를 확인하는 바이크매니저 방문 매입 안내",
+    ogImageAlt: "도심 도로에 세워진 검은색 바이크",
   },
   hero: {
     eyebrow: "인천·서울·경기 중고 바이크 방문 매입",

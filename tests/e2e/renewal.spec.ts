@@ -25,6 +25,13 @@ test("mobile keeps every process step visible without scroll enhancement", async
   for (let index = 0; index < 4; index += 1) {
     await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
   }
+
+  const firstStep = await page.getByTestId("process-step-0").boundingBox();
+  const secondStep = await page.getByTestId("process-step-1").boundingBox();
+  expect(firstStep).not.toBeNull();
+  expect(secondStep).not.toBeNull();
+  expect(Math.abs((firstStep?.x ?? 0) - (secondStep?.x ?? 0))).toBeLessThan(2);
+  expect(secondStep?.y ?? 0).toBeGreaterThan((firstStep?.y ?? 0) + (firstStep?.height ?? 0));
 });
 
 test("mobile inquiry bar appears after the hero and hides at the final call to action", async ({ page }) => {
@@ -49,9 +56,45 @@ test.describe("reduced motion", () => {
     await page.goto("/");
 
     await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "false");
+    await expect(page.locator(".process-stage")).toBeHidden();
+    await expect(page.getByTestId("process-step-3")).toBeVisible();
     await expect(page.getByTestId("hero-copy")).toHaveCSS("animation-name", "none");
     await expect(page.getByTestId("hero-media")).toHaveCSS("animation-name", "none");
   });
+});
+
+test("JavaScript-off desktop falls back to four static process cards", async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 1440, height: 900 },
+  });
+  const page = await context.newPage();
+
+  await page.goto("/");
+  await expect(page.getByTestId("process-story")).toHaveAttribute("data-enhanced", "false");
+  await expect(page.locator(".process-stage")).toBeHidden();
+  for (let index = 0; index < 4; index += 1) {
+    await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
+  }
+
+  await context.close();
+});
+
+test("small-screen brand link keeps an accessible home name", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/");
+
+  await expect(page.getByRole("link", { name: /바이크매니저 홈/ })).toBeVisible();
+});
+
+test("trust anchor clears the fixed desktop header", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.locator(".hero__scroll").click();
+
+  await expect
+    .poll(() => page.locator("#trust").evaluate((element) => element.getBoundingClientRect().top))
+    .toBeGreaterThanOrEqual(72);
 });
 
 test("loads without console, page, or hydration errors", async ({ page }) => {
@@ -64,7 +107,7 @@ test("loads without console, page, or hydration errors", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 
-  expect(errors.filter((message) => /hydration|error|failed/i.test(message))).toEqual([]);
+  expect(errors).toEqual([]);
 });
 
 for (const viewport of [

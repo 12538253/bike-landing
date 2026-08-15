@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#10100f",
+  themeColor: "#0C1A1C",
 };
 
 const jsonLd = {
@@ -60,7 +60,6 @@ const jsonLd = {
   image: `${site.canonicalUrl}${site.metadata.ogImage}`,
   telephone: site.phone.display,
   url: site.canonicalUrl,
-  priceRange: "KRW",
   address: {
     "@type": "PostalAddress",
     streetAddress: site.address.street,

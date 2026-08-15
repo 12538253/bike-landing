@@ -9,12 +9,7 @@ export default function Footer() {
           <p>중고 바이크 직접 방문·현장 거래</p>
         </div>
         <div className="site-footer__business">
-          <p>
-            상호명 {site.name} · 대표자 {site.business.owner} · 사업자등록번호{
-              " "
-            }
-            {site.business.registrationNumber}
-          </p>
+          <p>상호명 {site.name}</p>
           <p>{site.address.full}</p>
           <p>24시간 문의 가능 · 방문 전 연락 · {site.phone.display}</p>
         </div>

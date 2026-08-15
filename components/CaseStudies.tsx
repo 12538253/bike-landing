@@ -40,6 +40,7 @@ export default function CaseStudies() {
                   <h3>{caseStudy.model}</h3>
                   <span className="case-card__summary">{caseStudy.summary}</span>
                   <span className="case-card__link">
+                    <span className="sr-only">{caseStudy.sourceLabel}. </span>
                     원문과 사진 보기 <ArrowUpRight aria-hidden="true" size={17} />
                   </span>
                 </div>
