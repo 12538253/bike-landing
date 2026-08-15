@@ -10,20 +10,18 @@ export default function Footer() {
               BM
             </span>
             <span>
-              <strong>{site.name}</strong>
-              <em>{site.englishName}</em>
+              <strong>{site.footer.name}</strong>
+              <em>{site.footer.englishName}</em>
             </span>
           </div>
-          <p>중고 바이크 직접 방문·현장 거래</p>
+          <p>{site.footer.service}</p>
         </div>
         <div className="site-footer__business">
-          <p>상호명 {site.name}</p>
-          <p>{site.address.full}</p>
-          <p>24시간 문의 가능 · 방문 전 연락 · {site.phone.display}</p>
+          <p>{site.footer.business}</p>
+          <p>{site.footer.address}</p>
+          <p>{site.footer.contact}</p>
         </div>
-        <small>
-          © {site.business.copyrightYear} {site.englishName}. All rights reserved.
-        </small>
+        <small>{site.footer.copyright}</small>
       </div>
     </footer>
   );

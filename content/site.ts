@@ -88,6 +88,16 @@ export type LocationSectionCopy = Readonly<{
   title: string;
 }>;
 
+export type FooterCopy = Readonly<{
+  name: string;
+  englishName: string;
+  service: string;
+  business: string;
+  address: string;
+  contact: string;
+  copyright: string;
+}>;
+
 export type TransactionPathKey = "directVisit" | "sendFirst";
 
 export type TransactionPathSection = Readonly<{
@@ -150,7 +160,7 @@ export const site = {
   metadata: {
     title: "바이크매니저 | 인천·서울·경기 중고 바이크 방문 매입",
     description:
-      "바이크를 먼저 보내지 않아도 됩니다. 사진으로 예상 견적과 방문 가능 시간을 안내하고, 현장에서 확인한 뒤 입금 확인 후 상차합니다. 문의 010-7616-4949",
+      "인천·서울·경기 중고 바이크를 직접 방문해 매입합니다. 사진으로 예상 견적과 방문 일정을 빠르게 안내하고, 판매대금 입금 확인 후 상차합니다. 문의 010-7616-4949",
     keywords: [
       "중고오토바이매입",
       "중고바이크매입",
@@ -165,13 +175,13 @@ export const site = {
   hero: {
     eyebrow: "인천·서울·경기 중고 바이크 방문 매입",
     titleLines: [
-      "바이크를 먼저 보내실 필요 없습니다.",
-      "약속한 장소로 찾아가 현장에서 거래합니다.",
+      "바이크는 그대로 두세요.",
+      "저희가 직접 찾아가 매입합니다.",
     ],
     description:
       "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
     note:
-      "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+      "사진으로 예상 금액을 먼저 안내하고, 최종 금액은 현장에서 차량 상태를 함께 확인한 뒤 확정합니다.",
     scrollLabel: "거래 원칙 확인하기",
   },
   contact: {
@@ -200,10 +210,10 @@ export const site = {
   },
   tradePathSection: {
     eyebrow: "두 갈래 거래 경로",
-    title: "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
-    description: "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.",
+    title: "바이크는 그대로, 확인은 현장에서.",
+    description: "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
     note:
-      "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
+      "사진으로 예상 견적을 먼저 안내하고, 방문 일정에 맞춰 현장에서 거래를 진행합니다.",
   } satisfies TransactionPathSection,
   tradePaths: {
     directVisit: {
@@ -246,13 +256,13 @@ export const site = {
   } satisfies TrustSectionCopy,
   quoteSection: {
     eyebrow: "견적 준비",
-    title: "사진과 기본 정보 8가지만 보내주세요.",
+    title: "사진 몇 장과 기본 정보만 보내주세요.",
     description: "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
     items: ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"],
   } satisfies QuoteSectionCopy,
   caseStudySection: {
     eyebrow: "실제 매입 사례",
-    title: "실제 매입 사진과 진행 기록을 확인하세요.",
+    title: "말보다 실제 매입 기록으로 보여드립니다.",
     description: "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
     cardLinkLabel: "원문 보기",
     indexLink: {
@@ -303,12 +313,12 @@ export const site = {
   ] satisfies readonly CaseStudy[],
   purchaseGuide: {
     eyebrow: "매입 가능 범위",
-    title: "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    title: "스쿠터부터 대형 바이크까지 매입 상담합니다.",
     description: "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
     disclosure: {
       summary: "명의·서류가 다른 경우",
       answer:
-        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
+        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인 후 필요한 서류와 진행 방법을 안내합니다.",
     },
   } satisfies PurchaseGuideCopy,
   faqSection: {
@@ -321,9 +331,9 @@ export const site = {
           "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
       },
       {
-        question: "24시간 바로 방문하나요?",
+        question: "당일이나 늦은 시간에도 방문할 수 있나요?",
         answer:
-          "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
+          "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
       },
       {
         question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
@@ -341,6 +351,15 @@ export const site = {
       external: true,
     },
     eyebrow: "사진부터 보내주세요.",
-    title: "예상 견적과 방문 가능한 시간을 알려드립니다.",
+    title: "예상 견적부터 방문 일정까지 빠르게 안내합니다.",
   } satisfies LocationSectionCopy,
+  footer: {
+    name: "바이크매니저",
+    englishName: "BIKE MANAGER",
+    service: "중고 바이크 직접 방문·현장 거래",
+    business: "상호명 바이크매니저",
+    address: "인천광역시 남동구 백범로 411 1층(간석동)",
+    contact: "24시간 문의 접수 · 방문 전 연락 · 010-7616-4949",
+    copyright: "© 2026 BIKE MANAGER. All rights reserved.",
+  } satisfies FooterCopy,
 } as const;
