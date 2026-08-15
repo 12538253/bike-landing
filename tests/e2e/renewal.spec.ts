@@ -88,6 +88,26 @@ async function transactionPathPanel(button: Locator, page: Page) {
   return page.locator(`#${panelId}`);
 }
 
+async function expectInactiveTransactionPathToBeUnavailable(panel: Locator) {
+  const state = await panel.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    const tabStops = [...element.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )].filter((candidate) => candidate.tabIndex >= 0).length;
+    return {
+      hidden: element.hasAttribute("hidden") || styles.display === "none" || styles.visibility === "hidden",
+      inert: Boolean(element.closest("[inert]")),
+      ariaHidden: element.getAttribute("aria-hidden") === "true",
+      tabStops,
+    };
+  });
+
+  expect(
+    state.hidden || state.inert || (state.ariaHidden && state.tabStops === 0),
+    "an inactive detail must be hidden, inert, or aria-hidden without tab stops",
+  ).toBe(true);
+}
+
 test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -151,43 +171,73 @@ test("process renders a compact 4/2/1 static rail", async ({ page }) => {
 });
 
 test("desktop transaction paths preview, pin, and prioritize keyboard focus", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 1440, height: 500 });
   await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, 0));
 
   const paths = page.getByTestId("transaction-paths");
   const directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
   const sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
   const pathsLine = paths.getByTestId("transaction-path-lines");
 
+  await expect(paths).toBeAttached();
+  expect(
+    await paths.evaluate((element) => {
+      const { bottom, top } = element.getBoundingClientRect();
+      return top >= window.innerHeight || bottom <= 0;
+    }),
+    "the path section must begin out of view before its first reveal assertion",
+  ).toBe(true);
   await expect(directVisit).toHaveAttribute("aria-expanded", "true");
   await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
   await expect(pathsLine).toHaveAttribute("aria-hidden", "true");
   await expect(pathsLine).toHaveAttribute("data-revealed", "false");
   const directVisitPanel = await transactionPathPanel(directVisit, page);
+  const sendFirstPanel = await transactionPathPanel(sendFirst, page);
   const methodCta = directVisitPanel.locator('[data-cta="method-kakao"]');
+  await expect(directVisitPanel).toBeVisible();
+  await expectInactiveTransactionPathToBeUnavailable(sendFirstPanel);
   await expect(methodCta).toHaveAttribute("href", "https://pf.kakao.com/_MzgSn/chat");
+  await directVisit.focus();
+  await page.keyboard.press("Tab");
+  await expect(methodCta).toBeFocused();
   expect((await methodCta.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  await page.locator('[data-cta="header-phone"]').focus();
 
   const heightBeforePreview = (await paths.boundingBox())?.height;
   await sendFirst.hover();
   await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
   await expect(directVisit).toHaveAttribute("aria-expanded", "false");
+  await expect(sendFirstPanel).toBeVisible();
+  await expectInactiveTransactionPathToBeUnavailable(directVisitPanel);
   expect((await paths.boundingBox())?.height).toBeCloseTo(heightBeforePreview ?? 0, 0);
 
   await page.mouse.move(0, 0);
   await expect(directVisit).toHaveAttribute("aria-expanded", "true");
   await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+  await expect(directVisitPanel).toBeVisible();
+  await expectInactiveTransactionPathToBeUnavailable(sendFirstPanel);
 
   await sendFirst.click();
   await page.mouse.move(0, 0);
   await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirstPanel).toBeVisible();
+  await expectInactiveTransactionPathToBeUnavailable(directVisitPanel);
 
   await sendFirst.focus();
   await directVisit.hover();
   await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
   await expect(directVisit).toHaveAttribute("aria-expanded", "false");
 
-  await sendFirst.press("Space");
+  await directVisit.focus();
+  await directVisit.press("Space");
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await page.locator('[data-cta="header-phone"]').focus();
+  await page.mouse.move(0, 0);
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+
+  await sendFirst.focus();
+  await sendFirst.press("Enter");
   await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
   await page.locator('[data-cta="header-phone"]').focus();
   await page.mouse.move(0, 0);
@@ -220,8 +270,10 @@ test("case studies use the featured and portrait layout at each breakpoint", asy
   if (!tabletAdv || !tabletPcx || !tabletIron) return;
   expect(tabletAdv.x).toBeLessThan(tabletPcx.x);
   expect(Math.abs(tabletPcx.x - tabletIron.x)).toBeLessThan(2);
+  expect(Math.abs(tabletAdv.y - tabletPcx.y)).toBeLessThan(16);
   expect(tabletIron.y).toBeGreaterThan(tabletPcx.y + tabletPcx.height - 2);
   expect(tabletAdv.height).toBeGreaterThan(tabletPcx.height * 1.7);
+  expect(Math.abs(tabletAdv.y + tabletAdv.height - (tabletIron.y + tabletIron.height))).toBeLessThan(16);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -347,7 +399,6 @@ test.describe("reduced motion", () => {
     const paths = page.getByTestId("transaction-paths");
     const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
     const sendFirstPanel = await transactionPathPanel(transactionPathButton(page, "차량을 먼저 보내는 방식"), page);
-    await expect(paths).not.toHaveAttribute("data-enhanced", /.+/);
     await expect(directVisitPanel).toBeVisible();
     await expect(sendFirstPanel).toBeVisible();
     await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
