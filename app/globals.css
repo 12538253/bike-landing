@@ -155,6 +155,7 @@ section[id] {
 .brand-mark {
   gap: 9px;
   flex: 0 0 auto;
+  min-height: 44px;
 }
 
 .brand-mark__badge {
@@ -1086,6 +1087,7 @@ section[id] {
 
 .final-location > a {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
   gap: 6px;
   margin-top: 28px;
@@ -1107,7 +1109,9 @@ section[id] {
 }
 
 .final-copy__phone {
-  display: inline-block;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   margin-top: 24px;
   color: rgba(255, 255, 255, 0.66);
   font-size: clamp(1.1rem, 2vw, 1.45rem);
@@ -1407,6 +1411,14 @@ section[id] {
   .transaction-paths__grid,
   .site-footer__inner {
     grid-template-columns: 1fr;
+  }
+
+  .transaction-paths__lines {
+    height: 48px;
+  }
+
+  .transaction-path__media {
+    height: 224px;
   }
 
   .trust-bar__grid,

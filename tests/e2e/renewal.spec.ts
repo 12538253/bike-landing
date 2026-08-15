@@ -466,6 +466,59 @@ test("390px visibly renders both transaction paths and their decision facts", as
   await expectUserVisible(paths.locator('[data-cta="method-kakao"]'), "transaction Kakao link");
 });
 
+test("390px one-viewport scroll exposes the direct transaction path above the sticky inquiry bar", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate(() => window.scrollTo(0, 844));
+
+  const paths = page.locator('#process[data-testid="transaction-paths"]');
+  const sticky = page.getByTestId("sticky-inquiry");
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(844);
+  await waitForStablePosition(paths);
+
+  const directTitle = paths.locator(".transaction-path--directVisit .transaction-path__title");
+  const directSteps = paths.locator(".transaction-path--directVisit .transaction-path__step");
+  await expect(directSteps).toHaveCount(5);
+
+  const targets = [
+    { label: "transaction heading", locator: paths.locator("#method-title") },
+    { label: "direct-visit title", locator: directTitle },
+    ...Array.from({ length: 5 }, (_, index) => ({
+      label: `direct-visit step ${index + 1}`,
+      locator: directSteps.nth(index),
+    })),
+  ];
+  const stickyBox = await sticky.boundingBox();
+  expect(stickyBox, "the sticky inquiry bar must have a layout box").not.toBeNull();
+  const stickyVisible = await sticky.evaluate((element) =>
+    element.classList.contains("is-visible") && element.getAttribute("aria-hidden") !== "true",
+  );
+
+  for (const { label, locator } of targets) {
+    const box = await locator.boundingBox();
+    expect.soft(box, `${label} must have a nonzero layout box`).not.toBeNull();
+    expect.soft(box?.width ?? 0, `${label} must have nonzero width`).toBeGreaterThan(0);
+    expect.soft(box?.height ?? 0, `${label} must have nonzero height`).toBeGreaterThan(0);
+    expect.soft(box?.x ?? -1, `${label} must not require horizontal movement`).toBeGreaterThanOrEqual(0);
+    expect.soft((box?.x ?? 0) + (box?.width ?? 0), `${label} must fit the 390px viewport`).toBeLessThanOrEqual(390);
+    expect.soft(box?.y ?? -1, `${label} must be inside the viewport`).toBeGreaterThanOrEqual(0);
+    expect.soft((box?.y ?? 0) + (box?.height ?? 0), `${label} must be inside the viewport`).toBeLessThanOrEqual(844);
+
+    const overlapsStickyHorizontally = Boolean(
+      stickyBox && box && box.x < stickyBox.x + stickyBox.width && box.x + box.width > stickyBox.x,
+    );
+    const overlapsStickyVertically = Boolean(
+      stickyBox && box && box.y < stickyBox.y + stickyBox.height && box.y + box.height > stickyBox.y,
+    );
+    expect.soft(
+      stickyVisible && overlapsStickyHorizontally && overlapsStickyVertically,
+      `${label} must not be obscured by the sticky inquiry bar`,
+    ).toBe(false);
+  }
+
+  expect(await page.evaluate(() => window.scrollX), "the one-viewport read must not move horizontally").toBe(0);
+});
+
 test("390px visibly renders cases and the moved official destinations", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -955,6 +1008,24 @@ test("small-screen brand lockup keeps its Korean name and accessible home name",
   await expect(page.getByRole("link", { name: /바이크매니저 홈/ })).toBeVisible();
   await expect(page.locator(".brand-mark__name")).toHaveText("바이크매니저");
   await expect(page.locator(".brand-mark__name")).toBeVisible();
+});
+
+test("390px secondary navigation links expose at least 44px touch targets", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const targets = [
+    { label: "header brand home", locator: page.locator(".brand-mark") },
+    { label: "final map and review", locator: page.locator(".final-location > a") },
+    { label: "final phone number", locator: page.locator(".final-copy__phone") },
+  ];
+
+  for (const { label, locator } of targets) {
+    const box = await locator.boundingBox();
+    expect.soft(box, `${label} must have a layout box`).not.toBeNull();
+    expect.soft(box?.width ?? 0, `${label} must be at least 44px wide`).toBeGreaterThanOrEqual(44);
+    expect.soft(box?.height ?? 0, `${label} must be at least 44px tall`).toBeGreaterThanOrEqual(44);
+  }
 });
 
 test("trust anchor clears the fixed desktop header", async ({ page }) => {
