@@ -985,7 +985,7 @@ test("downstream hash targets remain visible below the fixed header after settli
     const target = page.locator(`#${id}`);
     if (id === "process") {
       await expect(target).toHaveAttribute("data-testid", "transaction-paths");
-      await expect(target.locator("#method-title")).toHaveText("차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.");
+      await expect(target.locator("#method-title")).toHaveText("바이크는 그대로, 확인은 현장에서.");
     }
     await waitForStablePosition(target);
     const top = await target.evaluate((element) => element.getBoundingClientRect().top);

@@ -1381,6 +1381,10 @@ section[id] {
     width: 100%;
   }
 
+  .hero h1 {
+    font-size: 1.9rem;
+  }
+
   .hero__image {
     object-position: center;
   }
