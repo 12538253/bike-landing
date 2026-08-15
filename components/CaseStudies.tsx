@@ -49,8 +49,8 @@ export default function CaseStudies() {
           ))}
         </div>
         <p className="case-disclaimer">
-          카드 이미지는 기존 사이트 자산을 사용한 미리보기입니다. 운영 반영 전 공식 블로그 원본 사진의
-          사용 여부를 최종 확인합니다.
+          카드 이미지는 공식 블로그에 게시된 실제 매입 사진입니다. 카드를 누르면 당시 기록을 확인할 수
+          있습니다.
         </p>
       </div>
     </section>

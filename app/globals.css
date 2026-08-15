@@ -605,7 +605,7 @@ address {
 
 .case-card__media img {
   object-fit: cover;
-  filter: saturate(0.54) contrast(1.08) brightness(0.69);
+  filter: saturate(0.68) contrast(1.08) brightness(0.74);
   transform: scale(1);
   transition: transform 0.45s ease;
 }
