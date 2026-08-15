@@ -60,7 +60,19 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   )?.[0];
   assert.ok(transactionPaths, "expected the transaction paths section");
 
-  const textContent = (markup) => markup.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const textContent = (markup) => markup
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;|&#x0*a0;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;|&#34;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&rarr;/gi, "→")
+    .replace(/&#x([\da-f]+);/gi, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 16)))
+    .replace(/&#(\d+);/g, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 10)))
+    .replace(/\s+/g, " ")
+    .trim();
   const countText = (markup, text) => textContent(markup).split(text).length - 1;
   const transactionText = textContent(transactionPaths);
   const heading = "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.";
@@ -81,11 +93,28 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.ok(directVisit, "expected a direct-visit path article");
   assert.ok(sendFirst, "expected a send-first path article");
 
-  const assertOrderedSteps = (article, steps, label) => {
-    const orderedList = article.match(/<ol\b[^>]*>([\s\S]*?)<\/ol>/)?.[1];
-    assert.ok(orderedList, `expected ${label} to use a semantic ordered list`);
-    const items = [...orderedList.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map(([, item]) => textContent(item));
-    assert.deepEqual(items, steps, `expected ${label} steps in order`);
+  const assertOrderedSteps = (article, title, description, steps, label) => {
+    const articleText = textContent(article);
+    const titleStart = articleText.indexOf(title);
+    const titleEnd = titleStart + title.length;
+    const descriptionStart = articleText.indexOf(description);
+    assert.ok(titleStart >= 0 && descriptionStart > titleEnd, `expected ${label} steps before its description`);
+
+    // "입금 확인" also belongs to the direct path's explanatory copy and confirmation card.
+    // The title-to-description span is the content-defined step group, independent of its wrappers.
+    const stepsText = articleText.slice(titleEnd, descriptionStart);
+    let previousIndex = -1;
+    for (const step of steps) {
+      const stepIndex = stepsText.indexOf(step);
+      assert.ok(stepIndex >= 0, `expected ${label} step: ${step}`);
+      assert.equal(
+        stepsText.indexOf(step, stepIndex + step.length),
+        -1,
+        `expected one ${label} step: ${step}`,
+      );
+      assert.ok(stepIndex > previousIndex, `expected ${label} step order to include ${step}`);
+      previousIndex = stepIndex;
+    }
   };
 
   assert.equal(countText(transactionPaths, heading), 1, "expected one transaction paths heading");
@@ -99,11 +128,15 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.equal(countText(directVisit, "사진 보내고 방문 일정 확인"), 1, "expected one direct-visit CTA");
   assertOrderedSteps(
     directVisit,
+    directVisitTitle,
+    directVisitDescription,
     ["방문 일정 조율", "현장에서 함께 검수", "최종 금액 확인", "입금 확인", "상차"],
     "direct visit",
   );
   assertOrderedSteps(
     sendFirst,
+    sendFirstTitle,
+    sendFirstDescription,
     ["출발 전 최종 금액과 감가 기준 확인", "금액 변경 시 반환 조건 확인", "왕복 운임 부담 확인"],
     "send first",
   );
