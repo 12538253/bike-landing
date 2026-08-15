@@ -2,6 +2,21 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 type Rgb = readonly [number, number, number];
 
+const faqAnswerContracts = [
+  {
+    question: "사진 견적이 최종 금액인가요?",
+    facts: ["사진 견적은 예상 금액", "현장 상태", "최종 금액", "판매자가", "동의"],
+  },
+  {
+    question: "24시간 바로 방문하나요?",
+    facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
+  },
+  {
+    question: "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
+    facts: ["등록 상태", "본인 소유", "서류"],
+  },
+] as const;
+
 function parseCssColor(color: string): Rgb {
   if (color.startsWith("#")) {
     return [1, 3, 5].map((offset) => Number.parseInt(color.slice(offset, offset + 2), 16)) as unknown as Rgb;
@@ -140,6 +155,41 @@ async function countUserVisibleCharacters(root: Locator) {
     }
     return visibleText.replace(/\s/gu, "").length;
   });
+}
+
+async function expectUserVisible(locator: Locator, label: string) {
+  const count = await locator.count();
+  expect(count, `${label}: expected content in its intended section`).toBeGreaterThan(0);
+  const states = await locator.evaluateAll((elements) => elements.map((element) => {
+    let excludedBy: string | null = null;
+    for (let ancestor: Element | null = element; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.matches('svg, picture, script, style, noscript, .sr-only, [aria-hidden="true"]')) {
+        excludedBy = "semantic-hidden";
+        break;
+      }
+      const closedDetails = ancestor.closest("details:not([open])");
+      if (closedDetails) {
+        const summary = closedDetails.querySelector(":scope > summary");
+        if (!summary?.contains(element)) {
+          excludedBy = "closed-details";
+          break;
+        }
+      }
+      const styles = getComputedStyle(ancestor);
+      if (styles.display === "none" || styles.visibility === "hidden" || styles.visibility === "collapse") {
+        excludedBy = `${styles.display}/${styles.visibility}`;
+        break;
+      }
+      if (ancestor === document.documentElement) break;
+    }
+    const rect = element.getBoundingClientRect();
+    return { excludedBy, height: rect.height, width: rect.width };
+  }));
+
+  expect(
+    states.some(({ excludedBy, height, width }) => excludedBy === null && height > 0 && width > 0),
+    `${label}: expected at least one rendered candidate included by the visible-copy model; ${JSON.stringify(states)}`,
+  ).toBe(true);
 }
 
 async function expectMethodCtaContained(page: Page, label: string, hitTest: boolean) {
@@ -306,6 +356,169 @@ test("390px first view exposes the seller decision facts and contact paths", asy
     expect(box?.y ?? Number.POSITIVE_INFINITY).toBeLessThan(844);
     expect((box?.y ?? -1) + (box?.height ?? 0)).toBeGreaterThan(0);
   }
+});
+
+test("390px visibly renders the approved hero facts and contact links", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const hero = page.locator("#top");
+
+  for (const copy of [
+    "인천·서울·경기 중고 바이크 방문 매입",
+    "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 현장에서 차량 상태와 최종 금액을 확인하고, 판매대금 입금 확인 후 상차합니다.",
+    "사진 견적은 예상 금액이며, 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+  ]) {
+    await expectUserVisible(hero.getByText(copy, { exact: true }), `hero copy: ${copy}`);
+  }
+  await expectUserVisible(hero.locator('[data-cta="hero-kakao"]'), "hero Kakao link");
+  await expectUserVisible(hero.locator('a[href="tel:010-7616-4949"]'), "hero phone link");
+});
+
+test("390px visibly renders all four compact trust facts", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const trust = page.locator("#trust");
+
+  for (const fact of ["경력 10년 이상", "24시간 문의 접수", "직접 방문·현장 확인", "입금 확인 후 상차"]) {
+    await expectUserVisible(trust.getByText(fact, { exact: true }), `trust fact: ${fact}`);
+  }
+});
+
+test("390px visibly renders both transaction paths and their decision facts", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const paths = page.locator('#process[data-testid="transaction-paths"]');
+  await expect(paths).toHaveCount(1);
+
+  for (const copy of [
+    "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
+    "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.",
+    "바이크매니저 직접 방문",
+    "방문 일정",
+    "현장 확인",
+    "최종 금액",
+    "입금 확인",
+    "상차",
+    "약속한 장소에서 차량을 함께 확인하고, 최종 금액 안내와 입금 확인을 마친 뒤 상차합니다.",
+    "차량을 먼저 보내는 방식",
+    "최종 금액·감가 기준",
+    "반환 조건",
+    "왕복 운임",
+    "차량을 먼저 보낸다면 출발 전에 최종 금액, 감가 기준, 반환 조건과 왕복 운임을 확인하세요.",
+    "개인 거래는 가격 면에서 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
+  ]) {
+    await expectUserVisible(paths.getByText(copy, { exact: true }), `transaction copy: ${copy}`);
+  }
+  await expectUserVisible(paths.locator('[data-cta="method-kakao"]'), "transaction Kakao link");
+});
+
+test("390px visibly renders cases and the moved official destinations", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const cases = page.locator("#cases");
+
+  for (const copy of [
+    "실제 매입 사진과 기록을 확인하세요",
+    "당시 차량 사진과 진행 내용은 각 원문에서 확인할 수 있습니다.",
+    "ADV350",
+    "PCX125",
+    "아이언883",
+  ]) {
+    await expectUserVisible(cases.getByText(copy, { exact: true }), `case copy: ${copy}`);
+  }
+
+  const blog = cases.getByRole("link", { name: "공식 블로그에서 더 많은 사례 보기", exact: true });
+  const place = cases.getByRole("link", { name: "네이버 플레이스·리뷰 보기", exact: true });
+  await expectUserVisible(blog, "CaseStudies official blog index link");
+  await expect(blog).toHaveAttribute("href", "https://m.blog.naver.com/bikemanager4949");
+  await expect(blog).toHaveAttribute("data-cta", "naver-proof");
+  await expectUserVisible(place, "CaseStudies Naver Place link");
+  await expect(place).toHaveAttribute("href", "https://naver.me/F1rPbAcV");
+});
+
+test("390px visibly renders the quote checklist facts", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const quote = page.getByTestId("quote-checklist");
+
+  for (const copy of [
+    "사진과 8가지 정보만 보내주세요",
+    "밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요.",
+    "기종",
+    "연식",
+    "주행거리",
+    "하자 내역",
+    "폐지 여부",
+    "검사 여부",
+    "지역",
+    "바이크 사진",
+  ]) {
+    await expectUserVisible(quote.getByText(copy, { exact: true }), `quote copy: ${copy}`);
+  }
+});
+
+test("390px opens the separate purchase guide disclosure and renders its facts", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const guide = page.locator('section[aria-labelledby="guide-title"]');
+
+  for (const copy of [
+    "스쿠터부터 대형 바이크까지 상담합니다",
+    "차량 상태와 등록 정보를 확인한 뒤 매입 가능 여부와 필요한 서류를 안내합니다.",
+  ]) {
+    await expectUserVisible(guide.getByText(copy, { exact: true }), `guide copy: ${copy}`);
+  }
+
+  const details = guide.locator("details");
+  const summary = details.getByText("명의·서류가 다른 경우", { exact: true });
+  await expectUserVisible(summary, "purchase guide summary");
+  await summary.click();
+  await expect(details).toHaveAttribute("open", "");
+  const answer = details.locator("p");
+  await expectUserVisible(answer, "purchase guide answer");
+  const answerText = await answer.innerText();
+  for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "추가 확인"]) {
+    expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
+  }
+});
+
+for (const { question, facts } of faqAnswerContracts) {
+  test(`390px opens the FAQ and renders its core facts in at most two sentences: ${question}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const faq = page.locator("#faq");
+    const details = faq.locator("details").filter({ hasText: question });
+    await expect(details).toHaveCount(1);
+    const summary = details.getByText(question, { exact: true });
+    await expectUserVisible(summary, `FAQ summary: ${question}`);
+    await summary.click();
+    await expect(details).toHaveAttribute("open", "");
+    const answer = details.locator(".faq-answer");
+    await expectUserVisible(answer, `FAQ answer: ${question}`);
+    const answerText = (await answer.innerText()).trim();
+    for (const fact of facts) expect(answerText, `FAQ answer fact: ${fact}`).toContain(fact);
+
+    const terminators = answerText.match(/[.!?。！？]/gu) ?? [];
+    const sentences = answerText.split(/[.!?。！？]+/u).map((sentence) => sentence.trim()).filter(Boolean);
+    expect(sentences.length, `FAQ answer must be non-empty: ${question}`).toBeGreaterThanOrEqual(1);
+    expect(terminators.length, `FAQ answer terminator budget: ${question}`).toBeLessThanOrEqual(2);
+    expect(sentences.length, `FAQ answer sentence budget: ${question}`).toBeLessThanOrEqual(2);
+  });
+}
+
+test("390px visibly renders the final location facts and links", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const location = page.locator("#contact");
+
+  for (const copy of ["예상 견적과 방문 가능 시간을 안내합니다", "24시간 문의 접수 · 방문 전 연락"]) {
+    await expectUserVisible(location.getByText(copy, { exact: true }), `location copy: ${copy}`);
+  }
+  const map = location.getByRole("link", { name: "네이버 지도에서 위치·리뷰 보기", exact: true });
+  await expectUserVisible(map, "final Naver map/review link");
+  await expect(map).toHaveAttribute("href", "https://naver.me/F1rPbAcV");
+  await expectUserVisible(location.locator('[data-cta="final-phone"]'), "final phone link");
+  await expectUserVisible(location.getByRole("link", { name: "카카오톡으로 사진 보내기", exact: true }), "final Kakao link");
 });
 
 test("desktop transaction paths preview, pin, and prioritize keyboard focus", async ({ page }) => {

@@ -4,6 +4,8 @@ Date: 2026-08-15 (Asia/Seoul)
 
 Status: **DONE — expected RED established against production base `3dccae3`.**
 
+Review follow-up: rendered visibility and FAQ answer semantics were strengthened in commit follow-up work after the initial Task 1 checkpoint.
+
 Scope was tests only. No production source, `main`, deployment, DNS, or remote state was changed.
 
 ## Test design
@@ -18,6 +20,7 @@ Scope was tests only. No production source, `main`, deployment, DNS, or remote s
 - Direct visit precedes send-first and the new short step groups/details are present in order.
 - The official blog index and Naver Place links plus `data-cta="naver-proof"` are moved into CaseStudies; obsolete repeated case badges/link wording are absent.
 - FAQ contains exactly three `<details>` with the approved questions. The fourth page-level `<details>` is the separate PurchaseGuide disclosure.
+- Each FAQ answer independently protects its core facts: expected-vs-final estimate plus seller agreement, 24-hour inquiry intake without immediate-visit guarantee, and registration/ownership/documents. Each answer is limited to at most two Korean sentence terminators/sentences; the separate PurchaseGuide may retain its approved three sentences.
 - Existing metadata, contact, image, case-source, JSON-LD, palette, and fabricated-proof regressions remain unchanged.
 
 ### Browser contract
@@ -27,6 +30,8 @@ Scope was tests only. No production source, `main`, deployment, DNS, or remote s
 - 390px user-visible copy is 60–70% of the fixed 2,249-character baseline (30–40% reduction).
 - The counter excludes whitespace, SVG/picture text, `.sr-only`, `display:none`, `visibility:hidden`, `[aria-hidden=true]`, and closed-details content except the summary.
 - The 390×844 first view exposes region/business, direct visit, photo inquiry, on-site/final amount, payment-before-loading, Kakao, and phone paths.
+- Separate 390px section-scoped tests require Hero, TrustBar, TransactionPaths, CaseStudies, QuoteChecklist, PurchaseGuide, FAQ, and LocationFinal facts and anchors to be rendered in their intended section. The helper applies the copy counter's semantic/CSS exclusions and also requires a non-zero rendered rectangle.
+- PurchaseGuide and every FAQ use their actual native `<details>`/`<summary>` controls: summaries must be visible while closed, then the test opens each disclosure and requires the answer facts to become visibly rendered.
 - Removed standalone sections are absent and `/#process` settles the TransactionPaths heading below the fixed header.
 - At 960px and 1440px, hover/click/Enter/Space exercise both active states. Grid height delta must remain ≤1px.
 - The direct CTA must be at least 44px tall, remain fully inside its article and every clipping ancestor in both active states, and hit-test to the link at its bottom inset when active.
@@ -45,7 +50,7 @@ Command:
 
 `node --test tests/static-export.test.mjs`
 
-Result: **15 tests: 9 pass, 6 fail**, all behavior-contract failures:
+Result after review follow-up: **18 tests: 10 pass, 8 fail**, all behavior-contract failures:
 
 1. `#process` does not identify TransactionPaths.
 2. `data-testid="process-story"` is still exported.
@@ -53,6 +58,10 @@ Result: **15 tests: 9 pass, 6 fail**, all behavior-contract failures:
 4. CaseStudies does not yet contain `data-cta="naver-proof"` or the moved index/Place destinations.
 5. FAQ has **6** details instead of **3**, and there is not yet the separate PurchaseGuide details contract.
 6. The new TransactionPaths introduction count is **0**, followed by the remaining new route-copy expectations once implementation advances.
+7. The approved estimate/final-amount/seller-agreement FAQ is absent.
+8. The approved inquiry-intake/no-immediate-visit FAQ is absent.
+
+The existing registration/ownership/documents FAQ independently passes its core-fact and two-sentence contract on the base page. This proves the per-answer test can pass real compliant content rather than failing generically.
 
 No syntax, import, fixture, metadata, image, or dependency failure occurred.
 
@@ -72,6 +81,21 @@ Observed behavior failures:
 Result: **8 tests: 2 pass, 6 expected fail**. The six failures are removed-section structure, visible-copy budget, 960 containment/state order, 1440 containment/state order, 200% containment, and `#process` hash ownership.
 
 The 390px first-view facts and the general 960px no-overflow/action test pass on the base implementation, proving those new tests are not failing from setup errors.
+
+### Review follow-up: rendered 390px facts and disclosures
+
+Command:
+
+`npx playwright test tests/e2e/renewal.spec.ts --grep "390px visibly renders|390px opens"`
+
+Result: **10 tests: 1 pass, 9 expected fail.**
+
+Expected base behavior:
+
+- Hero, compact trust titles, `#process` ownership/path facts, CaseStudies destinations, quote copy, PurchaseGuide disclosure, and LocationFinal copy/link names fail on the old structure or old wording.
+- The first two approved FAQ questions/answers fail because the old variants do not protect the new estimate/agreement and intake/no-guarantee facts.
+- The registration/ownership/documents FAQ opens through the real native summary, renders its answer, satisfies all required facts, and stays within two sentences.
+- No failure is caused by locator syntax, an unopened required answer, or an unrelated hidden subtree.
 
 ### Focused CTA geometry
 
@@ -96,7 +120,7 @@ The browser counter measures `<main>` because the documented 2,249 baseline excl
 
 ## Verification hygiene
 
-- `npx playwright test tests/e2e/renewal.spec.ts --list`: 25 tests discovered; no parse/config errors.
+- `npx playwright test tests/e2e/renewal.spec.ts --list`: 35 tests discovered; no parse/config errors.
 - `npx eslint tests/e2e/renewal.spec.ts tests/static-export.test.mjs`: pass.
 - `git diff --check`: pass.
 

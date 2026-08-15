@@ -9,6 +9,35 @@ const stylesheetHref = html.match(/href="([^"]+\.css)"/)?.[1];
 assert.ok(stylesheetHref, "expected an exported stylesheet");
 const stylesheet = await readFile(new URL(`../out${stylesheetHref}`, import.meta.url), "utf8");
 
+const textContent = (markup) => markup
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&nbsp;|&#160;|&#x0*a0;/gi, " ")
+  .replace(/&amp;/gi, "&")
+  .replace(/&quot;|&#34;/gi, '"')
+  .replace(/&apos;|&#39;/gi, "'")
+  .replace(/&lt;/gi, "<")
+  .replace(/&gt;/gi, ">")
+  .replace(/&rarr;/gi, "→")
+  .replace(/&#x([\da-f]+);/gi, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 16)))
+  .replace(/&#(\d+);/g, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 10)))
+  .replace(/\s+/g, " ")
+  .trim();
+
+const faqAnswerContracts = [
+  {
+    question: "사진 견적이 최종 금액인가요?",
+    facts: ["사진 견적은 예상 금액", "현장 상태", "최종 금액", "판매자가", "동의"],
+  },
+  {
+    question: "24시간 바로 방문하나요?",
+    facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
+  },
+  {
+    question: "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
+    facts: ["등록 상태", "본인 소유", "서류"],
+  },
+];
+
 test("exports the approved contact and canonical metadata", () => {
   assert.match(html, /<link rel="canonical" href="https:\/\/www\.bike-manager\.com"\/>/);
   assert.match(html, /010-7616-4949/);
@@ -120,15 +149,32 @@ test("moves official blog and Naver Place links into case studies", () => {
 test("exports exactly three FAQ details plus one purchase-guide details", () => {
   const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
   assert.ok(faqSection, "expected the FAQ section");
-  const faqQuestions = [
-    "사진 견적이 최종 금액인가요?",
-    "24시간 바로 방문하나요?",
-    "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
-  ];
   assert.equal([...faqSection.matchAll(/<details\b/g)].length, 3, "expected exactly three FAQ details");
   assert.equal([...html.matchAll(/<details\b/g)].length, 4, "expected one separate purchase-guide details");
-  for (const question of faqQuestions) assert.match(faqSection, new RegExp(question.replace("?", "\\?")));
+  for (const { question } of faqAnswerContracts) assert.ok(faqSection.includes(question));
 });
+
+for (const { question, facts } of faqAnswerContracts) {
+  test(`keeps the core facts and two-sentence limit for FAQ: ${question}`, () => {
+    const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(faqSection, "expected the FAQ section");
+    const details = [...faqSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)]
+      .map(([, markup]) => markup)
+      .find((markup) => textContent(markup).includes(question));
+    assert.ok(details, `expected FAQ details for: ${question}`);
+
+    const answerMarkup = details.match(/<div\b(?=[^>]*class="[^"]*\bfaq-answer\b)[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(answerMarkup, `expected an answer for: ${question}`);
+    const answer = textContent(answerMarkup);
+    for (const fact of facts) assert.ok(answer.includes(fact), `expected "${fact}" in answer: ${question}`);
+
+    const terminators = answer.match(/[.!?。！？]/gu) ?? [];
+    const sentences = answer.split(/[.!?。！？]+/u).map((sentence) => sentence.trim()).filter(Boolean);
+    assert.ok(sentences.length >= 1, `expected a non-empty answer: ${question}`);
+    assert.ok(terminators.length <= 2, `expected at most two sentence terminators: ${question}`);
+    assert.ok(sentences.length <= 2, `expected at most two sentences: ${question}`);
+  });
+}
 
 test("orders case studies around the core scooter customer", () => {
   const casesSection = html.match(/<section[^>]+id="cases"[\s\S]*?<\/section>/)?.[0];
@@ -148,19 +194,6 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   )?.[0];
   assert.ok(transactionPaths, "expected the transaction paths section");
 
-  const textContent = (markup) => markup
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;|&#160;|&#x0*a0;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;|&#34;/gi, '"')
-    .replace(/&apos;|&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&rarr;/gi, "→")
-    .replace(/&#x([\da-f]+);/gi, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 16)))
-    .replace(/&#(\d+);/g, (_, codePoint) => String.fromCodePoint(Number.parseInt(codePoint, 10)))
-    .replace(/\s+/g, " ")
-    .trim();
   const countText = (markup, text) => textContent(markup).split(text).length - 1;
   const transactionText = textContent(transactionPaths);
   const heading = "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.";
