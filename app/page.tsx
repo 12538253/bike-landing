@@ -1,29 +1,33 @@
+import CaseStudies from "@/components/CaseStudies";
+import FAQSection from "@/components/FAQSection";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import TrustSection from "@/components/TrustSection";
+import HonestComparison from "@/components/HonestComparison";
+import LocationFinal from "@/components/LocationFinal";
+import NaverProof from "@/components/NaverProof";
 import ProcessSection from "@/components/ProcessSection";
-import PolicySection from "@/components/PolicySection";
-import LocationSection from "@/components/LocationSection";
-import ReviewsSection from "@/components/ReviewsSection";
-import ServicesSection from "@/components/ServicesSection";
-import FAQSection from "@/components/FAQSection";
-import PurchaseTicker from "@/components/PurchaseTicker";
-import Footer from "@/components/Footer";
+import PurchaseGuide from "@/components/PurchaseGuide";
+import QuoteChecklist from "@/components/QuoteChecklist";
+import TradeMethodComparison from "@/components/TradeMethodComparison";
+import TrustBar from "@/components/TrustBar";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white selection:bg-brand-orange selection:text-white">
+    <div className="site-page">
       <Header />
-      <main className="flex-1 pt-16">
-        <PurchaseTicker />
+      <main>
         <Hero />
-        <ReviewsSection />
-        <TrustSection />
+        <TrustBar />
+        <QuoteChecklist />
+        <CaseStudies />
+        <TradeMethodComparison />
         <ProcessSection />
-        <PolicySection />
-        <ServicesSection />
+        <HonestComparison />
+        <PurchaseGuide />
+        <NaverProof />
         <FAQSection />
-        <LocationSection />
+        <LocationFinal />
       </main>
       <Footer />
     </div>

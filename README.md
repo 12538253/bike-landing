@@ -1,101 +1,56 @@
-# 🏍️ 바이크매니저 (Bike Manager)
+# 바이크매니저 랜딩 페이지
 
-## 📝 프로젝트 소개 (Project Info)
+인천·서울·경기 중고 바이크 방문 매입 서비스의 공식 랜딩 페이지입니다. 판매자가 차량을 먼저 보내지 않고, 현장에서 상태와 최종 금액을 확인한 뒤 입금 확인 후 상차하는 거래 절차를 중심으로 구성했습니다.
 
-이 프로젝트는 중고 오토바이 매매를 하시는 **처남을 위해** 제작된 랜딩 페이지입니다.
-개인적으로는 **최신 Next.js 16과 AI 코딩 툴을 학습**하고, 실제 상업용 수준의 퍼포먼스를 내는 웹사이트를 구축해보는 것을 목표로 했습니다.
+- 운영 사이트: [https://www.bike-manager.com](https://www.bike-manager.com)
+- 프레임워크: Next.js 16 App Router, React 19, Tailwind CSS 4
+- 배포: Cloudflare Pages 정적 export (`out`)
+- 런타임: Node.js 22
 
-단순한 홍보 페이지를 넘어, **SEO(검색 최적화)**와 **모바일 사용자 경험(UX)**을 극대화하여 실제 문의 전환율을 높이는 데 초점을 맞췄습니다.
-
-🔗 **라이브 데모**: [https://www.bike-manager.com](https://www.bike-manager.com)
-
-<br/>
-
-## 🛠 사용 기술 (Tech Stack)
-
-"형님 이거 무슨 툴로 만드신 거예요?"
-"요즘 제일 핫한 걸로만 꽉 채워 넣었다."
-
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack) - *빠르고 SEO에 최강*
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) - *다크 모드 간지 구현*
-- **Animation**: [Framer Motion](https://www.framer.com/motion/) - *고급진 등장 효과*
-- **Deployment**: [Cloudflare Pages](https://pages.cloudflare.com/) - *서버비 0원, 속도는 광속*
-- **SEO Tools**: `next/head`, `JSON-LD` (구조화 데이터), `Open Graph`
-
-<br/>
-
-## ✨ 주요 기능 (Key Features)
-
-### 1. 전환율을 높이는 UX (Conversion Focused)
-- **모바일 최적화**: 바이크 유저 90%가 모바일 접속. 하단에 `카톡 문의` 버튼을 고정해서 언제든 연락 가능하게 함.
-- **실시간 구매 티커**: "방금 OO님이 300만원에 판매하셨습니다" 흐르는 자막으로 신뢰도 상승 (CSS Infinite Scroll).
-- **1분 견적**: 복잡한 가입 없이 바로 카톡으로 연결.
-
-### 2. 신뢰도 마케팅 (Trust & Social Proof)
-- **네이버/당근 인증 배지**: 공식 앱 아이콘을 박아서 "인증된 업체" 느낌 팍팍 줌.
-- **투명한 가격표**: 스캐너 진단비, 출장비 등을 명시해서 "눈탱이 없다"는 걸 강조.
-- **반응형 디자인**: 아이패드, 갤럭시 폴드, 아이폰 미니 어디서 봐도 예쁨.
-
-### 3. 기술적 최적화 (Technical Polish)
-- **SEO 완비**: 네이버랑 구글이 좋아하도록 `robots.txt`, `sitemap.xml`, `meta 태그` 풀세팅.
-- **성능 최적화**: 라이트하우스 점수 95+점. (이미지 최적화 `next/image` 사용)
-- **정적 배포**: `output: 'export'` 설정으로 정적 HTML로 변환, 로딩 속도 극대화.
-
-<br/>
-
-## 🚀 실행 방법 (Getting Started)
-
-"형님 저도 코드 좀 볼 수 있어요?"
-"그럼, 깃허브 봐봐."
-
-### 설치 및 실행
+## 로컬 실행
 
 ```bash
-# 1. 레포지토리 복제
-git clone https://github.com/your-username/bike-manager.git
-
-# 2. 패키지 설치
-npm install
-
-# 3. 개발 서버 실행
+npm ci
 npm run dev
 ```
 
-### 배포 (Cloudflare Pages)
+정적 결과물을 만들고 확인하려면 다음 명령을 사용합니다.
 
-서버비 아끼려고 **정적 내보내기(Static Export)** 방식을 썼습니다.
-
-1. 빌드 명령어 실행:
-   ```bash
-   npm run build
-   # out 폴더가 생성됩니다.
-   ```
-2. Cloudflare Pages에 `out` 폴더 업로드하면 끝!
-
-<br/>
-
-## 📂 폴더 구조 (Structure)
-
-```
-├── app/                  # Next.js 앱 라우터 (여기가 핵심)
-│   ├── layout.tsx        # 전체 레이아웃 (SEO 설정 포함)
-│   ├── page.tsx          # 메인 페이지 조립
-│   └── globals.css       # 전체 스타일
-├── components/           # 레고 블록들 (재사용 컴포넌트)
-│   ├── Hero.tsx          # 첫 화면 (임팩트 담당)
-│   ├── TrustSection.tsx  # 신뢰 포인트
-│   ├── ReviewsSection.tsx# 후기 & 인증 배지
-│   └── ...
-└── public/               # 이미지 파일들
+```bash
+npm run build
+npm run preview
 ```
 
-<br/>
+## 검증
 
-## 📝 후기 (Retrospect)
+```bash
+npm run lint
+npm run build
+npm run test:static
+npm run test:e2e
+npm audit --omit=dev
+```
 
-AI를 활용해서 코딩하니 생산성이 엄청나네요.
-처남이 이 홈페이지로 대박 나서 나중에 **할리 데이비슨** 한 대 뽑아줬으면 좋겠습니다.
+`npm run verify`는 lint, build, 정적 HTML 테스트, Chromium 인터랙션 테스트를 순서대로 실행합니다. GitHub Actions도 브랜치 push와 pull request에서 같은 검증을 수행합니다.
 
----
+## 구조
 
-**© 2025 Bike Manager Project** | Made with 🧡 by Brother-in-law
+- `content/site.ts`: 전화번호, 주소, 링크, 사례, FAQ, 메타데이터의 단일 정보원
+- `app/page.tsx`: 페이지 섹션 조립
+- `app/layout.tsx`: 메타데이터와 JSON-LD
+- `components/ProcessStory.tsx`: 데스크톱 거래 단계 스크롤 인터랙션
+- `components/StickyInquiryBar.tsx`: 모바일 문의 바 표시·숨김
+- `public/_headers`: Cloudflare Pages 정적 보안 헤더
+- `tests/static-export.test.mjs`: 연락처·canonical·JSON-LD·가짜 신뢰 요소 회귀 테스트
+- `tests/e2e/renewal.spec.ts`: 반응형·모션 감소·hydration·인터랙션 테스트
+
+## 콘텐츠 원칙
+
+- 대표 전화는 `010-7616-4949`로 통일합니다.
+- `24시간`은 문의 접수를 뜻하며 즉시 방문을 보장하지 않습니다.
+- 리뷰 수는 고정하지 않고 네이버 플레이스의 현재 정보로 연결합니다.
+- 사례는 업체 공식 블로그 원문으로 연결합니다.
+- 방문자 사진과 리뷰 문구는 복사하지 않습니다.
+- 사례 카드의 현재 이미지는 미리보기용 기존 자산입니다. 운영 반영 전 업체가 공식 사진 사용을 확인해야 합니다.
+
+배포와 운영 안전 수칙은 [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md)를 참고하세요.

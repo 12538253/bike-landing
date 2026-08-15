@@ -1,104 +1,102 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+
+import StickyInquiryBar from "@/components/StickyInquiryBar";
+import { site } from "@/content/site";
+
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-import { GoogleAnalytics } from "@next/third-parties/google";
-
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.bike-manager.com"),
-  title: "바이크매니저 | 전국 중고 오토바이 최고가 당일 매입 (PCX, R3, 할리)",
-  description: "당근마켓보다 빠르고 안전하게. 인천, 부천, 서울, 경기 1시간 내 무료 출장. 중고 바이크 전 기종 최고가 매입. 010-5712-0080",
-  keywords: ["중고오토바이매입", "중고바이크매입", "오토바이판매", "바이크매니저", "인천오토바이"],
-  other: {
-    "naver-site-verification": "", // 추후 값 입력 필요
-    "google-site-verification": "", // 추후 값 입력 필요
+  metadataBase: new URL(site.canonicalUrl),
+  title: site.metadata.title,
+  description: site.metadata.description,
+  keywords: [...site.metadata.keywords],
+  alternates: {
+    canonical: site.canonicalUrl,
   },
   icons: {
-    icon: "/favicon.png",
+    icon: [{ url: "/favicon.png", type: "image/png" }],
     shortcut: "/favicon.png",
     apple: "/favicon.png",
   },
-
   openGraph: {
-    title: "바이크매니저 | 전국 중고 오토바이 최고가 당일 매입",
-    description: "당근마켓보다 빠르고 안전하게. 수도권 2시간 내 방문, 100% 현장 계좌 이체.",
-    url: "https://www.bike-manager.com",
-    siteName: "Bike Manager",
+    title: site.metadata.title,
+    description: site.metadata.description,
+    url: site.canonicalUrl,
+    siteName: site.name,
     images: [
       {
-        url: "/images/hero-bg.png",
+        url: site.metadata.ogImage,
         width: 1200,
         height: 630,
-        alt: "바이크매니저 - 프리미엄 중고 오토바이 매입",
+        alt: site.metadata.ogImageAlt,
       },
     ],
     locale: "ko_KR",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: site.metadata.title,
+    description: site.metadata.description,
+    images: [site.metadata.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#10100f",
 };
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "name": "바이크매니저",
-  "image": "https://www.bike-manager.com/images/hero-bg.png",
-  "telephone": "010-5712-0080",
-  "address": {
+  "@id": `${site.canonicalUrl}/#business`,
+  name: site.name,
+  image: `${site.canonicalUrl}${site.metadata.ogImage}`,
+  telephone: site.phone.display,
+  url: site.canonicalUrl,
+  priceRange: "KRW",
+  address: {
     "@type": "PostalAddress",
-    "streetAddress": "백범로 411",
-    "addressLocality": "Namdong-gu",
-    "addressRegion": "Incheon",
-    "postalCode": "21500",
-    "addressCountry": "KR"
+    streetAddress: site.address.street,
+    addressLocality: site.address.locality,
+    addressRegion: site.address.region,
+    addressCountry: site.address.country,
   },
-  "url": "https://www.bike-manager.com",
-  "priceRange": "KRW",
-  "openingHoursSpecification": {
-    "@type": "OpeningHoursSpecification",
-    "dayOfWeek": [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    ],
-    "opens": "09:00",
-    "closes": "22:00"
-  }
+  areaServed: ["인천광역시", "서울특별시", "경기도"],
 };
 
-import StickyBottomBar from "@/components/StickyBottomBar";
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" suppressHydrationWarning={true}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning={true}
-      >
+    <html lang="ko">
+      <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero-mobile.webp"
+          type="image/webp"
+          media="(max-width: 760px)"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero-bg.webp"
+          type="image/webp"
+          media="(min-width: 761px)"
+        />
+      </head>
+      <body>
         {children}
-        <StickyBottomBar />
+        <StickyInquiryBar />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
-        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
       </body>
     </html>
   );

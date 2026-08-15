@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local writing and verification artifacts
+/_workspace/
+/.playwright-mcp/
+/test-results/
+/playwright-report/

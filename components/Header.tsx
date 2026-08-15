@@ -1,28 +1,44 @@
-"use client";
+import { MessageCircle, Phone } from "lucide-react";
 
-import { Phone } from "lucide-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { site } from "@/content/site";
 
 export default function Header() {
-    return (
-        <motion.header
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-black/80 px-6 backdrop-blur-md md:px-12"
-        >
-            <Link href="/" className="text-xl font-bold tracking-tighter text-white">
-                BIKE MANAGER
-            </Link>
+  const phone = site.contact.headerPhone;
 
-            <a
-                href="tel:01076164949"
-                className="group flex h-10 items-center gap-2 rounded-full border border-brand-orange/30 bg-brand-orange/10 px-4 text-sm font-semibold text-brand-orange transition-all hover:bg-brand-orange hover:text-white md:h-auto md:py-2"
-            >
-                <Phone className="h-4 w-4 fill-current" />
-                <span className="hidden md:inline">24시 문의</span> 010-7616-4949
-            </a>
-        </motion.header>
-    );
+  return (
+    <header className="site-header">
+      <div className="site-shell site-header__inner">
+        <a className="brand-mark" href="#top">
+          <span className="brand-mark__badge" aria-hidden="true">
+            BM
+          </span>
+          <span className="brand-mark__name">{site.englishName}</span>
+        </a>
+
+        <nav className="site-nav" aria-label="주요 메뉴">
+          <a href="#cases">매입 사례</a>
+          <a href="#process">거래 절차</a>
+          <a href="#faq">자주 묻는 질문</a>
+        </nav>
+
+        <div className="site-header__actions">
+          <a
+            className="header-kakao"
+            href={site.links.kakao}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="카카오톡으로 문의하기"
+          >
+            <MessageCircle aria-hidden="true" size={18} />
+            <span>카카오톡</span>
+          </a>
+          <a className="header-phone" href={phone.href} data-cta={phone.ctaId}>
+            <Phone aria-hidden="true" size={17} />
+            <span className="header-phone__hours">24시간 문의</span>
+            <span>{site.phone.display}</span>
+          </a>
+        </div>
+      </div>
+    </header>
+  );
 }
