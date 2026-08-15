@@ -80,6 +80,8 @@ test("exports the two transaction paths with local, budgeted route images", asyn
     "차량이 내 손을 떠나는 시점에 따라 확인해야 할 조건이 달라집니다. 바이크매니저는 약속한 장소로 직접 방문해 차량 상태와 최종 금액을 함께 확인합니다.";
   const directVisitTitle = "바이크매니저 직접 방문";
   const sendFirstTitle = "차량을 먼저 보내는 방식";
+  const directVisitEyebrow = "현장에서 확인";
+  const sendFirstEyebrow = "출발 전에 확인";
   const directVisitDescription =
     "바이크매니저는 약속한 장소에서 차량을 함께 확인하고, 최종 금액과 계약 내용을 안내한 뒤 입금 확인 후 상차합니다.";
   const sendFirstDescription =
@@ -120,9 +122,19 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.equal(countText(transactionPaths, heading), 1, "expected one transaction paths heading");
   assert.equal(countText(transactionPaths, introduction), 1, "expected one transaction paths introduction");
   assert.equal(countText(directVisit, directVisitTitle), 1, "expected direct visit copy once");
+  assert.equal(countText(directVisit, directVisitEyebrow), 1, "expected one direct-visit eyebrow");
   assert.equal(countText(directVisit, directVisitDescription), 1, "expected direct visit description once");
   assert.equal(countText(sendFirst, sendFirstTitle), 1, "expected send-first copy once");
+  assert.equal(countText(sendFirst, sendFirstEyebrow), 1, "expected one send-first eyebrow");
   assert.equal(countText(sendFirst, sendFirstDescription), 1, "expected send-first description once");
+  assert.ok(
+    textContent(directVisit).indexOf(directVisitEyebrow) < textContent(directVisit).indexOf(directVisitTitle),
+    "expected the direct-visit eyebrow to label its path title",
+  );
+  assert.ok(
+    textContent(sendFirst).indexOf(sendFirstEyebrow) < textContent(sendFirst).indexOf(sendFirstTitle),
+    "expected the send-first eyebrow to label its path title",
+  );
   assert.ok(textContent(directVisit).includes("입금 확인"), "expected the payment-confirmation card copy");
   assert.equal(countText(directVisit, "확인 후 상차"), 1, "expected one loading-confirmation card copy");
   assert.equal(countText(directVisit, "사진 보내고 방문 일정 확인"), 1, "expected one direct-visit CTA");

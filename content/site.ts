@@ -47,6 +47,7 @@ export type TransactionPathSection = Readonly<{
 }>;
 
 export type TransactionPath = Readonly<{
+  eyebrow: string;
   title: string;
   steps: readonly string[];
   description: string;
@@ -153,6 +154,7 @@ export const site = {
   } satisfies TransactionPathSection,
   tradePaths: {
     directVisit: {
+      eyebrow: "현장에서 확인",
       title: "바이크매니저 직접 방문",
       steps: ["방문 일정 조율", "현장에서 함께 검수", "최종 금액 확인", "입금 확인", "상차"],
       description:
@@ -173,6 +175,7 @@ export const site = {
       } satisfies ContactLink,
     } satisfies TransactionPath,
     sendFirst: {
+      eyebrow: "출발 전에 확인",
       title: "차량을 먼저 보내는 방식",
       steps: ["출발 전 최종 금액과 감가 기준 확인", "금액 변경 시 반환 조건 확인", "왕복 운임 부담 확인"],
       description:

@@ -249,6 +249,32 @@ test("desktop transaction paths preview, pin, and prioritize keyboard focus", as
   await expect(pathsLine).toHaveAttribute("data-revealed", "true");
 });
 
+test("transaction paths restore the completed static fallback when motion preference changes", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 500 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  const paths = page.getByTestId("transaction-paths");
+  const pathsLine = paths.getByTestId("transaction-path-lines");
+  const directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  const sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  const directVisitPanel = await transactionPathPanel(directVisit, page);
+  const sendFirstPanel = await transactionPathPanel(sendFirst, page);
+
+  await expect(pathsLine).toHaveAttribute("data-revealed", "false");
+  await expect(directVisitPanel).toBeVisible();
+  await expectInactiveTransactionPathToBeUnavailable(sendFirstPanel);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(directVisitPanel).toBeVisible();
+  await expect(sendFirstPanel).toBeVisible();
+  await expect(pathsLine).toHaveAttribute("data-revealed", "true");
+});
+
 test("case studies use the featured and portrait layout at each breakpoint", async ({ page }) => {
   const cards = (model: string) =>
     page.locator("article.case-card", { has: page.getByRole("heading", { name: model, exact: true }) });

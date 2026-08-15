@@ -66,7 +66,10 @@ An implementation-only temporary QA test also exercised the narrowest fallback a
 
 - `components/TransactionPaths.tsx`
 - `components/TradeMethodComparison.tsx`
+- `content/site.ts`
 - `app/globals.css`
+- `tests/static-export.test.mjs`
+- `tests/e2e/renewal.spec.ts`
 - `.superpowers/sdd/2026-08-15-transaction-paths/task-3-report.md`
 
 ## Self-review
@@ -77,3 +80,45 @@ An implementation-only temporary QA test also exercised the narrowest fallback a
 - Verified no GSAP, WebGL, scroll control, autoplay/carousel behavior, new dependency, or Task 4 CaseStudies/ProcessStory change was introduced.
 - Verified the server HTML contains both panels and a completed line, while enhanced inactive content is focus-blocked without nesting the CTA inside a button.
 - No remaining Task 3 concerns found.
+
+## Review fixes
+
+### Runtime motion-preference transition
+
+- Added a focused Playwright regression that starts in enhanced desktop mode with the section offscreen and the fork unrevealed, switches the live media preference to reduced motion, and requires both panels plus the completed static fork.
+- Bound the fork effect to the existing `enhanced` external-store value. Every non-enhanced mode now sets `data-revealed="true"`; React effect cleanup disconnects the enhanced observer before that fallback runs. Only enhanced desktop/fine-pointer/no-reduction mode resets the line and creates the scoped one-shot observer.
+
+RED command:
+
+```sh
+npx playwright test tests/e2e/renewal.spec.ts --workers=1 --grep 'restore the completed static fallback'
+```
+
+Expected failure before the fix:
+
+```text
+Expected data-revealed: "true"
+Received: "false"
+1 failed
+```
+
+The same command passed 1/1 after the effect lifecycle fix. The test also verifies the visual fallback by asserting both controlled detail panels are visible and both controls report `aria-expanded="true"` after the live preference change.
+
+### Eyebrow content SSOT
+
+- Added `eyebrow` to the `TransactionPath` type and to the keyed `directVisit` / `sendFirst` content records with the exact approved Korean labels.
+- Removed the visible labels from the client presentation constant; the component now renders `path.eyebrow` while the remaining keyed presentation map contains decorative numbers only.
+- Extended the static-export contract to require each exact eyebrow once, before its matching title and within the correct path article. This characterization was already green against the existing visible output; TypeScript/build then verify the refactored component obtains the now-required field from the typed content model.
+
+### Review-fix final verification
+
+```sh
+npm run lint
+npx tsc --noEmit
+npm run build
+npm run test:static
+git diff --check
+npx playwright test tests/e2e/renewal.spec.ts --workers=1 --grep 'desktop transaction paths|restore the completed static fallback|disables entrance|JavaScript-off desktop|320px has no horizontal'
+```
+
+Lint, TypeScript, build, and diff check exited 0. Static tests passed 10/10. The focused Chromium suite passed 5/5, covering the original desktop interaction, the new live motion-preference transition, initial reduced motion, JavaScript-off content, and the 320px regression.

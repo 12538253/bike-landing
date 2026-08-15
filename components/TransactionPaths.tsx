@@ -11,9 +11,9 @@ type TransactionPathsProps = Readonly<{
 }>;
 
 const pathKeys: readonly TransactionPathKey[] = ["directVisit", "sendFirst"];
-const pathPresentation: Readonly<Record<TransactionPathKey, Readonly<{ eyebrow: string; number: string }>>> = {
-  directVisit: { eyebrow: "현장에서 확인", number: "01" },
-  sendFirst: { eyebrow: "출발 전에 확인", number: "02" },
+const pathNumbers: Readonly<Record<TransactionPathKey, string>> = {
+  directVisit: "01",
+  sendFirst: "02",
 };
 const enhancedQuery =
   "(min-width: 960px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
@@ -48,7 +48,10 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
   useEffect(() => {
     const root = rootRef.current;
     const line = lineRef.current;
-    if (!root || !line || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!root || !line) return;
+
+    line.dataset.revealed = "true";
+    if (!enhanced) return;
 
     line.dataset.revealed = "false";
     const observer = new IntersectionObserver(
@@ -62,7 +65,7 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
 
     observer.observe(root);
     return () => observer.disconnect();
-  }, []);
+  }, [enhanced]);
 
   return (
     <div className="transaction-paths" ref={rootRef}>
@@ -91,7 +94,6 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
       >
         {pathKeys.map((key) => {
           const path = paths[key];
-          const presentation = pathPresentation[key];
           const active = !enhanced || activePath === key;
           const panelId = `transaction-path-panel-${key}`;
 
@@ -130,11 +132,11 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
                     style={{ objectPosition: path.imagePosition }}
                   />
                   <span className="transaction-path__media-shade" aria-hidden="true" />
-                  <span className="transaction-path__number" aria-hidden="true">{presentation.number}</span>
+                  <span className="transaction-path__number" aria-hidden="true">{pathNumbers[key]}</span>
                 </span>
                 <span className="transaction-path__heading">
                   <span className="transaction-path__eyebrow">
-                    {presentation.eyebrow}
+                    {path.eyebrow}
                   </span>
                   <span className="transaction-path__title">{path.title}</span>
                 </span>
