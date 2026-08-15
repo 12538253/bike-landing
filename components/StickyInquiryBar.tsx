@@ -7,17 +7,23 @@ import { site } from "@/content/site";
 
 export default function StickyInquiryBar() {
   const [heroPassed, setHeroPassed] = useState(false);
+  const [processVisible, setProcessVisible] = useState(false);
   const [finalVisible, setFinalVisible] = useState(false);
 
   useEffect(() => {
     const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
+    const process = document.querySelector<HTMLElement>("[data-testid='transaction-paths']");
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
-    if (!hero || !finalCta) return;
+    if (!hero || !process || !finalCta) return;
 
     const heroObserver = new IntersectionObserver(
       ([entry]) => {
         setHeroPassed(!entry.isIntersecting && entry.boundingClientRect.bottom <= 0);
       },
+      { threshold: 0 },
+    );
+    const processObserver = new IntersectionObserver(
+      ([entry]) => setProcessVisible(entry.isIntersecting),
       { threshold: 0 },
     );
     const finalObserver = new IntersectionObserver(
@@ -26,15 +32,17 @@ export default function StickyInquiryBar() {
     );
 
     heroObserver.observe(hero);
+    processObserver.observe(process);
     finalObserver.observe(finalCta);
 
     return () => {
       heroObserver.disconnect();
+      processObserver.disconnect();
       finalObserver.disconnect();
     };
   }, []);
 
-  const visible = heroPassed && !finalVisible;
+  const visible = heroPassed && !processVisible && !finalVisible;
   const kakao = site.contact.stickyKakao;
 
   return (

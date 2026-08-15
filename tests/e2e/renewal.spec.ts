@@ -488,11 +488,8 @@ test("390px one-viewport scroll exposes the direct transaction path above the st
       locator: directSteps.nth(index),
     })),
   ];
-  const stickyBox = await sticky.boundingBox();
-  expect(stickyBox, "the sticky inquiry bar must have a layout box").not.toBeNull();
-  const stickyVisible = await sticky.evaluate((element) =>
-    element.classList.contains("is-visible") && element.getAttribute("aria-hidden") !== "true",
-  );
+  await expect(sticky).toHaveAttribute("aria-hidden", "true");
+  await expect(sticky).not.toHaveClass(/is-visible/);
 
   for (const { label, locator } of targets) {
     const box = await locator.boundingBox();
@@ -503,20 +500,32 @@ test("390px one-viewport scroll exposes the direct transaction path above the st
     expect.soft((box?.x ?? 0) + (box?.width ?? 0), `${label} must fit the 390px viewport`).toBeLessThanOrEqual(390);
     expect.soft(box?.y ?? -1, `${label} must be inside the viewport`).toBeGreaterThanOrEqual(0);
     expect.soft((box?.y ?? 0) + (box?.height ?? 0), `${label} must be inside the viewport`).toBeLessThanOrEqual(844);
-
-    const overlapsStickyHorizontally = Boolean(
-      stickyBox && box && box.x < stickyBox.x + stickyBox.width && box.x + box.width > stickyBox.x,
-    );
-    const overlapsStickyVertically = Boolean(
-      stickyBox && box && box.y < stickyBox.y + stickyBox.height && box.y + box.height > stickyBox.y,
-    );
-    expect.soft(
-      stickyVisible && overlapsStickyHorizontally && overlapsStickyVertically,
-      `${label} must not be obscured by the sticky inquiry bar`,
-    ).toBe(false);
   }
 
   expect(await page.evaluate(() => window.scrollX), "the one-viewport read must not move horizontally").toBe(0);
+});
+
+test("390px suppresses the sticky inquiry bar throughout the intersecting transaction section", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const paths = page.locator('#process[data-testid="transaction-paths"]');
+  const sticky = page.getByTestId("sticky-inquiry");
+
+  for (const scrollY of [845, 1000, 1400]) {
+    await page.evaluate((top) => window.scrollTo(0, top), scrollY);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollY);
+    await expect.poll(
+      () => paths.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+      }),
+      { message: `transaction paths must intersect at scrollY=${scrollY}` },
+    ).toBe(true);
+    await expect(sticky, `sticky inquiry must stay hidden at scrollY=${scrollY}`).toHaveAttribute("aria-hidden", "true");
+    await expect(sticky, `sticky inquiry must stay offscreen at scrollY=${scrollY}`).not.toHaveClass(/is-visible/);
+    await expect(sticky, `sticky inquiry must not receive taps at scrollY=${scrollY}`).toHaveCSS("pointer-events", "none");
+  }
 });
 
 test("390px visibly renders cases and the moved official destinations", async ({ page }) => {
@@ -979,6 +988,17 @@ test.describe("reduced motion", () => {
     await expect(sendFirstPanel).toBeVisible();
     await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
   });
+
+  test("keeps the mobile inquiry bar hidden over transaction paths", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.evaluate(() => window.scrollTo(0, 845));
+
+    const sticky = page.getByTestId("sticky-inquiry");
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(845);
+    await expect(sticky).toHaveAttribute("aria-hidden", "true");
+    await expect(sticky).not.toHaveClass(/is-visible/);
+  });
 });
 
 test("JavaScript-off desktop keeps both transaction paths visible", async ({ browser }) => {
@@ -997,6 +1017,7 @@ test("JavaScript-off desktop keeps both transaction paths visible", async ({ bro
   await expect(directVisitPanel).toBeVisible();
   await expect(sendFirstPanel).toBeVisible();
   await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
+  await expect(page.getByTestId("sticky-inquiry")).toHaveAttribute("aria-hidden", "true");
 
   await context.close();
 });
