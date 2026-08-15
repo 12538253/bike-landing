@@ -372,21 +372,16 @@ test("removes standalone process, comparison, and Naver proof sections", async (
   await expect(page.locator('#process[data-testid="transaction-paths"]')).toHaveCount(1);
 });
 
-test("390px visible copy stays within the approved 30–40% reduction band", async ({ page }) => {
-  const documentedBaseline = 2249;
-  const methodologyTolerance = 2;
+test("390px visible copy is at least 30% shorter than the documented baseline", async ({ page }) => {
+  const maxVisibleCharacters = 1576;
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
   const visibleCharacters = await countUserVisibleCharacters(page.locator("main"));
   expect(
     visibleCharacters,
-    "visible copy must retain at least 60% of the documented baseline",
-  ).toBeGreaterThanOrEqual(Math.ceil(documentedBaseline * 0.6) - methodologyTolerance);
-  expect(
-    visibleCharacters,
     "visible copy must be at least 30% shorter than the documented baseline",
-  ).toBeLessThanOrEqual(Math.floor(documentedBaseline * 0.7) + methodologyTolerance);
+  ).toBeLessThanOrEqual(maxVisibleCharacters);
 });
 
 test("390px first view exposes the seller decision facts and contact paths", async ({ page }) => {

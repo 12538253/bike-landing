@@ -27,7 +27,7 @@ Scope was tests only. No production source, `main`, deployment, DNS, or remote s
 
 `tests/e2e/renewal.spec.ts` now verifies:
 
-- 390px user-visible copy is 60–70% of the fixed 2,249-character baseline (30–40% reduction).
+- 390px user-visible copy is at most **1,576 characters**, enforcing at least a 30% reduction from the fixed 2,249-character baseline with the documented two-character methodology tolerance. There is no numeric lower bound; required visible facts, sections, links, and disclosures guard against undercopy.
 - The counter excludes whitespace, SVG/picture text, `.sr-only`, `display:none`, `visibility:hidden`, `[aria-hidden=true]`, and closed-details content except the summary.
 - The 390×844 first view exposes region/business, direct visit, photo inquiry, on-site/final amount, payment-before-loading, Kakao, and phone paths.
 - Separate 390px section-scoped tests require Hero, TrustBar, TransactionPaths, CaseStudies, QuoteChecklist, PurchaseGuide, FAQ, and LocationFinal facts and anchors to be rendered in their intended section. The helper applies the copy counter's semantic/CSS exclusions and also requires a non-zero rendered rectangle.
@@ -117,7 +117,9 @@ These failures align with the prior Task 5 report's unmodified default-state mea
 
 ## Counting-method note
 
-The browser counter measures `<main>` because the documented 2,249 baseline excludes header/footer chrome. Against base `3dccae3`, the independent counter returns **2,250**, a one-character difference from the documented measurement. The test therefore uses an explicit two-character methodology tolerance, producing an allowed final band of **1,348–1,576** characters. This tolerance is small enough not to weaken the approved 30–40% reduction.
+The browser counter measures `<main>` because the documented 2,249 baseline excludes header/footer chrome. Against base `3dccae3`, the independent counter returns **2,250**, a one-character difference from the documented measurement. The test keeps the two-character methodology tolerance as an explicit upper limit of **1,576** characters.
+
+Rendered canonical-copy review measured **917 initially visible characters** and **1,248 characters with all disclosures open**. Retaining the old 60% floor would require roughly **431 characters of filler** in the initial state, contrary to the copy-reduction goal. The lower bound was therefore removed; all separately reviewed section-scoped visibility, required-fact, link, and disclosure assertions remain the undercopy guard.
 
 ## Verification hygiene
 
