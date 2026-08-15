@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development task-by-task, write failing tests first, and request review at each checkpoint.
 
-**Goal:** 실제 사진과 두 갈래 거래 경로를 중심으로 기본 노출 문구를 30~40% 줄이고, 390px에서 10초 안에 업체·안심 근거·문의 방법을 이해하게 한다.
+**Goal:** 실제 사진과 두 갈래 거래 경로를 중심으로 기본 노출 문구를 최소 30% 줄이고, 390px에서 10초 안에 업체·안심 근거·문의 방법을 이해하게 한다. 필수 정보를 보존한 canonical copy가 더 짧다면 하한을 맞추기 위한 문구는 추가하지 않는다.
 
 **Architecture:** 기존 TransactionPaths를 유일한 거래 절차 설명으로 삼는다. ProcessStory, HonestComparison, NaverProof 독립 섹션을 제거하고 고유 정보만 CaseStudies·TransactionPaths·LocationFinal로 옮긴다. `content/site.ts`는 보이는 문구와 FAQ의 단일 정보원이다. CSS는 compact mobile layout과 intrinsic transaction height를 담당한다.
 
@@ -16,7 +16,7 @@
 
 - [ ] 제거할 세 독립 섹션과 ProcessStory가 현재 존재해 실패하는 테스트를 작성한다.
 - [ ] FAQ 3개, 이동한 블로그/플레이스 링크, 필수 사실 문자열, `#process` 목적지를 검사한다.
-- [ ] 390px 기본 노출 카피가 baseline 대비 30~40% 줄었는지 브라우저에서 계산한다.
+- [ ] 390px 기본 노출 카피가 baseline 대비 30% 이상 줄었는지 브라우저에서 계산하고, 필수 사실·링크·섹션이 실제로 보이는지 별도로 검사한다.
 - [ ] 960·1440px 양쪽 활성 상태에서 CTA containment, 44px, 상태 불변 높이, 다음 섹션 비겹침을 검사한다.
 - [ ] 200% 글자 크기와 320·390·768·960·1440px overflow를 검사한다.
 - [ ] 구현 전 예상 RED를 기록한다.
@@ -69,4 +69,3 @@
 - [ ] 기능 브랜치만 push한다.
 - [ ] GitHub Verify, Cloudflare branch preview 200/noindex, 새 이미지 응답을 확인한다.
 - [ ] `origin/main`, DNS, 운영 도메인은 변경하지 않는다.
-
