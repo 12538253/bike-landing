@@ -14,12 +14,9 @@ export default function TrustBar() {
         {site.trustPoints.map((point, index) => {
           const Icon = icons[index];
           return (
-            <div className="trust-point" key={point.title}>
+            <div className="trust-point" key={point}>
               <Icon aria-hidden="true" size={24} strokeWidth={1.8} />
-              <div>
-                <strong>{point.title}</strong>
-                <span>{point.description}</span>
-              </div>
+              <strong>{point}</strong>
             </div>
           );
         })}

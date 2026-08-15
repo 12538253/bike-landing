@@ -21,7 +21,7 @@ export default function Header() {
 
         <nav className="site-nav" aria-label="주요 메뉴">
           <a href="#cases">매입 사례</a>
-          <a href="#process">거래 절차</a>
+          <a href="#process">거래 경로</a>
           <a href="#faq">자주 묻는 질문</a>
         </nav>
 

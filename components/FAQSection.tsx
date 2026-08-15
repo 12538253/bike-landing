@@ -8,8 +8,7 @@ export default function FAQSection() {
       <div className="site-shell faq-layout">
         <div className="section-heading section-heading--left faq-heading">
           <p>자주 묻는 질문</p>
-          <h2 id="faq-title">문의 전에 궁금한 점부터 확인하세요</h2>
-          <span>답이 더 필요하다면 차량 사진과 함께 카카오톡으로 편하게 물어보세요.</span>
+          <h2 id="faq-title">문의할 때 많이 묻는 내용입니다</h2>
         </div>
         <div className="faq-list">
           {site.faq.map((item) => (

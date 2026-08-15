@@ -3,10 +3,7 @@ import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import HonestComparison from "@/components/HonestComparison";
 import LocationFinal from "@/components/LocationFinal";
-import NaverProof from "@/components/NaverProof";
-import ProcessSection from "@/components/ProcessSection";
 import PurchaseGuide from "@/components/PurchaseGuide";
 import QuoteChecklist from "@/components/QuoteChecklist";
 import TradeMethodComparison from "@/components/TradeMethodComparison";
@@ -19,13 +16,10 @@ export default function Home() {
       <main>
         <Hero />
         <TrustBar />
-        <QuoteChecklist />
-        <CaseStudies />
         <TradeMethodComparison />
-        <ProcessSection />
-        <HonestComparison />
+        <CaseStudies />
+        <QuoteChecklist />
         <PurchaseGuide />
-        <NaverProof />
         <FAQSection />
         <LocationFinal />
       </main>

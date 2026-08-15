@@ -15,15 +15,15 @@ export default function LocationFinal() {
           </span>
           <p>인천 오프라인 매장</p>
           <address>{site.address.short}</address>
-          <span>24시간 문의 가능 · 방문 전 연락</span>
+          <span>24시간 문의 접수 · 방문 전 연락</span>
           <a href={site.links.naverPlace} target="_blank" rel="noreferrer">
-            네이버 지도에서 위치 보기 <ArrowUpRight aria-hidden="true" size={17} />
+            네이버 지도에서 위치·리뷰 보기 <ArrowUpRight aria-hidden="true" size={17} />
           </a>
         </div>
 
         <div className="final-copy">
-          <p>사진으로 먼저 확인해 보세요</p>
-          <h2 id="final-title">바이크 사진을 보내주시면 예상 견적과 방문 가능 시간을 안내합니다</h2>
+          <p>사진부터 보내주세요</p>
+          <h2 id="final-title">예상 견적과 방문 가능 시간을 안내합니다</h2>
           <div className="final-copy__actions">
             <a
               className="button button--primary"
