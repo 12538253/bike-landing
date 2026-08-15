@@ -108,6 +108,125 @@ async function expectInactiveTransactionPathToBeUnavailable(panel: Locator) {
   ).toBe(true);
 }
 
+async function countUserVisibleCharacters(root: Locator) {
+  return root.evaluate((element) => {
+    const isExcluded = (node: Node) => {
+      let ancestor = node.parentElement;
+      while (ancestor && element.contains(ancestor)) {
+        if (ancestor.matches('svg, picture, script, style, noscript, .sr-only, [aria-hidden="true"]')) {
+          return true;
+        }
+
+        const closedDetails = ancestor.closest("details:not([open])");
+        if (closedDetails) {
+          const summary = closedDetails.querySelector(":scope > summary");
+          if (!summary?.contains(node)) return true;
+        }
+
+        const styles = getComputedStyle(ancestor);
+        if (styles.display === "none" || styles.visibility === "hidden" || styles.visibility === "collapse") {
+          return true;
+        }
+        if (ancestor === element) break;
+        ancestor = ancestor.parentElement;
+      }
+      return false;
+    };
+
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let visibleText = "";
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!isExcluded(node)) visibleText += node.textContent ?? "";
+    }
+    return visibleText.replace(/\s/gu, "").length;
+  });
+}
+
+async function expectMethodCtaContained(page: Page, label: string, hitTest: boolean) {
+  const cta = page.locator('[data-cta="method-kakao"]');
+  if (hitTest) {
+    await cta.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const nextScrollY = Math.max(0, window.scrollY + rect.bottom - window.innerHeight + 4);
+      window.scrollTo(0, nextScrollY);
+    });
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+  }
+
+  const geometry = await cta.evaluate((element, shouldHitTest) => {
+    const ctaRect = element.getBoundingClientRect();
+    const article = element.closest("article");
+    if (!article) throw new Error("expected the transaction CTA inside an article");
+
+    let effectiveTop = ctaRect.top;
+    let effectiveBottom = ctaRect.bottom;
+    const violations: string[] = [];
+    for (let ancestor: HTMLElement | null = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      const styles = getComputedStyle(ancestor);
+      const clips = [styles.overflowX, styles.overflowY].some((value) => value !== "visible");
+      if (ancestor === article || clips) {
+        const ancestorRect = ancestor.getBoundingClientRect();
+        effectiveTop = Math.max(effectiveTop, ancestorRect.top);
+        effectiveBottom = Math.min(effectiveBottom, ancestorRect.bottom);
+        if (
+          ctaRect.left < ancestorRect.left - 0.5
+          || ctaRect.right > ancestorRect.right + 0.5
+          || ctaRect.top < ancestorRect.top - 0.5
+          || ctaRect.bottom > ancestorRect.bottom + 0.5
+        ) {
+          violations.push(
+            `${ancestor.tagName.toLowerCase()}.${ancestor.className || "(no-class)"} `
+            + `[${styles.overflowX}/${styles.overflowY}]`,
+          );
+        }
+      }
+      if (ancestor === document.documentElement) break;
+    }
+
+    const bottomPoint = { x: ctaRect.left + ctaRect.width / 2, y: ctaRect.bottom - 2 };
+    const hit = shouldHitTest
+      && bottomPoint.x >= 0
+      && bottomPoint.x < window.innerWidth
+      && bottomPoint.y >= 0
+      && bottomPoint.y < window.innerHeight
+      ? document.elementFromPoint(bottomPoint.x, bottomPoint.y)
+      : null;
+
+    return {
+      height: ctaRect.height,
+      effectiveHeight: Math.max(0, effectiveBottom - effectiveTop),
+      hitTestable: !shouldHitTest || Boolean(hit && element.contains(hit)),
+      violations,
+    };
+  }, hitTest);
+
+  expect.soft(geometry.height, `${label}: the CTA layout box must be at least 44px`).toBeGreaterThanOrEqual(44);
+  expect.soft(geometry.effectiveHeight, `${label}: at least 44px of the CTA must remain usable`).toBeGreaterThanOrEqual(44);
+  expect.soft(geometry.violations, `${label}: the CTA must fit its article and clipping ancestors`).toEqual([]);
+  if (hitTest) expect.soft(geometry.hitTestable, `${label}: the CTA bottom inset must hit the link`).toBe(true);
+}
+
+async function waitForTransactionLayout(grid: Locator) {
+  await grid.evaluate(
+    (element) => new Promise<void>((resolve) => {
+      let previous = "";
+      let stableFrames = 0;
+      const sample = () => {
+        const tracked = [element, ...element.querySelectorAll("article, [data-cta='method-kakao']")];
+        const current = tracked.map((item) => {
+          const rect = item.getBoundingClientRect();
+          return [rect.left, rect.top, rect.width, rect.height].map((value) => value.toFixed(2)).join(":");
+        }).join("|");
+        stableFrames = current === previous ? stableFrames + 1 : 0;
+        previous = current;
+        if (stableFrames >= 5) resolve();
+        else requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    }),
+  );
+}
+
 test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -123,7 +242,7 @@ test("hero title keeps its two sentences in separate visual lines", async ({ pag
 });
 
 test("wide section headings do not gain avoidable extra lines", async ({ page }) => {
-  const headingIds = ["quote-title", "method-title", "process-title", "honest-title", "guide-title", "naver-title"];
+  const headingIds = ["method-title", "cases-title", "quote-title", "guide-title", "faq-title", "final-title"];
 
   await page.setViewportSize({ width: 1200, height: 900 });
   await page.goto("/");
@@ -142,31 +261,50 @@ test("wide section headings do not gain avoidable extra lines", async ({ page })
   }
 });
 
-test("process renders a compact 4/2/1 static rail", async ({ page }) => {
-  for (const { width, columns } of [
-    { width: 1440, columns: 4 },
-    { width: 768, columns: 2 },
-    { width: 390, columns: 1 },
+test("removes standalone process, comparison, and Naver proof sections", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByTestId("process-story")).toHaveCount(0);
+  await expect(page.locator(".process-step, #process-title")).toHaveCount(0);
+  await expect(page.locator(".honest-section, #honest-title")).toHaveCount(0);
+  await expect(page.locator(".naver-proof, #naver-title")).toHaveCount(0);
+  await expect(page.locator('#process[data-testid="transaction-paths"]')).toHaveCount(1);
+});
+
+test("390px visible copy stays within the approved 30–40% reduction band", async ({ page }) => {
+  const documentedBaseline = 2249;
+  const methodologyTolerance = 2;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const visibleCharacters = await countUserVisibleCharacters(page.locator("main"));
+  expect(
+    visibleCharacters,
+    "visible copy must retain at least 60% of the documented baseline",
+  ).toBeGreaterThanOrEqual(Math.ceil(documentedBaseline * 0.6) - methodologyTolerance);
+  expect(
+    visibleCharacters,
+    "visible copy must be at least 30% shorter than the documented baseline",
+  ).toBeLessThanOrEqual(Math.floor(documentedBaseline * 0.7) + methodologyTolerance);
+});
+
+test("390px first view exposes the seller decision facts and contact paths", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const heroText = (await page.locator("#top").innerText()).replace(/\s/gu, "");
+  for (const fact of ["인천·서울·경기", "직접", "사진", "현장", "최종금액", "입금확인후상차"]) {
+    expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
+  }
+
+  for (const locator of [
+    page.locator('[data-cta="hero-kakao"]'),
+    page.locator('[data-cta="header-phone"]'),
   ]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
-
-    const story = page.getByTestId("process-story");
-    await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
-    await expect(page.locator(".process-stage")).toHaveCount(0);
-    const steps = story.locator(".process-step");
-    await expect(steps).toHaveCount(4);
-    const boxes = await steps.evaluateAll((elements) =>
-      elements.map((element) => {
-        const { x, y, height } = element.getBoundingClientRect();
-        return { x, y, height };
-      }),
-    );
-
-    expect(new Set(boxes.map(({ x }) => Math.round(x))).size).toBe(columns);
-    if (columns === 4) {
-      expect((await story.boundingBox())?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(900);
-    }
+    const box = await locator.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box?.y ?? Number.POSITIVE_INFINITY).toBeLessThan(844);
+    expect((box?.y ?? -1) + (box?.height ?? 0)).toBeGreaterThan(0);
   }
 });
 
@@ -249,6 +387,95 @@ test("desktop transaction paths preview, pin, and prioritize keyboard focus", as
   await expect(pathsLine).toHaveAttribute("data-revealed", "true");
 });
 
+for (const width of [960, 1440]) {
+  test(`${width}px transaction states keep the CTA contained and the next section clear`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+
+    const paths = page.getByTestId("transaction-paths");
+    const grid = paths.locator(".transaction-paths__grid");
+    const directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+    const sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+    await expect(grid).toHaveAttribute("data-enhanced", "true");
+    await waitForTransactionLayout(grid);
+    const baselineHeight = (await grid.boundingBox())?.height ?? 0;
+    const expectStableHeight = async (label: string) => {
+      await waitForTransactionLayout(grid);
+      const height = (await grid.boundingBox())?.height ?? 0;
+      expect.soft(Math.abs(height - baselineHeight), `${width}px ${label} grid height delta`).toBeLessThanOrEqual(1);
+    };
+
+    await expectMethodCtaContained(page, `${width}px direct active`, true);
+
+    await sendFirst.hover();
+    await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+    await waitForTransactionLayout(grid);
+    await expectMethodCtaContained(page, `${width}px send-first hover active`, false);
+    await expectStableHeight("hover");
+
+    await page.mouse.move(0, 0);
+    await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+    await expectStableHeight("hover reset");
+
+    await sendFirst.click();
+    await page.mouse.move(0, 0);
+    await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+    await waitForTransactionLayout(grid);
+    await expectMethodCtaContained(page, `${width}px send-first click active`, false);
+    await expectStableHeight("click");
+
+    await directVisit.focus();
+    await directVisit.press("Space");
+    await page.locator('[data-cta="header-phone"]').focus();
+    await page.mouse.move(0, 0);
+    await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+    await waitForTransactionLayout(grid);
+    await expectMethodCtaContained(page, `${width}px direct Space active`, true);
+    await expectStableHeight("Space");
+
+    await sendFirst.focus();
+    await sendFirst.press("Enter");
+    await page.locator('[data-cta="header-phone"]').focus();
+    await page.mouse.move(0, 0);
+    await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+    await waitForTransactionLayout(grid);
+    await expectMethodCtaContained(page, `${width}px send-first Enter active`, false);
+    await expectStableHeight("Enter");
+
+    const nextSection = await paths.evaluate((element) => {
+      const next = element.nextElementSibling;
+      if (!next) return null;
+      return {
+        id: next.id,
+        pathsBottom: element.getBoundingClientRect().bottom,
+        nextTop: next.getBoundingClientRect().top,
+      };
+    });
+    expect.soft(nextSection, `${width}px transaction section must have a following section`).not.toBeNull();
+    expect.soft(nextSection?.pathsBottom ?? 0, `${width}px transaction section must not overlap its successor`)
+      .toBeLessThanOrEqual((nextSection?.nextTop ?? 0) + 1);
+    expect.soft(nextSection?.id).toBe("cases");
+  });
+}
+
+test("200% text at 960px keeps the transaction CTA contained without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 960, height: 900 });
+  await page.goto("/");
+  const grid = page.getByTestId("transaction-paths").locator(".transaction-paths__grid");
+  await expect(grid).toHaveAttribute("data-enhanced", "true");
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%";
+  });
+  await waitForTransactionLayout(grid);
+
+  await expectMethodCtaContained(page, "960px at 200% text", true);
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+});
+
 test("transaction paths restore the completed static fallback when motion preference changes", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 500 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -315,9 +542,13 @@ test("case studies use the featured and portrait layout at each breakpoint", asy
 test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 
-  for (const id of ["faq", "contact"]) {
+  for (const id of ["process", "faq", "contact"]) {
     await page.goto(`/#${id}`, { waitUntil: "networkidle" });
     const target = page.locator(`#${id}`);
+    if (id === "process") {
+      await expect(target).toHaveAttribute("data-testid", "transaction-paths");
+      await expect(target.locator("#method-title")).toHaveText("차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.");
+    }
     await waitForStablePosition(target);
     const top = await target.evaluate((element) => element.getBoundingClientRect().top);
     expect(top, `#${id} should clear the fixed header`).toBeGreaterThanOrEqual(72);
@@ -371,27 +602,6 @@ test("case cards load distinct local images", async ({ page }) => {
   }
 });
 
-test("mobile keeps every process step visible without scroll enhancement", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-
-  const story = page.getByTestId("process-story");
-  await story.scrollIntoViewIfNeeded();
-  await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
-  await expect(page.locator(".process-stage")).toHaveCount(0);
-
-  for (let index = 0; index < 4; index += 1) {
-    await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
-  }
-
-  const firstStep = await page.getByTestId("process-step-0").boundingBox();
-  const secondStep = await page.getByTestId("process-step-1").boundingBox();
-  expect(firstStep).not.toBeNull();
-  expect(secondStep).not.toBeNull();
-  expect(Math.abs((firstStep?.x ?? 0) - (secondStep?.x ?? 0))).toBeLessThan(2);
-  expect(secondStep?.y ?? 0).toBeGreaterThan((firstStep?.y ?? 0) + (firstStep?.height ?? 0));
-});
-
 test("mobile inquiry bar appears after the hero and hides at the final call to action", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -413,12 +623,7 @@ test.describe("reduced motion", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
-    const story = page.getByTestId("process-story");
-    await expect(story).not.toHaveAttribute("data-enhanced", /.+/);
-    await expect(page.locator(".process-stage")).toHaveCount(0);
-    for (let index = 0; index < 4; index += 1) {
-      await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
-    }
+    await expect(page.getByTestId("process-story")).toHaveCount(0);
     await expect(page.getByTestId("hero-copy")).toHaveCSS("animation-name", "none");
     await expect(page.getByTestId("hero-media")).toHaveCSS("animation-name", "none");
 
@@ -431,7 +636,7 @@ test.describe("reduced motion", () => {
   });
 });
 
-test("JavaScript-off desktop falls back to four static process cards", async ({ browser }) => {
+test("JavaScript-off desktop keeps both transaction paths visible", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     viewport: { width: 1440, height: 900 },
@@ -439,11 +644,7 @@ test("JavaScript-off desktop falls back to four static process cards", async ({ 
   const page = await context.newPage();
 
   await page.goto("/");
-  await expect(page.getByTestId("process-story")).not.toHaveAttribute("data-enhanced", /.+/);
-  await expect(page.locator(".process-stage")).toHaveCount(0);
-  for (let index = 0; index < 4; index += 1) {
-    await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
-  }
+  await expect(page.getByTestId("process-story")).toHaveCount(0);
 
   const paths = page.getByTestId("transaction-paths");
   const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
@@ -491,6 +692,7 @@ for (const viewport of [
   { width: 320, height: 700 },
   { width: 390, height: 844 },
   { width: 768, height: 900 },
+  { width: 960, height: 900 },
   { width: 1440, height: 900 },
 ]) {
   test(`${viewport.width}px has no horizontal overflow or undersized primary actions`, async ({ page }) => {

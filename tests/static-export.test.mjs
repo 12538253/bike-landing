@@ -34,12 +34,100 @@ test("renders the trust-first hero and trackable contact links", () => {
   assert.doesNotMatch(html, /224347789101/);
   assert.doesNotMatch(html, /224340255184/);
   assert.match(html, /https:\/\/m\.blog\.naver\.com\/bikemanager4949/);
-  assert.match(html, /처음 문의할 때 이 여덟 가지가 필요합니다/);
   assert.match(html, /하자 내역/);
   assert.match(html, /폐지 여부/);
   assert.match(html, /검사 여부/);
   assert.doesNotMatch(html, /naver-proof__mark[^>]*>N</);
   assert.doesNotMatch(html, /구독자 660/);
+});
+
+test("points #process at transaction paths and exports the approved section order", () => {
+  const transactionPaths = html.match(
+    /<section\b(?=[^>]*id="process")(?=[^>]*data-testid="transaction-paths")[^>]*>[\s\S]*?<\/section>/,
+  )?.[0];
+  assert.ok(transactionPaths, "expected #process to identify the transaction paths section");
+
+  const orderedMarkers = [
+    'id="top"',
+    'id="trust"',
+    'id="process"',
+    'id="cases"',
+    'id="quote-title"',
+    'id="guide-title"',
+    'id="faq"',
+    'id="contact"',
+  ];
+  const markerIndexes = orderedMarkers.map((marker) => html.indexOf(marker));
+  assert.ok(markerIndexes.every((index) => index >= 0), "expected every final landing section marker");
+  assert.deepEqual(
+    [...markerIndexes].sort((left, right) => left - right),
+    markerIndexes,
+    "expected the approved hero-to-contact section order",
+  );
+});
+
+test("omits standalone process, comparison, and Naver proof sections", () => {
+  assert.doesNotMatch(html, /data-testid="process-story"|class="[^"]*\bprocess-story\b/);
+  assert.doesNotMatch(html, /class="[^"]*\bprocess-step\b|id="process-title"/);
+  assert.doesNotMatch(html, /class="[^"]*\bhonest-(?:section|layout|grid|callout)\b|id="honest-title"/);
+  assert.doesNotMatch(html, /class="[^"]*\bnaver-proof(?:__[^" ]*)?\b|id="naver-title"/);
+  assert.doesNotMatch(html, /차량을 먼저 맡기지 않는 현장 거래 4단계/);
+  assert.doesNotMatch(html, /조금 더 받을지, 시간을 아낄지에 따라 선택이 달라집니다/);
+  assert.doesNotMatch(html, /공식 블로그에서 실제 매입 기록을 확인하세요/);
+});
+
+test("retains the approved short copy and seller decision facts", () => {
+  for (const requiredCopy of [
+    "인천·서울·경기 중고 바이크 방문 매입",
+    "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 현장에서 차량 상태와 최종 금액을 확인하고, 판매대금 입금 확인 후 상차합니다.",
+    "사진 견적은 예상 금액이며, 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "경력 10년 이상",
+    "24시간 문의 접수",
+    "직접 방문·현장 확인",
+    "입금 확인 후 상차",
+    "실제 매입 사진과 기록을 확인하세요",
+    "당시 차량 사진과 진행 내용은 각 원문에서 확인할 수 있습니다.",
+    "공식 블로그에서 더 많은 사례 보기",
+    "네이버 플레이스·리뷰 보기",
+    "사진과 8가지 정보만 보내주세요",
+    "밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요.",
+    "스쿠터부터 대형 바이크까지 상담합니다",
+    "차량 상태와 등록 정보를 확인한 뒤 매입 가능 여부와 필요한 서류를 안내합니다.",
+    "명의·서류가 다른 경우",
+    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 진행이 어렵거나 추가 서류가 필요할 수 있습니다.",
+    "예상 견적과 방문 가능 시간을 안내합니다",
+    "24시간 문의 접수 · 방문 전 연락",
+    "네이버 지도에서 위치·리뷰 보기",
+  ]) {
+    assert.ok(html.includes(requiredCopy), `expected required visible copy: ${requiredCopy}`);
+  }
+
+  for (const item of ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"]) {
+    assert.match(html, new RegExp(`>${item}<`), `expected quote item: ${item}`);
+  }
+});
+
+test("moves official blog and Naver Place links into case studies", () => {
+  const casesSection = html.match(/<section\b(?=[^>]*id="cases")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(casesSection, "expected the case studies section");
+  assert.match(casesSection, /data-cta="naver-proof"/);
+  assert.match(casesSection, /href="https:\/\/m\.blog\.naver\.com\/bikemanager4949"/);
+  assert.match(casesSection, /href="https:\/\/naver\.me\/F1rPbAcV"/);
+  assert.doesNotMatch(casesSection, /공식 블로그 사례|원문과 사진 보기/);
+  assert.equal(casesSection.split("원문 보기").length - 1, 3, "expected one concise link per case");
+});
+
+test("exports exactly three FAQ details plus one purchase-guide details", () => {
+  const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(faqSection, "expected the FAQ section");
+  const faqQuestions = [
+    "사진 견적이 최종 금액인가요?",
+    "24시간 바로 방문하나요?",
+    "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
+  ];
+  assert.equal([...faqSection.matchAll(/<details\b/g)].length, 3, "expected exactly three FAQ details");
+  assert.equal([...html.matchAll(/<details\b/g)].length, 4, "expected one separate purchase-guide details");
+  for (const question of faqQuestions) assert.match(faqSection, new RegExp(question.replace("?", "\\?")));
 });
 
 test("orders case studies around the core scooter customer", () => {
@@ -77,15 +165,13 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   const transactionText = textContent(transactionPaths);
   const heading = "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.";
   const introduction =
-    "차량이 내 손을 떠나는 시점에 따라 확인해야 할 조건이 달라집니다. 바이크매니저는 약속한 장소로 직접 방문해 차량 상태와 최종 금액을 함께 확인합니다.";
+    "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.";
   const directVisitTitle = "바이크매니저 직접 방문";
   const sendFirstTitle = "차량을 먼저 보내는 방식";
-  const directVisitEyebrow = "현장에서 확인";
-  const sendFirstEyebrow = "출발 전에 확인";
   const directVisitDescription =
-    "바이크매니저는 약속한 장소에서 차량을 함께 확인하고, 최종 금액과 계약 내용을 안내한 뒤 입금 확인 후 상차합니다.";
+    "약속한 장소에서 차량을 함께 확인하고, 최종 금액 안내와 입금 확인을 마친 뒤 상차합니다.";
   const sendFirstDescription =
-    "차량을 먼저 보내는 거래라면 출발 전에 최종 금액, 감가 기준, 반환 조건과 운임 부담을 확인하세요.";
+    "차량을 먼저 보낸다면 출발 전에 최종 금액, 감가 기준, 반환 조건과 왕복 운임을 확인하세요.";
   const pathArticles = [...transactionPaths.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(
     ([, article]) => article,
   );
@@ -122,34 +208,23 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.equal(countText(transactionPaths, heading), 1, "expected one transaction paths heading");
   assert.equal(countText(transactionPaths, introduction), 1, "expected one transaction paths introduction");
   assert.equal(countText(directVisit, directVisitTitle), 1, "expected direct visit copy once");
-  assert.equal(countText(directVisit, directVisitEyebrow), 1, "expected one direct-visit eyebrow");
   assert.equal(countText(directVisit, directVisitDescription), 1, "expected direct visit description once");
   assert.equal(countText(sendFirst, sendFirstTitle), 1, "expected send-first copy once");
-  assert.equal(countText(sendFirst, sendFirstEyebrow), 1, "expected one send-first eyebrow");
   assert.equal(countText(sendFirst, sendFirstDescription), 1, "expected send-first description once");
-  assert.ok(
-    textContent(directVisit).indexOf(directVisitEyebrow) < textContent(directVisit).indexOf(directVisitTitle),
-    "expected the direct-visit eyebrow to label its path title",
-  );
-  assert.ok(
-    textContent(sendFirst).indexOf(sendFirstEyebrow) < textContent(sendFirst).indexOf(sendFirstTitle),
-    "expected the send-first eyebrow to label its path title",
-  );
   assert.ok(textContent(directVisit).includes("입금 확인"), "expected the payment-confirmation card copy");
-  assert.equal(countText(directVisit, "확인 후 상차"), 1, "expected one loading-confirmation card copy");
-  assert.equal(countText(directVisit, "사진 보내고 방문 일정 확인"), 1, "expected one direct-visit CTA");
+  assert.equal(countText(transactionPaths, "개인 거래는 가격 면에서 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다."), 1);
   assertOrderedSteps(
     directVisit,
     directVisitTitle,
     directVisitDescription,
-    ["방문 일정 조율", "현장에서 함께 검수", "최종 금액 확인", "입금 확인", "상차"],
+    ["방문 일정", "현장 확인", "최종 금액", "입금 확인", "상차"],
     "direct visit",
   );
   assertOrderedSteps(
     sendFirst,
     sendFirstTitle,
     sendFirstDescription,
-    ["출발 전 최종 금액과 감가 기준 확인", "금액 변경 시 반환 조건 확인", "왕복 운임 부담 확인"],
+    ["최종 금액·감가 기준", "반환 조건", "왕복 운임"],
     "send first",
   );
   assert.ok(
