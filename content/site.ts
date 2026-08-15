@@ -3,7 +3,8 @@ export type CtaId =
   | "header-phone"
   | "sticky-kakao"
   | "final-phone"
-  | "naver-proof";
+  | "naver-proof"
+  | "method-kakao";
 
 export type ContactLink = Readonly<{
   label: string;
@@ -13,6 +14,7 @@ export type ContactLink = Readonly<{
 }>;
 
 export type CaseStudy = Readonly<{
+  layout: "featured" | "portrait";
   region: string;
   model: string;
   summary: string;
@@ -37,7 +39,24 @@ export type ProcessStep = Readonly<{
   imagePosition: string;
 }>;
 
+export type TransactionPathKey = "directVisit" | "sendFirst";
+
+export type TransactionPath = Readonly<{
+  title: string;
+  steps: readonly string[];
+  description: string;
+  image: string;
+  imageAlt: string;
+  imagePosition: string;
+  confirmation?: Readonly<{
+    label: string;
+    detail: string;
+  }>;
+  cta?: ContactLink;
+}>;
+
 const phoneNumber = "010-7616-4949";
+const kakaoChatUrl = "https://pf.kakao.com/_MzgSn/chat";
 const naverPlaceUrl = "https://naver.me/F1rPbAcV";
 const officialBlogUrl = "https://m.blog.naver.com/bikemanager4949";
 
@@ -61,7 +80,7 @@ export const site = {
     copyrightYear: "2026",
   },
   links: {
-    kakao: "https://pf.kakao.com/_MzgSn/chat",
+    kakao: kakaoChatUrl,
     naverPlace: naverPlaceUrl,
     officialBlog: officialBlogUrl,
   },
@@ -94,7 +113,7 @@ export const site = {
   contact: {
     heroKakao: {
       label: "카카오톡으로 사진 보내기",
-      href: "https://pf.kakao.com/_MzgSn/chat",
+      href: kakaoChatUrl,
       ctaId: "hero-kakao",
       external: true,
     } satisfies ContactLink,
@@ -105,7 +124,7 @@ export const site = {
     } satisfies ContactLink,
     stickyKakao: {
       label: "카카오톡 문의",
-      href: "https://pf.kakao.com/_MzgSn/chat",
+      href: kakaoChatUrl,
       ctaId: "sticky-kakao",
       external: true,
     } satisfies ContactLink,
@@ -121,6 +140,36 @@ export const site = {
       external: true,
     } satisfies ContactLink,
   },
+  tradePaths: {
+    directVisit: {
+      title: "바이크매니저 직접 방문",
+      steps: ["방문 일정 조율", "현장에서 함께 검수", "최종 금액 확인", "입금 확인", "상차"],
+      description:
+        "바이크매니저는 약속한 장소에서 차량을 함께 확인하고, 최종 금액과 계약 내용을 안내한 뒤 입금 확인 후 상차합니다.",
+      image: "/images/routes/direct-visit.webp",
+      imageAlt: "늦은 저녁 바이크매니저 차량에 상차되는 혼다 ADV350 스쿠터",
+      imagePosition: "center center",
+      confirmation: {
+        label: "입금 확인",
+        detail: "확인 후 상차",
+      },
+      cta: {
+        label: "사진 보내고 방문 일정 확인",
+        href: kakaoChatUrl,
+        ctaId: "method-kakao",
+        external: true,
+      } satisfies ContactLink,
+    } satisfies TransactionPath,
+    sendFirst: {
+      title: "차량을 먼저 보내는 방식",
+      steps: ["출발 전 최종 금액과 감가 기준 확인", "금액 변경 시 반환 조건 확인", "왕복 운임 부담 확인"],
+      description:
+        "차량을 먼저 보내는 거래라면 출발 전에 최종 금액, 감가 기준, 반환 조건과 운임 부담을 확인하세요.",
+      image: "/images/routes/send-first.webp",
+      imageAlt: "측면에서 본 회색 혼다 PCX125 스쿠터",
+      imagePosition: "center center",
+    } satisfies TransactionPath,
+  } satisfies Readonly<Record<TransactionPathKey, TransactionPath>>,
   trustPoints: [
     // Public source for the confirmed career claim: https://m.blog.naver.com/bikemanager4949
     {
@@ -152,6 +201,7 @@ export const site = {
   ],
   cases: [
     {
+      layout: "featured",
       region: "서울 은평구",
       model: "ADV350",
       summary:
@@ -163,6 +213,7 @@ export const site = {
       imagePosition: "60% center",
     },
     {
+      layout: "portrait",
       region: "인천 부평",
       model: "PCX125",
       summary: "인천 부평에서 PCX125를 직접 확인한 방문 매입 사례입니다.",
@@ -173,6 +224,7 @@ export const site = {
       imagePosition: "center 48%",
     },
     {
+      layout: "portrait",
       region: "부천",
       model: "아이언883",
       summary: "부천에서 아이언883을 확인한 방문 매입 사례입니다.",
