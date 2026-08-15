@@ -5,14 +5,20 @@ type Rgb = readonly [number, number, number];
 const faqAnswerContracts = [
   {
     question: "사진 견적이 최종 금액인가요?",
-    facts: ["사진 견적은 예상 금액", "현장 상태", "최종 금액", "판매자가", "동의"],
+    answer:
+      "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
+    facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
   },
   {
     question: "24시간 바로 방문하나요?",
+    answer:
+      "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
     facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
   },
   {
-    question: "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
+    question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+    answer:
+      "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
     facts: ["등록 상태", "본인 소유", "서류"],
   },
 ] as const;
@@ -333,12 +339,12 @@ test("hero title keeps its two sentences in separate visual lines", async ({ pag
   await page.goto("/");
 
   const desktopLines = await renderedLines(page.locator(".hero h1"));
-  expect(desktopLines.some((line) => line.includes("됩니다.직접"))).toBe(false);
+  expect(desktopLines.some((line) => line.includes("없습니다.약속한"))).toBe(false);
   expect(desktopLines.length).toBeLessThanOrEqual(3);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileLines = await renderedLines(page.locator(".hero h1"));
-  expect(mobileLines.some((line) => line.includes("됩니다.직접"))).toBe(false);
+  expect(mobileLines.some((line) => line.includes("없습니다.약속한"))).toBe(false);
   expect(mobileLines.length).toBeLessThanOrEqual(4);
 });
 
@@ -389,7 +395,7 @@ test("390px first view exposes the seller decision facts and contact paths", asy
   await page.goto("/");
 
   const heroText = (await page.locator("#top").innerText()).replace(/\s/gu, "");
-  for (const fact of ["인천·서울·경기", "직접", "사진", "현장", "최종금액", "입금확인후상차"]) {
+  for (const fact of ["인천·서울·경기", "찾아가", "사진", "현장", "최종금액", "판매대금전액", "상차"]) {
     expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
   }
 
@@ -411,8 +417,10 @@ test("390px visibly renders the approved hero facts and contact links", async ({
 
   for (const copy of [
     "인천·서울·경기 중고 바이크 방문 매입",
-    "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 현장에서 차량 상태와 최종 금액을 확인하고, 판매대금 입금 확인 후 상차합니다.",
-    "사진 견적은 예상 금액이며, 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "바이크를 먼저 보내실 필요 없습니다.",
+    "약속한 장소로 찾아가 현장에서 거래합니다.",
+    "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
+    "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
   ]) {
     await expectUserVisible(hero.getByText(copy, { exact: true }), `hero copy: ${copy}`);
   }
@@ -445,13 +453,13 @@ test("390px visibly renders both transaction paths and their decision facts", as
     "최종 금액",
     "입금 확인",
     "상차",
-    "약속한 장소에서 차량을 함께 확인하고, 최종 금액 안내와 입금 확인을 마친 뒤 상차합니다.",
+    "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.",
     "차량을 먼저 보내는 방식",
     "최종 금액·감가 기준",
     "반환 조건",
     "왕복 운임",
-    "차량을 먼저 보낸다면 출발 전에 최종 금액, 감가 기준, 반환 조건과 왕복 운임을 확인하세요.",
-    "개인 거래는 가격 면에서 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
+    "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.",
+    "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
   ]) {
     await expectUserVisible(paths.getByText(copy, { exact: true }), `transaction copy: ${copy}`);
   }
@@ -464,8 +472,8 @@ test("390px visibly renders cases and the moved official destinations", async ({
   const cases = page.locator("#cases");
 
   for (const copy of [
-    "실제 매입 사진과 기록을 확인하세요",
-    "당시 차량 사진과 진행 내용은 각 원문에서 확인할 수 있습니다.",
+    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
     "ADV350",
     "PCX125",
     "아이언883",
@@ -488,8 +496,8 @@ test("390px visibly renders the quote checklist facts", async ({ page }) => {
   const quote = page.getByTestId("quote-checklist");
 
   for (const copy of [
-    "사진과 8가지 정보만 보내주세요",
-    "밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요.",
+    "사진과 기본 정보 8가지만 보내주세요.",
+    "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
     "기종",
     "연식",
     "주행거리",
@@ -509,8 +517,8 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   const guide = page.locator('section[aria-labelledby="guide-title"]');
 
   for (const copy of [
-    "스쿠터부터 대형 바이크까지 상담합니다",
-    "차량 상태와 등록 정보를 확인한 뒤 매입 가능 여부와 필요한 서류를 안내합니다.",
+    "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
   ]) {
     await expectUserVisible(guide.getByText(copy, { exact: true }), `guide copy: ${copy}`);
   }
@@ -524,12 +532,15 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   await expect(details).toHaveAttribute("open", "");
   await expectUserVisible(details, "opened purchase guide disclosure");
   const answerText = await visibleDetailsContent(details, "purchase guide answer");
+  expect(answerText).toBe(
+    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
+  );
   for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "추가 확인"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
 });
 
-for (const { question, facts } of faqAnswerContracts) {
+for (const { question, answer: expectedAnswer, facts } of faqAnswerContracts) {
   test(`390px opens the FAQ and renders its core facts in at most two sentences: ${question}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
@@ -543,6 +554,7 @@ for (const { question, facts } of faqAnswerContracts) {
     await expect(details).toHaveAttribute("open", "");
     await expectUserVisible(details, `opened FAQ disclosure: ${question}`);
     const answerText = await visibleDetailsContent(details, `FAQ answer: ${question}`);
+    expect(answerText, `canonical FAQ answer: ${question}`).toBe(expectedAnswer);
     for (const fact of facts) expect(answerText, `FAQ answer fact: ${fact}`).toContain(fact);
 
     const terminators = answerText.match(/[.!?。！？]/gu) ?? [];
@@ -558,7 +570,7 @@ test("390px visibly renders the final location facts and links", async ({ page }
   await page.goto("/");
   const location = page.locator("#contact");
 
-  for (const copy of ["예상 견적과 방문 가능 시간을 안내합니다", "24시간 문의 접수 · 방문 전 연락"]) {
+  for (const copy of ["예상 견적과 방문 가능한 시간을 알려드립니다.", "24시간 문의 접수 · 방문 전 연락"]) {
     await expectUserVisible(location.getByText(copy, { exact: true }), `location copy: ${copy}`);
   }
   const map = location.getByRole("link", { name: "네이버 지도에서 위치·리뷰 보기", exact: true });
@@ -659,6 +671,19 @@ for (const width of [960, 1440]) {
     await expect(grid).toHaveAttribute("data-enhanced", "true");
     await waitForTransactionLayout(grid);
     const baselineHeight = (await grid.boundingBox())?.height ?? 0;
+    const directArticle = grid.locator(".transaction-path--directVisit");
+    const sendFirstArticle = grid.locator(".transaction-path--sendFirst");
+    const articleWidths = async () => ({
+      direct: (await directArticle.boundingBox())?.width ?? 0,
+      sendFirst: (await sendFirstArticle.boundingBox())?.width ?? 0,
+    });
+    const initialWidths = await articleWidths();
+    if (width === 960) {
+      expect(Math.abs(initialWidths.direct - initialWidths.sendFirst), "960px paths stay equal width").toBeLessThanOrEqual(1);
+    } else {
+      expect(initialWidths.direct / initialWidths.sendFirst, "1440px direct path receives 1.12/.88 emphasis")
+        .toBeCloseTo(1.12 / 0.88, 1);
+    }
     const expectStableHeight = async (label: string) => {
       await waitForTransactionLayout(grid);
       const height = (await grid.boundingBox())?.height ?? 0;
@@ -670,6 +695,13 @@ for (const width of [960, 1440]) {
     await sendFirst.hover();
     await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
     await waitForTransactionLayout(grid);
+    const hoverWidths = await articleWidths();
+    if (width === 960) {
+      expect(Math.abs(hoverWidths.direct - hoverWidths.sendFirst), "960px hover stays equal width").toBeLessThanOrEqual(1);
+    } else {
+      expect(hoverWidths.sendFirst / hoverWidths.direct, "1440px send-first hover reverses 1.12/.88 emphasis")
+        .toBeCloseTo(1.12 / 0.88, 1);
+    }
     await expectMethodCtaContained(page, `${width}px send-first hover active`, false);
     await expectStableHeight("hover");
 

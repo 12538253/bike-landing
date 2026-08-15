@@ -116,7 +116,7 @@ address {
 }
 
 section[id] {
-  scroll-margin-top: var(--header-height);
+  scroll-margin-top: calc(var(--header-height) + 1px);
 }
 
 .site-shell {
@@ -899,6 +899,20 @@ section[id] {
 
   .transaction-paths__grid[data-enhanced="true"] .transaction-path[data-active="false"] .transaction-path__media img {
     filter: saturate(0.45) contrast(1.04) brightness(0.54);
+  }
+}
+
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .transaction-paths__grid[data-enhanced="true"] .transaction-path__panel > p {
+    max-width: 26rem;
+  }
+
+  .transaction-paths__grid[data-enhanced="true"][data-active-path="directVisit"] {
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  }
+
+  .transaction-paths__grid[data-enhanced="true"][data-active-path="sendFirst"] {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
   }
 }
 

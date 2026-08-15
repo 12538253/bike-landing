@@ -13,26 +13,26 @@ export default function LocationFinal() {
           <span className="final-location__icon">
             <MapPin aria-hidden="true" size={25} />
           </span>
-          <p>인천 오프라인 매장</p>
+          <p>{site.locationSection.storeLabel}</p>
           <address>{site.address.short}</address>
-          <span>24시간 문의 접수 · 방문 전 연락</span>
-          <a href={site.links.naverPlace} target="_blank" rel="noreferrer">
-            네이버 지도에서 위치·리뷰 보기 <ArrowUpRight aria-hidden="true" size={17} />
+          <span>{site.locationSection.hours}</span>
+          <a href={site.locationSection.mapLink.href} target="_blank" rel="noreferrer">
+            {site.locationSection.mapLink.label} <ArrowUpRight aria-hidden="true" size={17} />
           </a>
         </div>
 
         <div className="final-copy">
-          <p>사진부터 보내주세요</p>
-          <h2 id="final-title">예상 견적과 방문 가능 시간을 안내합니다</h2>
+          <p>{site.locationSection.eyebrow}</p>
+          <h2 id="final-title">{site.locationSection.title}</h2>
           <div className="final-copy__actions">
             <a
               className="button button--primary"
-              href={site.links.kakao}
+              href={site.contact.heroKakao.href}
               target="_blank"
               rel="noreferrer"
             >
               <MessageCircle aria-hidden="true" size={20} />
-              카카오톡으로 사진 보내기
+              {site.contact.heroKakao.label}
             </a>
             <a className="button button--ghost" href={phone.href} data-cta={phone.ctaId}>
               <Phone aria-hidden="true" size={19} />

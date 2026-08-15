@@ -13,9 +13,9 @@ export default function CaseStudies() {
     <section className="section section--ink" id="cases" aria-labelledby="cases-title">
       <div className="site-shell">
         <div className="section-heading section-heading--light">
-          <p>실제 매입 사례</p>
-          <h2 id="cases-title">실제 매입 사진과 기록을 확인하세요</h2>
-          <span>당시 차량 사진과 진행 내용은 각 원문에서 확인할 수 있습니다.</span>
+          <p>{site.caseStudySection.eyebrow}</p>
+          <h2 id="cases-title">{site.caseStudySection.title}</h2>
+          <span>{site.caseStudySection.description}</span>
         </div>
 
         <div className="case-grid">
@@ -47,7 +47,7 @@ export default function CaseStudies() {
                   ) : null}
                   <span className="case-card__link">
                     <span className="sr-only">{caseStudy.sourceLabel}. </span>
-                    원문 보기 <ArrowUpRight aria-hidden="true" size={17} />
+                    {site.caseStudySection.cardLinkLabel} <ArrowUpRight aria-hidden="true" size={17} />
                   </span>
                 </div>
               </a>
@@ -56,15 +56,15 @@ export default function CaseStudies() {
         </div>
         <div className="case-links">
           <a
-            href={site.contact.naverProof.href}
-            data-cta={site.contact.naverProof.ctaId}
+            href={site.caseStudySection.indexLink.href}
+            data-cta={site.caseStudySection.indexLink.ctaId}
             target="_blank"
             rel="noreferrer"
           >
-            {site.contact.naverProof.label} <ArrowUpRight aria-hidden="true" size={17} />
+            {site.caseStudySection.indexLink.label} <ArrowUpRight aria-hidden="true" size={17} />
           </a>
-          <a href={site.links.naverPlace} target="_blank" rel="noreferrer">
-            네이버 플레이스·리뷰 보기 <ArrowUpRight aria-hidden="true" size={17} />
+          <a href={site.caseStudySection.placeLink.href} target="_blank" rel="noreferrer">
+            {site.caseStudySection.placeLink.label} <ArrowUpRight aria-hidden="true" size={17} />
           </a>
         </div>
       </div>

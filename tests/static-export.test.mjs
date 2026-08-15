@@ -35,14 +35,20 @@ const disclosureParts = (detailsMarkup) => {
 const faqAnswerContracts = [
   {
     question: "사진 견적이 최종 금액인가요?",
-    facts: ["사진 견적은 예상 금액", "현장 상태", "최종 금액", "판매자가", "동의"],
+    answer:
+      "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
+    facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
   },
   {
     question: "24시간 바로 방문하나요?",
+    answer:
+      "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
     facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
   },
   {
-    question: "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
+    question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+    answer:
+      "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
     facts: ["등록 상태", "본인 소유", "서류"],
   },
 ];
@@ -58,7 +64,7 @@ test("exports the approved contact and canonical metadata", () => {
 });
 
 test("renders the trust-first hero and trackable contact links", () => {
-  assert.match(html, /바이크를 먼저 보내지 않아도 됩니다/);
+  assert.match(html, /바이크를 먼저 보내실 필요 없습니다/);
   assert.match(html, /data-cta="hero-kakao"/);
   assert.match(html, /data-cta="header-phone"/);
   assert.match(html, /data-cta="sticky-kakao"/);
@@ -117,23 +123,25 @@ test("omits standalone process, comparison, and Naver proof sections", () => {
 test("retains the approved short copy and seller decision facts", () => {
   for (const requiredCopy of [
     "인천·서울·경기 중고 바이크 방문 매입",
-    "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 현장에서 차량 상태와 최종 금액을 확인하고, 판매대금 입금 확인 후 상차합니다.",
-    "사진 견적은 예상 금액이며, 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "바이크를 먼저 보내실 필요 없습니다.",
+    "약속한 장소로 찾아가 현장에서 거래합니다.",
+    "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
+    "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
     "경력 10년 이상",
     "24시간 문의 접수",
     "직접 방문·현장 확인",
     "입금 확인 후 상차",
-    "실제 매입 사진과 기록을 확인하세요",
-    "당시 차량 사진과 진행 내용은 각 원문에서 확인할 수 있습니다.",
+    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
     "공식 블로그에서 더 많은 사례 보기",
     "네이버 플레이스·리뷰 보기",
-    "사진과 8가지 정보만 보내주세요",
-    "밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요.",
-    "스쿠터부터 대형 바이크까지 상담합니다",
-    "차량 상태와 등록 정보를 확인한 뒤 매입 가능 여부와 필요한 서류를 안내합니다.",
+    "사진과 기본 정보 8가지만 보내주세요.",
+    "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
+    "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
     "명의·서류가 다른 경우",
-    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 진행이 어렵거나 추가 서류가 필요할 수 있습니다.",
-    "예상 견적과 방문 가능 시간을 안내합니다",
+    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
+    "예상 견적과 방문 가능한 시간을 알려드립니다.",
     "24시간 문의 접수 · 방문 전 연락",
     "네이버 지도에서 위치·리뷰 보기",
   ]) {
@@ -142,6 +150,48 @@ test("retains the approved short copy and seller decision facts", () => {
 
   for (const item of ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"]) {
     assert.match(html, new RegExp(`>${item}<`), `expected quote item: ${item}`);
+  }
+});
+
+test("sources canonical landing section copy from typed site content", async () => {
+  const componentUrls = [
+    "../components/Header.tsx",
+    "../components/Hero.tsx",
+    "../components/TrustBar.tsx",
+    "../components/TradeMethodComparison.tsx",
+    "../components/CaseStudies.tsx",
+    "../components/QuoteChecklist.tsx",
+    "../components/PurchaseGuide.tsx",
+    "../components/FAQSection.tsx",
+    "../components/LocationFinal.tsx",
+  ];
+  const [siteSource, ...componentSources] = await Promise.all([
+    readFile(new URL("../content/site.ts", import.meta.url), "utf8"),
+    ...componentUrls.map((path) => readFile(new URL(path, import.meta.url), "utf8")),
+  ]);
+  const componentSource = componentSources.join("\n");
+  const canonicalCopies = [
+    "두 갈래 거래 경로",
+    "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
+    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "원문 보기",
+    "견적 준비",
+    "사진과 기본 정보 8가지만 보내주세요.",
+    "매입 가능 범위",
+    "명의·서류가 다른 경우",
+    "자주 묻는 질문",
+    "문의할 때 많이 묻는 내용입니다.",
+    "인천 오프라인 매장",
+    "24시간 문의 접수 · 방문 전 연락",
+    "네이버 지도에서 위치·리뷰 보기",
+    "사진부터 보내주세요.",
+    "카카오톡으로 사진 보내기",
+    "전화로 상담하기",
+  ];
+
+  for (const copy of canonicalCopies) {
+    assert.ok(siteSource.includes(copy), `expected site.ts to own canonical copy: ${copy}`);
+    assert.ok(!componentSource.includes(copy), `expected components to render canonical copy from site.ts: ${copy}`);
   }
 });
 
@@ -187,7 +237,7 @@ test("keeps purchase-guide facts in its native disclosure content", () => {
   }
 });
 
-for (const { question, facts } of faqAnswerContracts) {
+for (const { question, answer: expectedAnswer, facts } of faqAnswerContracts) {
   test(`keeps the core facts and two-sentence limit for FAQ: ${question}`, () => {
     const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
     assert.ok(faqSection, "expected the FAQ section");
@@ -197,6 +247,7 @@ for (const { question, facts } of faqAnswerContracts) {
     assert.ok(disclosure, `expected native FAQ details for: ${question}`);
 
     const answer = disclosure.content;
+    assert.equal(answer, expectedAnswer, `expected canonical FAQ answer: ${question}`);
     for (const fact of facts) assert.ok(answer.includes(fact), `expected "${fact}" in answer: ${question}`);
 
     const terminators = answer.match(/[.!?。！？]/gu) ?? [];
@@ -233,9 +284,9 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   const directVisitTitle = "바이크매니저 직접 방문";
   const sendFirstTitle = "차량을 먼저 보내는 방식";
   const directVisitDescription =
-    "약속한 장소에서 차량을 함께 확인하고, 최종 금액 안내와 입금 확인을 마친 뒤 상차합니다.";
+    "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.";
   const sendFirstDescription =
-    "차량을 먼저 보낸다면 출발 전에 최종 금액, 감가 기준, 반환 조건과 왕복 운임을 확인하세요.";
+    "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.";
   const pathArticles = [...transactionPaths.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(
     ([, article]) => article,
   );
@@ -276,7 +327,7 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.equal(countText(sendFirst, sendFirstTitle), 1, "expected send-first copy once");
   assert.equal(countText(sendFirst, sendFirstDescription), 1, "expected send-first description once");
   assert.ok(textContent(directVisit).includes("입금 확인"), "expected the payment-confirmation card copy");
-  assert.equal(countText(transactionPaths, "개인 거래는 가격 면에서 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다."), 1);
+  assert.equal(countText(transactionPaths, "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다."), 1);
   assertOrderedSteps(
     directVisit,
     directVisitTitle,

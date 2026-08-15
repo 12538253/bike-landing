@@ -8,12 +8,12 @@ export default function QuoteChecklist() {
       <div className="site-shell quote-layout">
         <div className="quote-layout__content">
           <div className="section-heading section-heading--left">
-            <p>견적 준비</p>
-            <h2 id="quote-title">사진과 8가지 정보만 보내주세요</h2>
-            <span>밝은 곳에서 전체 모습과 하자 부위를 가까이 찍어주세요.</span>
+            <p>{site.quoteSection.eyebrow}</p>
+            <h2 id="quote-title">{site.quoteSection.title}</h2>
+            <span>{site.quoteSection.description}</span>
           </div>
           <ul className="quote-list">
-            {site.quoteItems.map((item, index) => (
+            {site.quoteSection.items.map((item, index) => (
               <li key={item}>
                 <span className="quote-list__number">{String(index + 1).padStart(2, "0")}</span>
                 <span>{item}</span>

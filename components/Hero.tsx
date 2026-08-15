@@ -47,9 +47,9 @@ export default function Hero() {
               <MessageCircle aria-hidden="true" size={20} />
               {kakao.label}
             </a>
-            <a className="button button--ghost" href={site.phone.href}>
+            <a className="button button--ghost" href={site.contact.finalPhone.href}>
               <Phone aria-hidden="true" size={19} />
-              전화로 상담하기
+              {site.contact.finalPhone.label}
             </a>
           </div>
 
@@ -57,7 +57,7 @@ export default function Hero() {
         </div>
 
         <a className="hero__scroll" href="#trust" aria-label="신뢰 근거 보기">
-          <span>거래 원칙 확인하기</span>
+          <span>{site.hero.scrollLabel}</span>
           <ArrowDown aria-hidden="true" size={18} />
         </a>
       </div>

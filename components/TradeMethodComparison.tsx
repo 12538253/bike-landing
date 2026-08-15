@@ -11,14 +11,12 @@ export default function TradeMethodComparison() {
     >
       <div className="site-shell">
         <div className="section-heading section-heading--light transaction-paths-heading">
-          <p>두 갈래 거래 경로</p>
+          <p>{site.tradePathSection.eyebrow}</p>
           <h2 id="method-title">{site.tradePathSection.title}</h2>
           <span>{site.tradePathSection.description}</span>
         </div>
         <TransactionPaths paths={site.tradePaths} />
-        <p className="transaction-paths__note">
-          개인 거래는 가격 면에서 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.
-        </p>
+        <p className="transaction-paths__note">{site.tradePathSection.note}</p>
       </div>
     </section>
   );

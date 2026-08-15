@@ -13,6 +13,17 @@ export type ContactLink = Readonly<{
   external?: boolean;
 }>;
 
+export type NavigationLink = Readonly<{
+  label: string;
+  href: `#${string}`;
+}>;
+
+export type ExternalLink = Readonly<{
+  label: string;
+  href: string;
+  external: true;
+}>;
+
 export type CaseStudy = Readonly<{
   layout: "featured" | "portrait";
   region: string;
@@ -30,11 +41,60 @@ export type FaqItem = Readonly<{
   answer: string;
 }>;
 
+export type SectionCopy = Readonly<{
+  eyebrow: string;
+  title: string;
+  description?: string;
+}>;
+
+export type DisclosureCopy = Readonly<{
+  summary: string;
+  answer: string;
+}>;
+
+export type TrustSectionCopy = Readonly<{
+  title: string;
+  points: readonly [string, string, string, string];
+}>;
+
+export type QuoteSectionCopy = SectionCopy & Readonly<{
+  description: string;
+  items: readonly [string, string, string, string, string, string, string, string];
+}>;
+
+export type CaseStudySectionCopy = SectionCopy & Readonly<{
+  description: string;
+  cardLinkLabel: string;
+  indexLink: ContactLink;
+  placeLink: ExternalLink;
+}>;
+
+export type PurchaseGuideCopy = SectionCopy & Readonly<{
+  description: string;
+  disclosure: DisclosureCopy;
+}>;
+
+export type FaqSectionCopy = Readonly<{
+  eyebrow: string;
+  title: string;
+  items: readonly FaqItem[];
+}>;
+
+export type LocationSectionCopy = Readonly<{
+  storeLabel: string;
+  hours: string;
+  mapLink: ExternalLink;
+  eyebrow: string;
+  title: string;
+}>;
+
 export type TransactionPathKey = "directVisit" | "sendFirst";
 
 export type TransactionPathSection = Readonly<{
+  eyebrow: string;
   title: string;
   description: string;
+  note: string;
 }>;
 
 export type TransactionPath = Readonly<{
@@ -82,6 +142,11 @@ export const site = {
     naverPlace: naverPlaceUrl,
     officialBlog: officialBlogUrl,
   },
+  navigation: [
+    { label: "거래 경로", href: "#process" },
+    { label: "매입 사례", href: "#cases" },
+    { label: "자주 묻는 질문", href: "#faq" },
+  ] satisfies readonly NavigationLink[],
   metadata: {
     title: "바이크매니저 | 인천·서울·경기 중고 바이크 방문 매입",
     description:
@@ -100,13 +165,14 @@ export const site = {
   hero: {
     eyebrow: "인천·서울·경기 중고 바이크 방문 매입",
     titleLines: [
-      "바이크를 먼저 보내지 않아도 됩니다.",
-      "직접 찾아가 현장에서 거래합니다.",
+      "바이크를 먼저 보내실 필요 없습니다.",
+      "약속한 장소로 찾아가 현장에서 거래합니다.",
     ],
     description:
-      "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 현장에서 차량 상태와 최종 금액을 확인하고, 판매대금 입금 확인 후 상차합니다.",
+      "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
     note:
-      "사진 견적은 예상 금액이며, 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+      "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    scrollLabel: "거래 원칙 확인하기",
   },
   contact: {
     heroKakao: {
@@ -116,7 +182,7 @@ export const site = {
       external: true,
     } satisfies ContactLink,
     headerPhone: {
-      label: `24시간 문의 ${phoneNumber}`,
+      label: "24시간 문의",
       href: `tel:${phoneNumber}`,
       ctaId: "header-phone",
     } satisfies ContactLink,
@@ -131,16 +197,13 @@ export const site = {
       href: `tel:${phoneNumber}`,
       ctaId: "final-phone",
     } satisfies ContactLink,
-    naverProof: {
-      label: "공식 블로그에서 더 많은 사례 보기",
-      href: officialBlogUrl,
-      ctaId: "naver-proof",
-      external: true,
-    } satisfies ContactLink,
   },
   tradePathSection: {
+    eyebrow: "두 갈래 거래 경로",
     title: "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
     description: "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.",
+    note:
+      "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
   } satisfies TransactionPathSection,
   tradePaths: {
     directVisit: {
@@ -148,7 +211,7 @@ export const site = {
       title: "바이크매니저 직접 방문",
       steps: ["방문 일정", "현장 확인", "최종 금액", "입금 확인", "상차"],
       description:
-        "약속한 장소에서 차량을 함께 확인하고, 최종 금액 안내와 입금 확인을 마친 뒤 상차합니다.",
+        "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.",
       image: "/images/routes/direct-visit.webp",
       imageAlt: "늦은 저녁 운송 차량에 실린 혼다 ADV350 스쿠터",
       imagePosition: "center center",
@@ -169,30 +232,41 @@ export const site = {
       title: "차량을 먼저 보내는 방식",
       steps: ["최종 금액·감가 기준", "반환 조건", "왕복 운임"],
       description:
-        "차량을 먼저 보낸다면 출발 전에 최종 금액, 감가 기준, 반환 조건과 왕복 운임을 확인하세요.",
+        "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.",
       image: "/images/routes/send-first.webp",
       imageAlt: "측면에서 본 회색 혼다 PCX125 스쿠터",
       imagePosition: "center center",
       sourceUrl: "https://m.blog.naver.com/bikemanager4949/224362894515",
     } satisfies TransactionPath,
   } satisfies Readonly<Record<TransactionPathKey, TransactionPath>>,
-  trustPoints: [
+  trustSection: {
+    title: "거래 원칙",
     // Public source for the confirmed career claim: https://m.blog.naver.com/bikemanager4949
-    "경력 10년 이상",
-    "24시간 문의 접수",
-    "직접 방문·현장 확인",
-    "입금 확인 후 상차",
-  ],
-  quoteItems: [
-    "기종",
-    "연식",
-    "주행거리",
-    "하자 내역",
-    "폐지 여부",
-    "검사 여부",
-    "지역",
-    "바이크 사진",
-  ],
+    points: ["경력 10년 이상", "24시간 문의 접수", "직접 방문·현장 확인", "입금 확인 후 상차"],
+  } satisfies TrustSectionCopy,
+  quoteSection: {
+    eyebrow: "견적 준비",
+    title: "사진과 기본 정보 8가지만 보내주세요.",
+    description: "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
+    items: ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"],
+  } satisfies QuoteSectionCopy,
+  caseStudySection: {
+    eyebrow: "실제 매입 사례",
+    title: "실제 매입 사진과 진행 기록을 확인하세요.",
+    description: "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
+    cardLinkLabel: "원문 보기",
+    indexLink: {
+      label: "공식 블로그에서 더 많은 사례 보기",
+      href: officialBlogUrl,
+      ctaId: "naver-proof",
+      external: true,
+    } satisfies ContactLink,
+    placeLink: {
+      label: "네이버 플레이스·리뷰 보기",
+      href: naverPlaceUrl,
+      external: true,
+    } satisfies ExternalLink,
+  } satisfies CaseStudySectionCopy,
   cases: [
     {
       layout: "featured",
@@ -227,21 +301,46 @@ export const site = {
       imagePosition: "center 52%",
     },
   ] satisfies readonly CaseStudy[],
-  faq: [
-    {
-      question: "사진 견적이 최종 금액인가요?",
+  purchaseGuide: {
+    eyebrow: "매입 가능 범위",
+    title: "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    description: "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
+    disclosure: {
+      summary: "명의·서류가 다른 경우",
       answer:
-        "사진 견적은 예상 금액입니다. 현장 상태를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
+        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
     },
-    {
-      question: "24시간 바로 방문하나요?",
-      answer:
-        "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 안내합니다.",
+  } satisfies PurchaseGuideCopy,
+  faqSection: {
+    eyebrow: "자주 묻는 질문",
+    title: "문의할 때 많이 묻는 내용입니다.",
+    items: [
+      {
+        question: "사진 견적이 최종 금액인가요?",
+        answer:
+          "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
+      },
+      {
+        question: "24시간 바로 방문하나요?",
+        answer:
+          "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
+      },
+      {
+        question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+        answer:
+          "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
+      },
+    ],
+  } satisfies FaqSectionCopy,
+  locationSection: {
+    storeLabel: "인천 오프라인 매장",
+    hours: "24시간 문의 접수 · 방문 전 연락",
+    mapLink: {
+      label: "네이버 지도에서 위치·리뷰 보기",
+      href: naverPlaceUrl,
+      external: true,
     },
-    {
-      question: "번호판이 있거나 폐지 전이어도 상담할 수 있나요?",
-      answer:
-        "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 안내합니다.",
-    },
-  ] satisfies readonly FaqItem[],
+    eyebrow: "사진부터 보내주세요.",
+    title: "예상 견적과 방문 가능한 시간을 알려드립니다.",
+  } satisfies LocationSectionCopy,
 } as const;

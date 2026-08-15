@@ -20,9 +20,11 @@ export default function Header() {
         </a>
 
         <nav className="site-nav" aria-label="주요 메뉴">
-          <a href="#cases">매입 사례</a>
-          <a href="#process">거래 경로</a>
-          <a href="#faq">자주 묻는 질문</a>
+          {site.navigation.map((item) => (
+            <a href={item.href} key={item.href}>
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         <div className="site-header__actions">
@@ -38,7 +40,7 @@ export default function Header() {
           </a>
           <a className="header-phone" href={phone.href} data-cta={phone.ctaId}>
             <Phone aria-hidden="true" size={17} />
-            <span className="header-phone__hours">24시간 문의</span>
+            <span className="header-phone__hours">{phone.label}</span>
             <span>{site.phone.display}</span>
           </a>
         </div>
