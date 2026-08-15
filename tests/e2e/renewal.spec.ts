@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 type Rgb = readonly [number, number, number];
 
@@ -78,6 +78,16 @@ async function waitForStablePosition(locator: Locator) {
   );
 }
 
+function transactionPathButton(page: Page, name: string) {
+  return page.getByTestId("transaction-paths").getByRole("button", { name: new RegExp(name) });
+}
+
+async function transactionPathPanel(button: Locator, page: Page) {
+  const panelId = await button.getAttribute("aria-controls");
+  if (!panelId) throw new Error("expected each transaction path button to control a detail panel");
+  return page.locator(`#${panelId}`);
+}
+
 test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -138,6 +148,90 @@ test("process renders a compact 4/2/1 static rail", async ({ page }) => {
       expect((await story.boundingBox())?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(900);
     }
   }
+});
+
+test("desktop transaction paths preview, pin, and prioritize keyboard focus", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const paths = page.getByTestId("transaction-paths");
+  const directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  const sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  const pathsLine = paths.getByTestId("transaction-path-lines");
+
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+  await expect(pathsLine).toHaveAttribute("aria-hidden", "true");
+  await expect(pathsLine).toHaveAttribute("data-revealed", "false");
+  const directVisitPanel = await transactionPathPanel(directVisit, page);
+  const methodCta = directVisitPanel.locator('[data-cta="method-kakao"]');
+  await expect(methodCta).toHaveAttribute("href", "https://pf.kakao.com/_MzgSn/chat");
+  expect((await methodCta.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  const heightBeforePreview = (await paths.boundingBox())?.height;
+  await sendFirst.hover();
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(directVisit).toHaveAttribute("aria-expanded", "false");
+  expect((await paths.boundingBox())?.height).toBeCloseTo(heightBeforePreview ?? 0, 0);
+
+  await page.mouse.move(0, 0);
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+
+  await sendFirst.click();
+  await page.mouse.move(0, 0);
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+
+  await sendFirst.focus();
+  await directVisit.hover();
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(directVisit).toHaveAttribute("aria-expanded", "false");
+
+  await sendFirst.press("Space");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await page.locator('[data-cta="header-phone"]').focus();
+  await page.mouse.move(0, 0);
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+
+  await paths.scrollIntoViewIfNeeded();
+  await expect(pathsLine).toHaveAttribute("data-revealed", "true");
+  await page.locator(".hero").scrollIntoViewIfNeeded();
+  await expect(pathsLine).toHaveAttribute("data-revealed", "true");
+});
+
+test("case studies use the featured and portrait layout at each breakpoint", async ({ page }) => {
+  const cards = (model: string) =>
+    page.locator("article.case-card", { has: page.getByRole("heading", { name: model, exact: true }) });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const [wideAdv, widePcx, wideIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
+  expect(wideAdv && widePcx && wideIron).toBeTruthy();
+  if (!wideAdv || !widePcx || !wideIron) return;
+  expect(Math.abs(wideAdv.y - widePcx.y)).toBeLessThan(2);
+  expect(Math.abs(widePcx.y - wideIron.y)).toBeLessThan(2);
+  expect(wideAdv.width).toBeGreaterThan(widePcx.width * 1.7);
+  expect(Math.abs(widePcx.width - wideIron.width)).toBeLessThan(3);
+
+  await page.setViewportSize({ width: 768, height: 900 });
+  await page.goto("/");
+  const [tabletAdv, tabletPcx, tabletIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
+  expect(tabletAdv && tabletPcx && tabletIron).toBeTruthy();
+  if (!tabletAdv || !tabletPcx || !tabletIron) return;
+  expect(tabletAdv.x).toBeLessThan(tabletPcx.x);
+  expect(Math.abs(tabletPcx.x - tabletIron.x)).toBeLessThan(2);
+  expect(tabletIron.y).toBeGreaterThan(tabletPcx.y + tabletPcx.height - 2);
+  expect(tabletAdv.height).toBeGreaterThan(tabletPcx.height * 1.7);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const [mobileAdv, mobilePcx, mobileIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
+  expect(mobileAdv && mobilePcx && mobileIron).toBeTruthy();
+  if (!mobileAdv || !mobilePcx || !mobileIron) return;
+  expect(Math.abs(mobileAdv.x - mobilePcx.x)).toBeLessThan(2);
+  expect(Math.abs(mobilePcx.x - mobileIron.x)).toBeLessThan(2);
+  expect(mobilePcx.y).toBeGreaterThan(mobileAdv.y + mobileAdv.height - 2);
+  expect(mobileIron.y).toBeGreaterThan(mobilePcx.y + mobilePcx.height - 2);
 });
 
 test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {
@@ -249,6 +343,14 @@ test.describe("reduced motion", () => {
     }
     await expect(page.getByTestId("hero-copy")).toHaveCSS("animation-name", "none");
     await expect(page.getByTestId("hero-media")).toHaveCSS("animation-name", "none");
+
+    const paths = page.getByTestId("transaction-paths");
+    const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
+    const sendFirstPanel = await transactionPathPanel(transactionPathButton(page, "차량을 먼저 보내는 방식"), page);
+    await expect(paths).not.toHaveAttribute("data-enhanced", /.+/);
+    await expect(directVisitPanel).toBeVisible();
+    await expect(sendFirstPanel).toBeVisible();
+    await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
   });
 });
 
@@ -265,6 +367,13 @@ test("JavaScript-off desktop falls back to four static process cards", async ({ 
   for (let index = 0; index < 4; index += 1) {
     await expect(page.getByTestId(`process-step-${index}`)).toBeVisible();
   }
+
+  const paths = page.getByTestId("transaction-paths");
+  const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
+  const sendFirstPanel = await transactionPathPanel(transactionPathButton(page, "차량을 먼저 보내는 방식"), page);
+  await expect(directVisitPanel).toBeVisible();
+  await expect(sendFirstPanel).toBeVisible();
+  await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
 
   await context.close();
 });

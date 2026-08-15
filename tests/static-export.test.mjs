@@ -54,6 +54,62 @@ test("orders case studies around the core scooter customer", () => {
   assert.match(casesSection, /224362894515/);
 });
 
+test("exports the two transaction paths with local, budgeted route images", async () => {
+  const transactionPaths = html.match(
+    /<section\b(?=[^>]*data-testid="transaction-paths")[^>]*>[\s\S]*?<\/section>/,
+  )?.[0];
+  assert.ok(transactionPaths, "expected the transaction paths section");
+
+  const copy = [
+    "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
+    "차량이 내 손을 떠나는 시점에 따라 확인해야 할 조건이 달라집니다. 바이크매니저는 약속한 장소로 직접 방문해 차량 상태와 최종 금액을 함께 확인합니다.",
+    "바이크매니저 직접 방문",
+    "방문 일정 조율 → 현장에서 함께 검수 → 최종 금액 확인 → 입금 확인 → 상차",
+    "바이크매니저는 약속한 장소에서 차량을 함께 확인하고, 최종 금액과 계약 내용을 안내한 뒤 입금 확인 후 상차합니다.",
+    "입금 확인",
+    "확인 후 상차",
+    "사진 보내고 방문 일정 확인",
+    "차량을 먼저 보내는 방식",
+    "출발 전 최종 금액과 감가 기준 확인 → 금액 변경 시 반환 조건 확인 → 왕복 운임 부담 확인",
+    "차량을 먼저 보내는 거래라면 출발 전에 최종 금액, 감가 기준, 반환 조건과 운임 부담을 확인하세요.",
+  ];
+  for (const text of copy) {
+    assert.ok(transactionPaths.includes(text), `expected transaction path copy: ${text}`);
+  }
+  assert.equal(transactionPaths.split("차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.").length - 1, 1);
+  assert.equal(
+    transactionPaths.split("차량이 내 손을 떠나는 시점에 따라 확인해야 할 조건이 달라집니다. 바이크매니저는 약속한 장소로 직접 방문해 차량 상태와 최종 금액을 함께 확인합니다.").length - 1,
+    1,
+  );
+
+  assert.ok(
+    transactionPaths.indexOf("바이크매니저 직접 방문") < transactionPaths.indexOf("차량을 먼저 보내는 방식"),
+    "expected direct visit to precede send-first in the DOM",
+  );
+
+  const kakaoLink = [...transactionPaths.matchAll(/<a\b[^>]*>/g)]
+    .map(([link]) => link)
+    .find((link) => link.includes('data-cta="method-kakao"'));
+  assert.ok(kakaoLink, "expected the direct-visit Kakao CTA to be a real link");
+  assert.match(kakaoLink, /href="https:\/\/pf\.kakao\.com\/_MzgSn\/chat"/);
+
+  const expectedImages = ["/images/routes/direct-visit.webp", "/images/routes/send-first.webp"];
+  const imageTags = [...transactionPaths.matchAll(/<img\b[^>]*>/g)].map(([image]) => image);
+  for (const imagePath of expectedImages) {
+    assert.ok(
+      imageTags.some((image) => image.includes(`src="${imagePath}"`)),
+      `expected a local route image at ${imagePath}`,
+    );
+
+    const imageUrl = new URL(`../public${imagePath}`, import.meta.url);
+    const [{ size }, metadata] = await Promise.all([stat(imageUrl), sharp(fileURLToPath(imageUrl)).metadata()]);
+    assert.ok(metadata.width && metadata.height, `expected dimensions for ${imagePath}`);
+    assert.ok(Math.max(metadata.width, metadata.height) <= 800, `${imagePath} longest edge must be <=800px`);
+    assert.ok(size < 180 * 1024, `${imagePath} must be smaller than 180KB`);
+  }
+  assert.doesNotMatch(transactionPaths, /pstatic\.net/);
+});
+
 test("binds each case model to its official post and budgeted local image", async () => {
   const casesSection = html.match(/<section[^>]+id="cases"[\s\S]*?<\/section>/)?.[0];
   assert.ok(casesSection, "expected the case studies section");
@@ -63,7 +119,7 @@ test("binds each case model to its official post and budgeted local image", asyn
     { model: "PCX125", postId: "224362894515", imagePath: "/images/cases/pcx125.webp" },
     { model: "아이언883", postId: "224351926598", imagePath: "/images/cases/iron883.webp" },
   ];
-  const cards = [...casesSection.matchAll(/<article class="case-card">([\s\S]*?)<\/article>/g)].map(
+  const cards = [...casesSection.matchAll(/<article\b(?=[^>]*class="[^"]*\bcase-card\b[^"]*")[^>]*>([\s\S]*?)<\/article>/g)].map(
     ([, card]) => card,
   );
   assert.equal(cards.length, expectedCases.length);
