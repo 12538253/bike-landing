@@ -192,6 +192,57 @@ async function expectUserVisible(locator: Locator, label: string) {
   ).toBe(true);
 }
 
+async function visibleDetailsContent(details: Locator, label: string) {
+  const result = await details.evaluate((element) => {
+    if (!(element instanceof HTMLDetailsElement)) throw new Error("expected a native details element");
+    const summary = element.querySelector(":scope > summary");
+    if (!summary) throw new Error("expected a direct native summary");
+
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let content = "";
+    let renderedNodes = 0;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (summary.contains(node)) continue;
+      if (!(summary.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+
+      let excluded = false;
+      for (let ancestor = node.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.matches('svg, picture, script, style, noscript, .sr-only, [aria-hidden="true"]')) {
+          excluded = true;
+          break;
+        }
+        const closedDetails = ancestor.closest("details:not([open])");
+        if (closedDetails) {
+          const nestedSummary = closedDetails.querySelector(":scope > summary");
+          if (!nestedSummary?.contains(node)) {
+            excluded = true;
+            break;
+          }
+        }
+        const styles = getComputedStyle(ancestor);
+        if (styles.display === "none" || styles.visibility === "hidden" || styles.visibility === "collapse") {
+          excluded = true;
+          break;
+        }
+        if (ancestor === element) break;
+      }
+      if (excluded) continue;
+
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rendered = [...range.getClientRects()].some((rect) => rect.width > 0 && rect.height > 0);
+      if (!rendered) continue;
+      content += node.textContent ?? "";
+      renderedNodes += 1;
+    }
+    return { content: content.replace(/\s+/gu, " ").trim(), renderedNodes };
+  });
+
+  expect(result.renderedNodes, `${label}: expected rendered post-summary detail content`).toBeGreaterThan(0);
+  expect(result.content, `${label}: expected non-empty post-summary detail content`).not.toBe("");
+  return result.content;
+}
+
 async function expectMethodCtaContained(page: Page, label: string, hitTest: boolean) {
   const cta = page.locator('[data-cta="method-kakao"]');
   if (hitTest) {
@@ -470,13 +521,14 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   }
 
   const details = guide.locator("details");
-  const summary = details.getByText("명의·서류가 다른 경우", { exact: true });
+  await expect(details).toHaveCount(1);
+  const summary = details.locator(":scope > summary");
+  await expect(summary).toHaveText("명의·서류가 다른 경우");
   await expectUserVisible(summary, "purchase guide summary");
   await summary.click();
   await expect(details).toHaveAttribute("open", "");
-  const answer = details.locator("p");
-  await expectUserVisible(answer, "purchase guide answer");
-  const answerText = await answer.innerText();
+  await expectUserVisible(details, "opened purchase guide disclosure");
+  const answerText = await visibleDetailsContent(details, "purchase guide answer");
   for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "추가 확인"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
@@ -487,15 +539,15 @@ for (const { question, facts } of faqAnswerContracts) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     const faq = page.locator("#faq");
-    const details = faq.locator("details").filter({ hasText: question });
+    const details = faq.locator("details").filter({ has: page.locator("summary", { hasText: question }) });
     await expect(details).toHaveCount(1);
-    const summary = details.getByText(question, { exact: true });
+    const summary = details.locator(":scope > summary");
+    await expect(summary).toHaveText(question);
     await expectUserVisible(summary, `FAQ summary: ${question}`);
     await summary.click();
     await expect(details).toHaveAttribute("open", "");
-    const answer = details.locator(".faq-answer");
-    await expectUserVisible(answer, `FAQ answer: ${question}`);
-    const answerText = (await answer.innerText()).trim();
+    await expectUserVisible(details, `opened FAQ disclosure: ${question}`);
+    const answerText = await visibleDetailsContent(details, `FAQ answer: ${question}`);
     for (const fact of facts) expect(answerText, `FAQ answer fact: ${fact}`).toContain(fact);
 
     const terminators = answerText.match(/[.!?。！？]/gu) ?? [];

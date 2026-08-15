@@ -23,6 +23,15 @@ const textContent = (markup) => markup
   .replace(/\s+/g, " ")
   .trim();
 
+const disclosureParts = (detailsMarkup) => {
+  const match = detailsMarkup.match(/<summary\b[^>]*>([\s\S]*?)<\/summary>([\s\S]*)/i);
+  if (!match) return null;
+  return {
+    summary: textContent(match[1]),
+    content: textContent(match[2]),
+  };
+};
+
 const faqAnswerContracts = [
   {
     question: "사진 견적이 최종 금액인가요?",
@@ -154,18 +163,40 @@ test("exports exactly three FAQ details plus one purchase-guide details", () => 
   for (const { question } of faqAnswerContracts) assert.ok(faqSection.includes(question));
 });
 
+test("keeps purchase-guide facts in its native disclosure content", () => {
+  const guideSection = html.match(
+    /<section\b(?=[^>]*aria-labelledby="guide-title")[^>]*>[\s\S]*?<\/section>/,
+  )?.[0];
+  assert.ok(guideSection, "expected the purchase-guide section");
+  const guideDetails = [...guideSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)];
+  assert.equal(guideDetails.length, 1, "expected one native purchase-guide disclosure");
+  const disclosure = disclosureParts(guideDetails[0][1]);
+  assert.ok(disclosure, "expected a native purchase-guide summary and detail content");
+  assert.equal(disclosure.summary, "명의·서류가 다른 경우");
+  for (const fact of [
+    "신분증",
+    "사용신고필증",
+    "폐지증명서",
+    "타인·법인·외국인 명의",
+    "미성년자",
+    "서류 분실",
+    "차대번호",
+    "추가 확인",
+  ]) {
+    assert.ok(disclosure.content.includes(fact), `expected purchase-guide detail fact: ${fact}`);
+  }
+});
+
 for (const { question, facts } of faqAnswerContracts) {
   test(`keeps the core facts and two-sentence limit for FAQ: ${question}`, () => {
     const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
     assert.ok(faqSection, "expected the FAQ section");
-    const details = [...faqSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)]
-      .map(([, markup]) => markup)
-      .find((markup) => textContent(markup).includes(question));
-    assert.ok(details, `expected FAQ details for: ${question}`);
+    const disclosure = [...faqSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)]
+      .map(([, markup]) => disclosureParts(markup))
+      .find((candidate) => candidate?.summary === question);
+    assert.ok(disclosure, `expected native FAQ details for: ${question}`);
 
-    const answerMarkup = details.match(/<div\b(?=[^>]*class="[^"]*\bfaq-answer\b)[^>]*>([\s\S]*?)<\/div>/)?.[1];
-    assert.ok(answerMarkup, `expected an answer for: ${question}`);
-    const answer = textContent(answerMarkup);
+    const answer = disclosure.content;
     for (const fact of facts) assert.ok(answer.includes(fact), `expected "${fact}" in answer: ${question}`);
 
     const terminators = answer.match(/[.!?。！？]/gu) ?? [];
