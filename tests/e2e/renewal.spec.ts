@@ -10,10 +10,10 @@ const faqAnswerContracts = [
     facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
   },
   {
-    question: "24시간 바로 방문하나요?",
+    question: "당일이나 늦은 시간에도 방문할 수 있나요?",
     answer:
-      "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
-    facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
+      "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
+    facts: ["24시간", "인천·서울·경기", "당일·야간 방문", "일정", "빠르게 조율"],
   },
   {
     question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
@@ -352,13 +352,11 @@ test("hero title keeps its two sentences in separate visual lines", async ({ pag
   await page.goto("/");
 
   const desktopLines = await renderedLines(page.locator(".hero h1"));
-  expect(desktopLines.some((line) => line.includes("없습니다.약속한"))).toBe(false);
-  expect(desktopLines.length).toBeLessThanOrEqual(3);
+  expect(desktopLines).toEqual(["바이크는그대로두세요.", "저희가직접찾아가매입합니다."]);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileLines = await renderedLines(page.locator(".hero h1"));
-  expect(mobileLines.some((line) => line.includes("없습니다.약속한"))).toBe(false);
-  expect(mobileLines.length).toBeLessThanOrEqual(4);
+  expect(mobileLines).toEqual(["바이크는그대로두세요.", "저희가직접찾아가매입합니다."]);
 });
 
 test("wide section headings do not gain avoidable extra lines", async ({ page }) => {
@@ -408,7 +406,7 @@ test("390px first view exposes the seller decision facts and contact paths", asy
   await page.goto("/");
 
   const heroText = (await page.locator("#top").innerText()).replace(/\s/gu, "");
-  for (const fact of ["인천·서울·경기", "찾아가", "사진", "현장", "최종금액", "판매대금전액", "상차"]) {
+  for (const fact of ["인천·서울·경기", "바이크는 그대로", "저희가 직접 찾아가 매입합니다"]) {
     expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
   }
 
@@ -430,10 +428,8 @@ test("390px visibly renders the approved hero facts and contact links", async ({
 
   for (const copy of [
     "인천·서울·경기 중고 바이크 방문 매입",
-    "바이크를 먼저 보내실 필요 없습니다.",
-    "약속한 장소로 찾아가 현장에서 거래합니다.",
-    "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
-    "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "바이크는 그대로 두세요.",
+    "저희가 직접 찾아가 매입합니다.",
   ]) {
     await expectUserVisible(hero.getByText(copy, { exact: true }), `hero copy: ${copy}`);
   }
@@ -458,8 +454,8 @@ test("390px visibly renders both transaction paths and their decision facts", as
   await expect(paths).toHaveCount(1);
 
   for (const copy of [
-    "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
-    "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.",
+    "바이크는 그대로, 확인은 현장에서.",
+    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
     "바이크매니저 직접 방문",
     "방문 일정",
     "현장 확인",
@@ -472,7 +468,6 @@ test("390px visibly renders both transaction paths and their decision facts", as
     "반환 조건",
     "왕복 운임",
     "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.",
-    "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
   ]) {
     await expectUserVisible(paths.getByText(copy, { exact: true }), `transaction copy: ${copy}`);
   }
@@ -606,7 +601,7 @@ test("390px visibly renders cases and the moved official destinations", async ({
   const cases = page.locator("#cases");
 
   for (const copy of [
-    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "말보다 실제 매입 기록으로 보여드립니다.",
     "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
     "ADV350",
     "PCX125",
@@ -630,7 +625,7 @@ test("390px visibly renders the quote checklist facts", async ({ page }) => {
   const quote = page.getByTestId("quote-checklist");
 
   for (const copy of [
-    "사진과 기본 정보 8가지만 보내주세요.",
+    "사진 몇 장과 기본 정보만 보내주세요.",
     "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
     "기종",
     "연식",
@@ -651,7 +646,7 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   const guide = page.locator('section[aria-labelledby="guide-title"]');
 
   for (const copy of [
-    "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    "스쿠터부터 대형 바이크까지 매입 상담합니다.",
     "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
   ]) {
     await expectUserVisible(guide.getByText(copy, { exact: true }), `guide copy: ${copy}`);
@@ -666,9 +661,6 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   await expect(details).toHaveAttribute("open", "");
   await expectUserVisible(details, "opened purchase guide disclosure");
   const answerText = await visibleDetailsContent(details, "purchase guide answer");
-  expect(answerText).toBe(
-    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
-  );
   for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "추가 확인"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
@@ -704,7 +696,7 @@ test("390px visibly renders the final location facts and links", async ({ page }
   await page.goto("/");
   const location = page.locator("#contact");
 
-  for (const copy of ["예상 견적과 방문 가능한 시간을 알려드립니다.", "24시간 문의 접수 · 방문 전 연락"]) {
+  for (const copy of ["예상 견적부터 방문 일정까지 빠르게 안내합니다.", "24시간 문의 접수 · 방문 전 연락"]) {
     await expectUserVisible(location.getByText(copy, { exact: true }), `location copy: ${copy}`);
   }
   const map = location.getByRole("link", { name: "네이버 지도에서 위치·리뷰 보기", exact: true });

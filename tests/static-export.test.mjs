@@ -40,10 +40,10 @@ const faqAnswerContracts = [
     facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
   },
   {
-    question: "24시간 바로 방문하나요?",
+    question: "당일이나 늦은 시간에도 방문할 수 있나요?",
     answer:
-      "24시간은 문의 접수이며 즉시 방문을 보장하지 않습니다. 방문 시간은 지역과 당일 일정을 확인한 뒤 알려드립니다.",
-    facts: ["24시간", "문의 접수", "즉시 방문", "보장하지"],
+      "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
+    facts: ["24시간", "인천·서울·경기", "당일·야간 방문", "일정", "빠르게 조율"],
   },
   {
     question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
@@ -77,8 +77,9 @@ test("exports only the approved BM favicon asset", async () => {
   );
 });
 
-test("renders the trust-first hero and trackable contact links", () => {
-  assert.match(html, /바이크를 먼저 보내실 필요 없습니다/);
+test("renders the benefit-led hero and trackable contact links", () => {
+  assert.match(html, /바이크는 그대로 두세요/);
+  assert.match(html, /저희가 직접 찾아가 매입합니다/);
   assert.match(html, /data-cta="hero-kakao"/);
   assert.match(html, /data-cta="header-phone"/);
   assert.match(html, /data-cta="sticky-kakao"/);
@@ -137,29 +138,37 @@ test("omits standalone process, comparison, and Naver proof sections", () => {
 test("retains the approved short copy and seller decision facts", () => {
   for (const requiredCopy of [
     "인천·서울·경기 중고 바이크 방문 매입",
-    "바이크를 먼저 보내실 필요 없습니다.",
-    "약속한 장소로 찾아가 현장에서 거래합니다.",
-    "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
-    "사진으로 드린 견적은 예상 금액입니다. 최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "바이크는 그대로 두세요.",
+    "저희가 직접 찾아가 매입합니다.",
+    "바이크는 그대로, 확인은 현장에서.",
+    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
     "경력 10년 이상",
     "24시간 문의 접수",
     "직접 방문·현장 확인",
     "입금 확인 후 상차",
-    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "말보다 실제 매입 기록으로 보여드립니다.",
     "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
     "공식 블로그에서 더 많은 사례 보기",
     "네이버 플레이스·리뷰 보기",
-    "사진과 기본 정보 8가지만 보내주세요.",
+    "사진 몇 장과 기본 정보만 보내주세요.",
     "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
-    "스쿠터부터 대형 바이크까지 편하게 문의해 주세요.",
+    "스쿠터부터 대형 바이크까지 매입 상담합니다.",
     "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
     "명의·서류가 다른 경우",
-    "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인이 필요합니다. 확인 결과에 따라 거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
-    "예상 견적과 방문 가능한 시간을 알려드립니다.",
+    "예상 견적부터 방문 일정까지 빠르게 안내합니다.",
     "24시간 문의 접수 · 방문 전 연락",
     "네이버 지도에서 위치·리뷰 보기",
   ]) {
     assert.ok(html.includes(requiredCopy), `expected required visible copy: ${requiredCopy}`);
+  }
+
+  for (const removedCopy of [
+    "최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
+    "가격만 보면 개인 거래가 더 유리할 수 있습니다.",
+    "즉시 방문을 보장하지 않습니다.",
+    "거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
+  ]) {
+    assert.ok(!html.includes(removedCopy), `expected defensive copy to be removed: ${removedCopy}`);
   }
 
   for (const item of ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"]) {
@@ -186,17 +195,20 @@ test("sources canonical landing section copy from typed site content", async () 
   const componentSource = componentSources.join("\n");
   const canonicalCopies = [
     "두 갈래 거래 경로",
-    "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다.",
-    "실제 매입 사진과 진행 기록을 확인하세요.",
+    "바이크는 그대로, 확인은 현장에서.",
+    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
+    "말보다 실제 매입 기록으로 보여드립니다.",
     "원문 보기",
     "견적 준비",
-    "사진과 기본 정보 8가지만 보내주세요.",
+    "사진 몇 장과 기본 정보만 보내주세요.",
     "매입 가능 범위",
     "명의·서류가 다른 경우",
     "자주 묻는 질문",
     "문의할 때 많이 묻는 내용입니다.",
     "인천 오프라인 매장",
-    "24시간 문의 접수 · 방문 전 연락",
+    "당일이나 늦은 시간에도 방문할 수 있나요?",
+    "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
+    "예상 견적부터 방문 일정까지 빠르게 안내합니다.",
     "네이버 지도에서 위치·리뷰 보기",
     "사진부터 보내주세요.",
     "카카오톡으로 사진 보내기",
@@ -292,9 +304,9 @@ test("exports the two transaction paths with local, budgeted route images", asyn
 
   const countText = (markup, text) => textContent(markup).split(text).length - 1;
   const transactionText = textContent(transactionPaths);
-  const heading = "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.";
+  const heading = "바이크는 그대로, 확인은 현장에서.";
   const introduction =
-    "약속한 장소에서 차량 상태와 최종 금액을 함께 확인합니다.";
+    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.";
   const directVisitTitle = "바이크매니저 직접 방문";
   const sendFirstTitle = "차량을 먼저 보내는 방식";
   const directVisitDescription =
@@ -355,7 +367,7 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   assert.equal(countText(sendFirst, sendFirstTitle), 1, "expected send-first copy once");
   assert.equal(countText(sendFirst, sendFirstDescription), 1, "expected send-first description once");
   assert.ok(textContent(directVisit).includes("입금 확인"), "expected the payment-confirmation card copy");
-  assert.equal(countText(transactionPaths, "가격만 보면 개인 거래가 더 유리할 수 있습니다. 업체 매입은 시간과 절차를 줄이는 방식입니다."), 1);
+  assert.doesNotMatch(transactionPaths, /가격만 보면 개인 거래가 더 유리할 수 있습니다\./);
   assertOrderedSteps(
     directVisit,
     directVisitTitle,
