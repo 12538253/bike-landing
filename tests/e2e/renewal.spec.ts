@@ -352,11 +352,41 @@ test("hero title keeps its two sentences in separate visual lines", async ({ pag
   await page.goto("/");
 
   const desktopLines = await renderedLines(page.locator(".hero h1"));
-  expect(desktopLines).toEqual(["바이크는그대로두세요.", "저희가직접찾아가매입합니다."]);
+  expect(desktopLines).toEqual(["바이크는그대로두세요.", "직접찾아가매입합니다."]);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileLines = await renderedLines(page.locator(".hero h1"));
-  expect(mobileLines).toEqual(["바이크는그대로두세요.", "저희가직접찾아가매입합니다."]);
+  expect(mobileLines).toEqual(["바이크는그대로두세요.", "직접찾아가매입합니다."]);
+});
+
+test("mobile keeps the hero title larger than section headings and readable", async ({ page }) => {
+  const approvedTitleLines = ["바이크는그대로두세요.", "직접찾아가매입합니다."];
+
+  for (const { width, maximumTitleLines } of [
+    { width: 320, maximumTitleLines: 2 },
+    { width: 390, maximumTitleLines: 1 },
+  ]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+
+    const [heroFontSize, sectionFontSize, documentWidths] = await Promise.all([
+      page.locator(".hero h1").evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+      page.locator("#method-title").evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+      page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth })),
+    ]);
+
+    expect(heroFontSize, `${width}px hero title must outrank the representative section heading`).toBeGreaterThan(sectionFontSize);
+    expect(documentWidths.document, `${width}px must not overflow horizontally`).toBeLessThanOrEqual(documentWidths.viewport);
+
+    const titleLines = page.locator(".hero__title-line");
+    for (const [index, expectedText] of approvedTitleLines.entries()) {
+      const visualLines = await renderedLines(titleLines.nth(index));
+      expect(visualLines.length).toBeGreaterThan(0);
+      expect(visualLines.length).toBeLessThanOrEqual(maximumTitleLines);
+      expect(visualLines.every((line) => line.length > 1)).toBe(true);
+      expect(visualLines.join("")).toBe(expectedText);
+    }
+  }
 });
 
 test("wide section headings do not gain avoidable extra lines", async ({ page }) => {
@@ -406,7 +436,7 @@ test("390px first view exposes the seller decision facts and contact paths", asy
   await page.goto("/");
 
   const heroText = (await page.locator("#top").innerText()).replace(/\s/gu, "");
-  for (const fact of ["인천·서울·경기", "바이크는 그대로", "저희가 직접 찾아가 매입합니다"]) {
+  for (const fact of ["인천·서울·경기", "바이크는 그대로", "직접 찾아가 매입합니다"]) {
     expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
   }
 
@@ -429,7 +459,7 @@ test("390px visibly renders the approved hero facts and contact links", async ({
   for (const copy of [
     "인천·서울·경기 중고 바이크 방문 매입",
     "바이크는 그대로 두세요.",
-    "저희가 직접 찾아가 매입합니다.",
+    "직접 찾아가 매입합니다.",
   ]) {
     await expectUserVisible(hero.getByText(copy, { exact: true }), `hero copy: ${copy}`);
   }

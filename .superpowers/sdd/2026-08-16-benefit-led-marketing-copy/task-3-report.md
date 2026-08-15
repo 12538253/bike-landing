@@ -26,3 +26,33 @@
 ## 범위
 
 요청대로 push와 Cloudflare 미리보기 확인은 수행하지 않았다.
+
+## Review fix round 1 — 320px 제목 위계
+
+- RED 명령: `npm run test:e2e -- --grep "320px keeps the hero title larger than section headings and readable"` — exit 1. 실제 측정값은 H1 `30.4px`, 거래 경로 H2 `31.748px`로 H1이 더 작아 계약에 실패했다.
+- 최소 수정: `<=360px`에서만 `.hero h1`을 `2rem`으로 보정했다. 기존 `<=760px`의 `1.9rem`은 유지해 390px에서 승인된 두 문장이 각각 한 줄인 계약을 바꾸지 않았다.
+- GREEN 명령: `npm run build && npm run test:e2e -- --grep "320px keeps the hero title larger than section headings and readable"` — exit 0, 1/1 PASS.
+- 320×844 실화면: H1 `32px` > 거래 경로 H2 `31.358px`; 문서 `scrollWidth` 305px ≤ viewport 320px. 첫 문장은 1줄(279.9px), 둘째 문장은 2줄(136.4px·222.2px)이며 한 글자 고아 줄이 없다.
+- 스크린샷: `_workspace/2026-08-16-001/qa-320.png`
+
+## Review fix round 2 — 390px까지 위계 보장
+
+- 폐기한 가설: `<=360px`의 H1 `2rem` 보정만으로 충분하다. 320px에서는 통과했지만, 390px RED에서 H1 `30.4px` < 거래 경로 H2 `33.412px`로 위계가 여전히 역전됐다. 이 전용 보정은 제거했다.
+- 확장 RED 명령: `npm run test:e2e -- --grep "mobile keeps the hero title larger than section headings and readable"` — exit 1. 계약은 320·390 모두에서 H1 > 대표 H2, 가로 overflow 없음, 승인 문장 보존, 320 최대 2줄·390 각각 1줄·고아 한 글자 없음이다.
+- Round 2 가설: `<=760px` H1을 `2.1rem`·`letter-spacing: -0.12em`으로 공통 적용했다. 390px 한 줄·위계 계약은 통과했지만, Round 3에서 한글 자간 품질 우려로 폐기했다.
+- GREEN 명령: `npm run build && npm run test:e2e -- --grep "mobile keeps the hero title larger than section headings and readable"` — exit 0, 1/1 PASS.
+- 320×844: H1 `33.6px` > H2 `31.358px`, 자간 `-4.032px`, `scrollWidth` 305px ≤ 320px. 첫 문장 1줄(261px), 둘째 문장 2줄(128px·208px), 고아 한 글자 없음.
+- 390×844: H1 `33.6px` > H2 `33.022px`, 자간 `-4.032px`, `scrollWidth` 375px ≤ 390px. 승인 문장 두 개가 각각 1줄(261px·338.9px)이다.
+- 스크린샷: `_workspace/2026-08-16-001/qa-320-round1.png`, `_workspace/2026-08-16-001/qa-390-round1.png`
+
+## Review fix round 3 — 축약 카피와 자연스러운 자간
+
+- 폐기한 가설: `2.1rem`·`-0.12em`. H1 `33.6px`와 자간 `-4.032px`은 기술 계약을 통과했지만, 한글 제목 글자가 약 4px씩 가까워져 시각 품질을 해칠 수 있다.
+- 정확 카피 RED: 새 `직접 찾아가 매입합니다.`는 이전 문구의 부분 문자열이어서 포함 검사만으로는 구분되지 않았다. 이전 전체 문구 부재 계약을 추가한 뒤 `npm run test:static`은 exit 1로 정확히 RED가 됐다.
+- 최종 수정: 승인 문구를 `저희가 직접 찾아가 매입합니다.`에서 `직접 찾아가 매입합니다.`로 축약하고, `<=760px` H1을 `2.2rem`·`letter-spacing: -0.04em`으로 적용했다. H1의 뜻·거래 사실은 바꾸지 않았다.
+- GREEN 명령: `npm run build`, `npm run test:static`(24/24), `npm run test:e2e -- --grep "hero title keeps its two sentences in separate visual lines|mobile keeps the hero title larger than section headings and readable|390px visibly renders the approved hero facts and contact links"`(3/3).
+- 최종 전체 검증: `npm run verify` — exit 0, lint·정적 빌드·정적 테스트 24/24·Playwright 41/41 PASS.
+- 320×844: H1 `35.2px` > H2 `31.358px`, 자간 `-1.408px`, `scrollWidth` 305px ≤ 320px. 두 제목 모두 두 줄(116.2px·188px, 151px·153.1px)이며 고아 한 글자 줄이 없다.
+- 390×844: H1 `35.2px` > H2 `33.022px`, 자간 `-1.408px`, `scrollWidth` 375px ≤ 390px. 두 승인 제목은 각각 한 줄(309.9px)이다.
+- Fast Path 산출물: `_workspace/2026-08-16-001/final.md`는 새 승인 원문 1,636자·윤문 변경률 0.0%·S1 0건·자체검증 6/6으로 갱신했고, 승인 축약을 하이라이트에 기록했다.
+- 스크린샷: `_workspace/2026-08-16-001/qa-320-round2.png`, `_workspace/2026-08-16-001/qa-390-round2.png`

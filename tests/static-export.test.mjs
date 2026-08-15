@@ -79,7 +79,7 @@ test("exports only the approved BM favicon asset", async () => {
 
 test("renders the benefit-led hero and trackable contact links", () => {
   assert.match(html, /바이크는 그대로 두세요/);
-  assert.match(html, /저희가 직접 찾아가 매입합니다/);
+  assert.match(html, /직접 찾아가 매입합니다/);
   assert.match(html, /data-cta="hero-kakao"/);
   assert.match(html, /data-cta="header-phone"/);
   assert.match(html, /data-cta="sticky-kakao"/);
@@ -139,7 +139,7 @@ test("retains the approved short copy and seller decision facts", () => {
   for (const requiredCopy of [
     "인천·서울·경기 중고 바이크 방문 매입",
     "바이크는 그대로 두세요.",
-    "저희가 직접 찾아가 매입합니다.",
+    "직접 찾아가 매입합니다.",
     "바이크는 그대로, 확인은 현장에서.",
     "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
     "경력 10년 이상",
@@ -161,6 +161,8 @@ test("retains the approved short copy and seller decision facts", () => {
   ]) {
     assert.ok(html.includes(requiredCopy), `expected required visible copy: ${requiredCopy}`);
   }
+
+  assert.doesNotMatch(html, /저희가 직접 찾아가 매입합니다\./u, "expected the superseded hero title to be absent");
 
   for (const item of ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"]) {
     assert.match(html, new RegExp(`>${item}<`), `expected quote item: ${item}`);
