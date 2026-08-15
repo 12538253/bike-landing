@@ -96,6 +96,35 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
           const path = paths[key];
           const active = !enhanced || activePath === key;
           const panelId = `transaction-path-panel-${key}`;
+          const summaryContent = (
+            <>
+              <span className="transaction-path__media">
+                <Image
+                  src={path.image}
+                  alt={path.imageAlt}
+                  fill
+                  sizes="(max-width: 760px) 100vw, (max-width: 959px) 50vw, 55vw"
+                  style={{ objectPosition: path.imagePosition }}
+                />
+                <span className="transaction-path__media-shade" aria-hidden="true" />
+                <span className="transaction-path__number" aria-hidden="true">{pathNumbers[key]}</span>
+              </span>
+              <span className="transaction-path__heading">
+                <span className="transaction-path__eyebrow">
+                  {path.eyebrow}
+                </span>
+                <span className="transaction-path__title">{path.title}</span>
+              </span>
+              <span className="transaction-path__steps">
+                {path.steps.map((step, stepIndex) => (
+                  <span className="transaction-path__step" key={step}>
+                    <span>{step}</span>
+                    {stepIndex < path.steps.length - 1 ? <ArrowUpRight aria-hidden="true" size={15} /> : null}
+                  </span>
+                ))}
+              </span>
+            </>
+          );
 
           return (
             <article
@@ -114,41 +143,19 @@ export default function TransactionPaths({ paths }: TransactionPathsProps) {
                 }
               }}
             >
-              <button
-                className="transaction-path__summary"
-                type="button"
-                aria-expanded={active}
-                aria-controls={panelId}
-                onClick={() => {
-                  if (enhanced) setPinnedPath(key);
-                }}
-              >
-                <span className="transaction-path__media">
-                  <Image
-                    src={path.image}
-                    alt={path.imageAlt}
-                    fill
-                    sizes="(max-width: 760px) 100vw, (max-width: 959px) 50vw, 55vw"
-                    style={{ objectPosition: path.imagePosition }}
-                  />
-                  <span className="transaction-path__media-shade" aria-hidden="true" />
-                  <span className="transaction-path__number" aria-hidden="true">{pathNumbers[key]}</span>
-                </span>
-                <span className="transaction-path__heading">
-                  <span className="transaction-path__eyebrow">
-                    {path.eyebrow}
-                  </span>
-                  <span className="transaction-path__title">{path.title}</span>
-                </span>
-                <span className="transaction-path__steps">
-                  {path.steps.map((step, stepIndex) => (
-                    <span className="transaction-path__step" key={step}>
-                      <span>{step}</span>
-                      {stepIndex < path.steps.length - 1 ? <ArrowUpRight aria-hidden="true" size={15} /> : null}
-                    </span>
-                  ))}
-                </span>
-              </button>
+              {enhanced ? (
+                <button
+                  className="transaction-path__summary"
+                  type="button"
+                  aria-expanded={active}
+                  aria-controls={panelId}
+                  onClick={() => setPinnedPath(key)}
+                >
+                  {summaryContent}
+                </button>
+              ) : (
+                <div className="transaction-path__summary">{summaryContent}</div>
+              )}
 
               <div
                 className="transaction-path__panel"

@@ -103,6 +103,19 @@ function transactionPathButton(page: Page, name: string) {
   return page.getByTestId("transaction-paths").getByRole("button", { name: new RegExp(name) });
 }
 
+function transactionPathArticle(page: Page, key: "directVisit" | "sendFirst") {
+  return page.getByTestId("transaction-paths").locator(`.transaction-path--${key}`);
+}
+
+async function expectStaticTransactionPathSummary(article: Locator, label: string) {
+  const summary = article.locator(":scope > .transaction-path__summary");
+  await expect(summary, `${label}: expected one static summary`).toHaveCount(1);
+  await expect(summary, `${label}: static summary must be a plain container`).toHaveJSProperty("tagName", "DIV");
+  await expect(summary, `${label}: static summary must not advertise expansion`).not.toHaveAttribute("aria-expanded");
+  await expect(summary, `${label}: static summary must not control a panel`).not.toHaveAttribute("aria-controls");
+  await expect(summary, `${label}: static summary must not gain an interactive role`).not.toHaveAttribute("role");
+}
+
 async function transactionPathPanel(button: Locator, page: Page) {
   const panelId = await button.getAttribute("aria-controls");
   if (!panelId) throw new Error("expected each transaction path button to control a detail panel");
@@ -463,6 +476,9 @@ test("390px visibly renders both transaction paths and their decision facts", as
   ]) {
     await expectUserVisible(paths.getByText(copy, { exact: true }), `transaction copy: ${copy}`);
   }
+  await expect(paths.getByRole("button", { name: /바이크매니저 직접 방문|차량을 먼저 보내는 방식/ })).toHaveCount(0);
+  await expectStaticTransactionPathSummary(transactionPathArticle(page, "directVisit"), "390px direct visit");
+  await expectStaticTransactionPathSummary(transactionPathArticle(page, "sendFirst"), "390px send first");
   await expectUserVisible(paths.locator('[data-cta="method-kakao"]'), "transaction Kakao link");
 });
 
@@ -830,7 +846,12 @@ test("200% text at 960px keeps the transaction CTA contained without horizontal 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
 
-test("transaction paths restore the completed static fallback when motion preference changes", async ({ page }) => {
+test("transaction paths switch between interactive and static semantics when motion preference changes", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") runtimeErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 500 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
@@ -838,22 +859,37 @@ test("transaction paths restore the completed static fallback when motion prefer
 
   const paths = page.getByTestId("transaction-paths");
   const pathsLine = paths.getByTestId("transaction-path-lines");
-  const directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
-  const sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
-  const directVisitPanel = await transactionPathPanel(directVisit, page);
-  const sendFirstPanel = await transactionPathPanel(sendFirst, page);
+  let directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  let sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  const directVisitArticle = transactionPathArticle(page, "directVisit");
+  const sendFirstArticle = transactionPathArticle(page, "sendFirst");
+  const directVisitPanel = directVisitArticle.locator(":scope > .transaction-path__panel");
+  const sendFirstPanel = sendFirstArticle.locator(":scope > .transaction-path__panel");
 
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
   await expect(pathsLine).toHaveAttribute("data-revealed", "false");
   await expect(directVisitPanel).toBeVisible();
   await expectInactiveTransactionPathToBeUnavailable(sendFirstPanel);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
 
-  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
-  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(paths.getByRole("button", { name: /바이크매니저 직접 방문|차량을 먼저 보내는 방식/ })).toHaveCount(0);
+  await expectStaticTransactionPathSummary(directVisitArticle, "reduced-motion direct visit");
+  await expectStaticTransactionPathSummary(sendFirstArticle, "reduced-motion send first");
   await expect(directVisitPanel).toBeVisible();
   await expect(sendFirstPanel).toBeVisible();
   await expect(pathsLine).toHaveAttribute("data-revealed", "true");
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  directVisit = transactionPathButton(page, "바이크매니저 직접 방문");
+  sendFirst = transactionPathButton(page, "차량을 먼저 보내는 방식");
+  await expect(directVisit).toHaveAttribute("aria-expanded", "true");
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "false");
+  await sendFirst.hover();
+  await expect(sendFirst).toHaveAttribute("aria-expanded", "true");
+  await expect(directVisit).toHaveAttribute("aria-expanded", "false");
+  expect(runtimeErrors, "live media-query semantic switches must not log hydration/runtime errors").toEqual([]);
 });
 
 test("case studies use the featured and portrait layout at each breakpoint", async ({ page }) => {
@@ -982,10 +1018,16 @@ test.describe("reduced motion", () => {
     await expect(page.getByTestId("hero-media")).toHaveCSS("animation-name", "none");
 
     const paths = page.getByTestId("transaction-paths");
-    const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
-    const sendFirstPanel = await transactionPathPanel(transactionPathButton(page, "차량을 먼저 보내는 방식"), page);
+    const directVisitArticle = transactionPathArticle(page, "directVisit");
+    const sendFirstArticle = transactionPathArticle(page, "sendFirst");
+    const directVisitPanel = directVisitArticle.locator(":scope > .transaction-path__panel");
+    const sendFirstPanel = sendFirstArticle.locator(":scope > .transaction-path__panel");
+    await expect(paths.getByRole("button", { name: /바이크매니저 직접 방문|차량을 먼저 보내는 방식/ })).toHaveCount(0);
+    await expectStaticTransactionPathSummary(directVisitArticle, "reduced-motion direct visit");
+    await expectStaticTransactionPathSummary(sendFirstArticle, "reduced-motion send first");
     await expect(directVisitPanel).toBeVisible();
     await expect(sendFirstPanel).toBeVisible();
+    await expect(paths.locator('[data-cta="method-kakao"]')).toBeVisible();
     await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
   });
 
@@ -1012,10 +1054,16 @@ test("JavaScript-off desktop keeps both transaction paths visible", async ({ bro
   await expect(page.getByTestId("process-story")).toHaveCount(0);
 
   const paths = page.getByTestId("transaction-paths");
-  const directVisitPanel = await transactionPathPanel(transactionPathButton(page, "바이크매니저 직접 방문"), page);
-  const sendFirstPanel = await transactionPathPanel(transactionPathButton(page, "차량을 먼저 보내는 방식"), page);
+  const directVisitArticle = transactionPathArticle(page, "directVisit");
+  const sendFirstArticle = transactionPathArticle(page, "sendFirst");
+  const directVisitPanel = directVisitArticle.locator(":scope > .transaction-path__panel");
+  const sendFirstPanel = sendFirstArticle.locator(":scope > .transaction-path__panel");
+  await expect(paths.getByRole("button", { name: /바이크매니저 직접 방문|차량을 먼저 보내는 방식/ })).toHaveCount(0);
+  await expectStaticTransactionPathSummary(directVisitArticle, "JavaScript-off direct visit");
+  await expectStaticTransactionPathSummary(sendFirstArticle, "JavaScript-off send first");
   await expect(directVisitPanel).toBeVisible();
   await expect(sendFirstPanel).toBeVisible();
+  await expect(paths.locator('[data-cta="method-kakao"]')).toBeVisible();
   await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
   await expect(page.getByTestId("sticky-inquiry")).toHaveAttribute("aria-hidden", "true");
 

@@ -63,6 +63,20 @@ test("exports the approved contact and canonical metadata", () => {
   assert.match(html, /<meta name="theme-color" content="#0C1A1C"\/>/);
 });
 
+test("exports only the approved BM favicon asset", async () => {
+  assert.match(html, /<link rel="icon" href="\/favicon\.png" type="image\/png"\/>/);
+  assert.match(html, /<link rel="apple-touch-icon" href="\/favicon\.png"\/>/);
+  assert.doesNotMatch(html, /href="\/favicon\.ico(?:\?[^\"]*)?"/);
+
+  const approvedIcon = await stat(new URL("../out/favicon.png", import.meta.url));
+  assert.ok(approvedIcon.isFile(), "expected the approved PNG favicon in the static export");
+  await assert.rejects(
+    stat(new URL("../out/favicon.ico", import.meta.url)),
+    (error) => error?.code === "ENOENT",
+    "the stock Next favicon must not be emitted",
+  );
+});
+
 test("renders the trust-first hero and trackable contact links", () => {
   assert.match(html, /바이크를 먼저 보내실 필요 없습니다/);
   assert.match(html, /data-cta="hero-kakao"/);
@@ -295,6 +309,20 @@ test("exports the two transaction paths with local, budgeted route images", asyn
   const sendFirst = pathArticles.find((article) => textContent(article).includes(sendFirstTitle));
   assert.ok(directVisit, "expected a direct-visit path article");
   assert.ok(sendFirst, "expected a send-first path article");
+
+  for (const [label, article] of [["direct visit", directVisit], ["send first", sendFirst]]) {
+    const summary = article.match(
+      /<(\w+)\b(?=[^>]*class="[^"]*\btransaction-path__summary\b[^"]*")[^>]*>/,
+    );
+    assert.ok(summary, `expected a ${label} summary container`);
+    assert.equal(summary[1], "div", `expected the exported ${label} summary to be non-interactive`);
+    assert.doesNotMatch(summary[0], /\b(?:aria-expanded|aria-controls|role)=/);
+  }
+  assert.doesNotMatch(
+    transactionPaths,
+    /<button\b(?=[^>]*class="[^"]*\btransaction-path__summary\b)/,
+    "the JavaScript-off fallback must not expose no-op path buttons",
+  );
 
   const assertOrderedSteps = (article, title, description, steps, label) => {
     const articleText = textContent(article);
