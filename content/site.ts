@@ -41,6 +41,11 @@ export type ProcessStep = Readonly<{
 
 export type TransactionPathKey = "directVisit" | "sendFirst";
 
+export type TransactionPathSection = Readonly<{
+  title: string;
+  description: string;
+}>;
+
 export type TransactionPath = Readonly<{
   title: string;
   steps: readonly string[];
@@ -48,6 +53,7 @@ export type TransactionPath = Readonly<{
   image: string;
   imageAlt: string;
   imagePosition: string;
+  sourceUrl: string;
   confirmation?: Readonly<{
     label: string;
     detail: string;
@@ -140,6 +146,11 @@ export const site = {
       external: true,
     } satisfies ContactLink,
   },
+  tradePathSection: {
+    title: "차량은 곁에 두고, 거래 조건은 현장에서 확인하세요.",
+    description:
+      "차량이 내 손을 떠나는 시점에 따라 확인해야 할 조건이 달라집니다. 바이크매니저는 약속한 장소로 직접 방문해 차량 상태와 최종 금액을 함께 확인합니다.",
+  } satisfies TransactionPathSection,
   tradePaths: {
     directVisit: {
       title: "바이크매니저 직접 방문",
@@ -147,8 +158,9 @@ export const site = {
       description:
         "바이크매니저는 약속한 장소에서 차량을 함께 확인하고, 최종 금액과 계약 내용을 안내한 뒤 입금 확인 후 상차합니다.",
       image: "/images/routes/direct-visit.webp",
-      imageAlt: "늦은 저녁 바이크매니저 차량에 상차되는 혼다 ADV350 스쿠터",
+      imageAlt: "늦은 저녁 운송 차량에 실린 혼다 ADV350 스쿠터",
       imagePosition: "center center",
+      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224355424035",
       confirmation: {
         label: "입금 확인",
         detail: "확인 후 상차",
@@ -168,6 +180,7 @@ export const site = {
       image: "/images/routes/send-first.webp",
       imageAlt: "측면에서 본 회색 혼다 PCX125 스쿠터",
       imagePosition: "center center",
+      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224362894515",
     } satisfies TransactionPath,
   } satisfies Readonly<Record<TransactionPathKey, TransactionPath>>,
   trustPoints: [
