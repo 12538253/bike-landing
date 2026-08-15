@@ -162,18 +162,29 @@ test("retains the approved short copy and seller decision facts", () => {
     assert.ok(html.includes(requiredCopy), `expected required visible copy: ${requiredCopy}`);
   }
 
-  for (const removedCopy of [
-    "최종 금액은 현장 상태에 따라 달라질 수 있습니다.",
-    "가격만 보면 개인 거래가 더 유리할 수 있습니다.",
-    "즉시 방문을 보장하지 않습니다.",
-    "거래가 어렵거나 서류를 더 준비해야 할 수 있습니다.",
-  ]) {
-    assert.ok(!html.includes(removedCopy), `expected defensive copy to be removed: ${removedCopy}`);
-  }
-
   for (const item of ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"]) {
     assert.match(html, new RegExp(`>${item}<`), `expected quote item: ${item}`);
   }
+});
+
+test("keeps full sale-payment confirmation before loading the bike", () => {
+  const hero = html.match(/<section\b(?=[^>]*id="top")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(hero, "expected the hero section");
+  const heroText = textContent(hero);
+  const salePaymentIndex = heroText.indexOf("판매대금 전액");
+  const confirmationIndex = heroText.indexOf("입금된 것을 확인");
+  const loadingIndex = heroText.indexOf("상차");
+
+  assert.ok(salePaymentIndex >= 0, "expected the hero to state full sale-payment amount");
+  assert.ok(confirmationIndex > salePaymentIndex, "expected payment confirmation after the full sale-payment amount");
+  assert.ok(loadingIndex > confirmationIndex, "expected loading only after payment confirmation");
+});
+
+test("omits every globally forbidden defensive phrase", () => {
+  assert.doesNotMatch(
+    html,
+    /최종 금액은 현장 상태에 따라 달라질 수 있습니다\.|가격만 보면 개인 거래가 더 유리할 수 있습니다\.|즉시 방문을 보장하지 않습니다\.|거래가 어렵거나 서류를 더 준비해야 할 수 있습니다\.|무조건|즉시 출동/u,
+  );
 });
 
 test("sources canonical landing section copy from typed site content", async () => {
