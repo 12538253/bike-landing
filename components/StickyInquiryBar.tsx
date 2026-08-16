@@ -9,16 +9,19 @@ export default function StickyInquiryBar() {
   const barRef = useRef<HTMLElement>(null);
   const [heroPassed, setHeroPassed] = useState(false);
   const [processVisible, setProcessVisible] = useState(false);
+  const [faqVisible, setFaqVisible] = useState(false);
   const [finalVisible, setFinalVisible] = useState(false);
 
   useEffect(() => {
     const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
     const process = document.querySelector<HTMLElement>("[data-testid='visit-flow']");
+    const faq = document.querySelector<HTMLElement>("#faq");
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
-    if (!hero || !process || !finalCta) return;
+    if (!hero || !process || !faq || !finalCta) return;
 
-    const moveFocusTo = (destination: HTMLElement) => {
-      if (!barRef.current?.contains(document.activeElement)) return;
+    const moveFocusTo = (destination: HTMLElement, previousDestination?: HTMLElement) => {
+      const activeElement = document.activeElement;
+      if (!barRef.current?.contains(activeElement) && activeElement !== previousDestination) return;
 
       const previousTabIndex = destination.getAttribute("tabindex");
       const restoreTabIndex = () => {
@@ -46,24 +49,33 @@ export default function StickyInquiryBar() {
     );
     const finalObserver = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) moveFocusTo(finalCta);
+        if (entry.isIntersecting) moveFocusTo(finalCta, faq);
         setFinalVisible(entry.isIntersecting);
       },
       { threshold: 0.1 },
     );
+    const faqObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) moveFocusTo(faq);
+        setFaqVisible(entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
 
     heroObserver.observe(hero);
     processObserver.observe(process);
+    faqObserver.observe(faq);
     finalObserver.observe(finalCta);
 
     return () => {
       heroObserver.disconnect();
       processObserver.disconnect();
+      faqObserver.disconnect();
       finalObserver.disconnect();
     };
   }, []);
 
-  const visible = heroPassed && !processVisible && !finalVisible;
+  const visible = heroPassed && !processVisible && !faqVisible && !finalVisible;
   const kakao = site.contact.stickyKakao;
 
   return (

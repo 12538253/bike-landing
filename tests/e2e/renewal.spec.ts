@@ -746,6 +746,48 @@ test("compact case source links keep a 44px unclipped touch target at every supp
   }
 });
 
+test("compact case proof and source links remain readable and unclipped", async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+
+    for (const card of await page.locator("article.case-card").all()) {
+      const proof = card.locator(".case-card__proof");
+      const link = card.locator(".case-card__link");
+      await expectUserVisible(proof, `${width}px compact proof`);
+      await expectUserVisible(link, `${width}px compact source link`);
+      const [cardBox, proofBox, linkBox, proofFontSize, linkFontSize] = await Promise.all([
+        card.boundingBox(),
+        proof.boundingBox(),
+        link.boundingBox(),
+        proof.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+        link.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+      ]);
+      expect(cardBox && proofBox && linkBox).toBeTruthy();
+      if (!cardBox || !proofBox || !linkBox) continue;
+      expect(proofFontSize, `${width}px proof must remain readable`).toBeGreaterThanOrEqual(11);
+      expect(linkFontSize, `${width}px source link must remain readable`).toBeGreaterThanOrEqual(11);
+      for (const [label, box] of [["proof", proofBox], ["link", linkBox]] as const) {
+        expect(box.x, `${width}px ${label} left edge`).toBeGreaterThanOrEqual(cardBox.x - 1);
+        expect(box.x + box.width, `${width}px ${label} right edge`).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+      }
+    }
+  }
+});
+
+test("200% text zoom preserves readable intrinsic layout without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+
+  const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  for (const target of [page.locator('[data-cta="hero-kakao"]'), page.locator('[data-cta="final-phone"]')]) {
+    const box = await target.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 
@@ -816,7 +858,7 @@ test("mobile inquiry bar appears after the hero and hides at the final call to a
   const bar = page.getByTestId("sticky-inquiry");
   await expect(bar).not.toHaveClass(/is-visible/);
 
-  await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+  await page.locator("#cases").scrollIntoViewIfNeeded();
   await expect(bar).toHaveClass(/is-visible/);
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
@@ -831,7 +873,7 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
 
     const bar = page.getByTestId("sticky-inquiry");
     const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
-    await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+    await page.locator("#cases").scrollIntoViewIfNeeded();
     await expect(bar, `${reducedMotion}: sticky inquiry should become visible before each transition`).toHaveClass(/is-visible/);
 
     await stickyKakao.focus();
@@ -845,7 +887,7 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
     await expect(page.locator("#process"), `${reducedMotion}: the temporary process tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
     await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
 
-    await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+    await page.locator("#cases").scrollIntoViewIfNeeded();
     await expect(bar, `${reducedMotion}: sticky inquiry should reappear away from the process`).toHaveClass(/is-visible/);
     await stickyKakao.focus();
     await page.locator("#contact").scrollIntoViewIfNeeded();
@@ -858,6 +900,109 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
     await expect(page.locator("#contact"), `${reducedMotion}: the temporary contact tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
     await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
   }
+});
+
+test("sticky inquiry yields to the labelled FAQ section and restores its temporary tabindex", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const bar = page.getByTestId("sticky-inquiry");
+  const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
+  const faq = page.locator("#faq");
+  await page.locator("#cases").scrollIntoViewIfNeeded();
+  await expect(bar).toHaveClass(/is-visible/);
+
+  await stickyKakao.focus();
+  await faq.scrollIntoViewIfNeeded();
+  await expect(bar).toHaveAttribute("inert", "");
+  await expect(bar).toHaveAttribute("aria-hidden", "true");
+  await expect(faq).toBeFocused();
+  await page.locator('[data-cta="header-phone"]').focus();
+  await expect(faq).not.toHaveAttribute("tabindex");
+});
+
+test("761px through 960px header preserves navigation without exposing the Kakao header action early", async ({ page }) => {
+  for (const width of [761, 768, 960]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+
+    const nav = page.getByRole("navigation", { name: "주요 메뉴" });
+    const header = page.locator(".site-header__inner");
+    await expect(nav, `${width}px navigation must be visible from the 761px breakpoint`).toBeVisible();
+    const [headerBox, navBox, dimensions] = await Promise.all([
+      header.boundingBox(),
+      nav.boundingBox(),
+      page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth })),
+    ]);
+    expect(headerBox && navBox, `${width}px header and navigation must render`).toBeTruthy();
+    if (!headerBox || !navBox) continue;
+    expect(navBox.x).toBeGreaterThanOrEqual(headerBox.x - 1);
+    expect(navBox.x + navBox.width).toBeLessThanOrEqual(headerBox.x + headerBox.width + 1);
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+
+    const kakao = page.locator(".header-kakao");
+    if (width < 960) await expect(kakao).toBeHidden();
+    else await expect(kakao).toBeVisible();
+  }
+});
+
+test("footer small type remains 13–14px with readable contrast", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const footer = page.locator(".site-footer");
+  await expect(footer).toContainText("문의 010-7616-4949");
+  const metrics = await footer.locator("small").evaluate((element) => {
+    const styles = getComputedStyle(element);
+    const footerStyles = getComputedStyle(element.closest(".site-footer")!);
+    return { fontSize: Number.parseFloat(styles.fontSize), color: styles.color, background: footerStyles.backgroundColor };
+  });
+  expect(metrics.fontSize).toBeGreaterThanOrEqual(13);
+  expect(metrics.fontSize).toBeLessThanOrEqual(14);
+  expect(contrastRatio(parseCssColor(metrics.color), parseCssColor(metrics.background))).toBeGreaterThanOrEqual(3);
+});
+
+test("focus indicator is a 2–3px high-contrast ring on light and dark controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  for (const target of [page.locator('[data-cta="header-phone"]'), page.locator('[data-cta="final-phone"]')]) {
+    await target.focus();
+    const styles = await target.evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        focusVisible: element.matches(":focus-visible"),
+        outlineColor: computed.outlineColor,
+        outlineWidth: Number.parseFloat(computed.outlineWidth),
+        boxShadow: computed.boxShadow,
+      };
+    });
+    expect(styles.focusVisible).toBe(true);
+    expect(styles.outlineWidth).toBeGreaterThanOrEqual(2);
+    expect(styles.outlineWidth).toBeLessThanOrEqual(3);
+    expect(styles.boxShadow).toMatch(/0px 0px 0px (?:2|3)px/);
+  }
+});
+
+test("390px default main and visit flow remain intrinsically compact", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const [mainBox, flowBox] = await Promise.all([page.locator("main").boundingBox(), page.getByTestId("visit-flow").boundingBox()]);
+  expect(mainBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(5400);
+  expect(flowBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(1000);
+});
+
+test("wide coarse-pointer visit flow remains a static two-stage fallback", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  await page.goto("/");
+
+  const flow = page.getByTestId("visit-flow");
+  await expect(flow.getByRole("button", { name: /사진으로 먼저 안내|약속한 장소에서 함께 확인/ })).toHaveCount(0);
+  await expectStaticVisitStage(visitStage(page, "photoGuide"), "coarse photo guide");
+  await expectStaticVisitStage(visitStage(page, "onsiteDeal"), "coarse onsite deal");
+  await context.close();
 });
 
 test("small-screen brand lockup keeps its Korean name and accessible home name", async ({ page }) => {

@@ -337,7 +337,7 @@ export const site = {
     service: "중고 바이크 직접 방문·현장 거래",
     business: "상호명 바이크매니저",
     address: "인천광역시 남동구 백범로 411 1층(간석동)",
-    contact: "24시간 문의 접수 · 방문 전 연락 · 010-7616-4949",
+    contact: "문의 010-7616-4949",
     copyright: "© 2026 BIKE MANAGER. All rights reserved.",
   } satisfies FooterCopy,
 } as const;
