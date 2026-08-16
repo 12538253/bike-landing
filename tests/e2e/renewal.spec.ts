@@ -1087,13 +1087,15 @@ test("focus indicator maintains 3:1 contrast on the approved light and dark surf
   }
 });
 
-test("brighter preview keeps the brand frame dark and the decision surfaces light", async ({ page }) => {
+test("midtone preview bridges the dark brand frame with smoky mineral surfaces", async ({ page }) => {
   const expectedBackgrounds = {
-    trust: "rgb(232, 225, 213)",
-    process: "rgb(246, 242, 233)",
-    cases: "rgb(255, 250, 243)",
-    quote: "rgb(241, 237, 228)",
-    support: "rgb(250, 247, 240)",
+    trust: "rgb(143, 156, 153)",
+    process: "rgb(213, 207, 196)",
+    cases: "rgb(221, 215, 204)",
+    quote: "rgb(213, 207, 196)",
+    support: "rgb(221, 215, 204)",
+    card: "rgb(233, 227, 217)",
+    activeStage: "rgb(223, 207, 181)",
     contact: "rgb(12, 26, 28)",
   } as const;
 
@@ -1102,38 +1104,68 @@ test("brighter preview keeps the brand frame dark and the decision surfaces ligh
     await page.goto("/");
 
     const surfaces = await page.evaluate(() => {
-      const state = (selector: string, textSelector?: string) => {
+      const state = (selector: string, textSelector?: string, accentSelector?: string) => {
         const surface = document.querySelector<HTMLElement>(selector);
         if (!surface) throw new Error(`missing surface: ${selector}`);
         const text = textSelector ? surface.querySelector<HTMLElement>(textSelector) : surface;
         if (!text) throw new Error(`missing text: ${selector} ${textSelector}`);
+        const accent = accentSelector ? surface.querySelector<HTMLElement>(accentSelector) : null;
         return {
           background: getComputedStyle(surface).backgroundColor,
           color: getComputedStyle(text).color,
+          accentColor: accent ? getComputedStyle(accent).color : null,
         };
       };
 
       return {
         hero: state(".hero"),
-        trust: state(".trust-bar", ".trust-point strong"),
-        process: state("#process", "h2"),
+        trust: state(".trust-bar", ".trust-point strong", ".trust-point svg"),
+        process: state("#process", "h2", ".section-heading > p"),
         cases: state("#cases", "h2"),
         quote: state('[data-testid="quote-checklist"]', "h2"),
         support: state("#faq", "h2"),
         contact: state("#contact", "h2"),
+        processCard: state(".visit-flow__stage"),
+        caseCard: state(".case-card"),
+        quoteCard: state(".quote-list li"),
+        activeStage: document.querySelector<HTMLElement>(
+          '.visit-flow[data-enhanced="true"] .visit-flow__stage[data-active="true"] .visit-flow__stage-summary',
+        ) ? getComputedStyle(document.querySelector<HTMLElement>(
+          '.visit-flow[data-enhanced="true"] .visit-flow__stage[data-active="true"] .visit-flow__stage-summary',
+        )!).backgroundColor : null,
+        primaryCta: state(".hero .button--primary"),
       };
     });
 
-    expect(surfaces.hero).toEqual({ background: "rgb(12, 26, 28)", color: "rgb(255, 255, 255)" });
-    expect(surfaces.contact).toEqual({ background: expectedBackgrounds.contact, color: "rgb(255, 255, 255)" });
+    expect(surfaces.hero).toMatchObject({ background: "rgb(12, 26, 28)", color: "rgb(255, 255, 255)" });
+    expect(surfaces.contact).toMatchObject({ background: expectedBackgrounds.contact, color: "rgb(255, 255, 255)" });
     for (const key of ["trust", "process", "cases", "quote", "support"] as const) {
       expect(surfaces[key].background, `${viewport.width}px ${key} surface`).toBe(expectedBackgrounds[key]);
-    }
-    for (const key of ["trust", "process", "cases"] as const) {
       expect(
         contrastRatio(parseCssColor(surfaces[key].color), parseCssColor(surfaces[key].background)),
         `${viewport.width}px ${key} text contrast`,
       ).toBeGreaterThanOrEqual(4.5);
+    }
+
+    for (const key of ["processCard", "caseCard", "quoteCard"] as const) {
+      expect(surfaces[key].background, `${viewport.width}px ${key} surface`).toBe(expectedBackgrounds.card);
+    }
+
+    expect(
+      contrastRatio(parseCssColor(surfaces.trust.accentColor!), parseCssColor(surfaces.trust.background)),
+      `${viewport.width}px trust accent contrast`,
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(parseCssColor(surfaces.process.accentColor!), parseCssColor(surfaces.process.background)),
+      `${viewport.width}px process accent contrast`,
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(parseCssColor(surfaces.primaryCta.color), parseCssColor(surfaces.primaryCta.background)),
+      `${viewport.width}px copper CTA contrast`,
+    ).toBeGreaterThanOrEqual(6);
+
+    if (viewport.width >= 960) {
+      expect(surfaces.activeStage).toBe(expectedBackgrounds.activeStage);
     }
   }
 });
