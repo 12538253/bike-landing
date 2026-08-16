@@ -1,5 +1,6 @@
 export type CtaId =
   | "hero-kakao"
+  | "final-kakao"
   | "header-phone"
   | "sticky-kakao"
   | "final-phone"
@@ -181,7 +182,7 @@ export const site = {
     finalKakao: {
       label: "사진 보내고 예상 견적 확인",
       href: kakaoChatUrl,
-      ctaId: "hero-kakao",
+      ctaId: "final-kakao",
       external: true,
     } satisfies ContactLink,
     headerPhone: {

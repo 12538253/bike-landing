@@ -210,6 +210,36 @@ async function expectUserVisible(locator: Locator, label: string) {
   ).toBe(true);
 }
 
+async function expectExpandedTextToRemainReachableAtTextZoom(locator: Locator, label: string) {
+  await locator.scrollIntoViewIfNeeded();
+  const result = await locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const clippingAncestors: string[] = [];
+
+    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      const styles = getComputedStyle(ancestor);
+      const clipsVertically = [styles.overflow, styles.overflowY].some((value) => value === "hidden" || value === "clip" || value === "scroll" || value === "auto");
+      if (clipsVertically && ancestor.scrollHeight > ancestor.clientHeight + 1) clippingAncestors.push(ancestor.className || ancestor.tagName);
+    }
+
+    const fixedOverlays = [...document.querySelectorAll<HTMLElement>("body *")]
+      .filter((candidate) => candidate !== element && !candidate.contains(element))
+      .filter((candidate) => {
+        const styles = getComputedStyle(candidate);
+        if (styles.position !== "fixed" || styles.visibility === "hidden" || styles.display === "none" || Number(styles.opacity) === 0) return false;
+        const overlay = candidate.getBoundingClientRect();
+        return overlay.width > 0 && overlay.height > 0
+          && overlay.left < rect.right && overlay.right > rect.left && overlay.top < rect.bottom && overlay.bottom > rect.top;
+      })
+      .map((candidate) => candidate.dataset.testid || candidate.className || candidate.tagName);
+
+    return { clippingAncestors, fixedOverlays };
+  });
+
+  expect(result.clippingAncestors, `${label}: expanded text must not be vertically clipped`).toEqual([]);
+  expect(result.fixedOverlays, `${label}: expanded text must not sit under fixed UI`).toEqual([]);
+}
+
 async function visibleDetailsContent(details: Locator, label: string) {
   const result = await details.evaluate((element) => {
     if (!(element instanceof HTMLDetailsElement)) throw new Error("expected a native details element");
@@ -659,6 +689,25 @@ test("390px opens the merged support document disclosure and renders its facts",
   for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "현재 상태", "필요한 확인 사항과 서류"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
+});
+
+test("200% text zoom keeps representative VisitFlow and support detail text reachable", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%";
+  });
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+
+  const visitDescription = page.locator(".visit-flow__stage--photoGuide .visit-flow__stage-panel > p");
+  await expectUserVisible(visitDescription, "200% text zoom VisitFlow description");
+  await expectExpandedTextToRemainReachableAtTextZoom(visitDescription, "200% text zoom VisitFlow description");
+
+  const guide = page.locator("#faq details").filter({ hasText: "명의·서류가 다른 경우" });
+  await guide.locator(":scope > summary").click();
+  const supportAnswer = guide.locator(".support-answer > p");
+  await expectUserVisible(supportAnswer, "200% text zoom expanded support answer");
+  await expectExpandedTextToRemainReachableAtTextZoom(supportAnswer, "200% text zoom expanded support answer");
 });
 
 for (const { question, answer: expectedAnswer, facts } of faqAnswerContracts) {

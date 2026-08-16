@@ -17,6 +17,7 @@ export default function LocationFinal() {
             <a
               className="button button--primary"
               href={kakao.href}
+              data-cta={kakao.ctaId}
               target="_blank"
               rel="noreferrer"
             >

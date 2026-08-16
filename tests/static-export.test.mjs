@@ -81,6 +81,26 @@ test("exports the approved contact and canonical metadata", () => {
   assert.match(html, /<meta name="theme-color" content="#0C1A1C"\/>/);
 });
 
+test("exports a budgeted production-canonical Open Graph JPEG", async () => {
+  const ogImagePath = "/images/og-bike-manager.jpg";
+  const ogImage = new URL(`../out${ogImagePath}`, import.meta.url);
+  const [{ size }, metadata] = await Promise.all([
+    stat(ogImage),
+    sharp(fileURLToPath(ogImage)).metadata(),
+  ]);
+
+  assert.equal(metadata.format, "jpeg", "the exported Open Graph asset must be a JPEG");
+  assert.equal(metadata.width, 1200, "the exported Open Graph JPEG must be 1200px wide");
+  assert.equal(metadata.height, 630, "the exported Open Graph JPEG must be 630px tall");
+  assert.ok(size <= 180 * 1024, `the exported Open Graph JPEG is ${Math.ceil(size / 1024)}KB`);
+  assert.match(
+    html,
+    /<meta property="og:image" content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager\.jpg"\/>/,
+    "Open Graph metadata must use the production canonical origin",
+  );
+  assert.doesNotMatch(html, /og:image" content="https?:\/\/[^\"]*(?:pages\.dev|localhost|127\.0\.0\.1)/);
+});
+
 test("exports only the approved BM favicon asset", async () => {
   assert.match(html, /<link rel="icon" href="\/favicon\.png" type="image\/png"\/>/);
   assert.match(html, /<link rel="apple-touch-icon" href="\/favicon\.png"\/>/);
@@ -99,6 +119,9 @@ test("renders the benefit-led hero and trackable contact links", () => {
   assert.match(html, /바이크는 그대로 두세요/);
   assert.match(html, /직접 찾아가 매입합니다/);
   assert.match(html, /data-cta="hero-kakao"/);
+  const finalSection = html.match(/<section\b(?=[^>]*id="contact")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(finalSection, "expected the final contact section");
+  assert.match(finalSection, /data-cta="final-kakao"/, "the final Kakao CTA must render its configured tracking ID");
   assert.match(html, /data-cta="header-phone"/);
   assert.match(html, /data-cta="sticky-kakao"/);
   assert.match(html, /data-cta="final-phone"/);
