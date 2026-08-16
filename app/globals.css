@@ -1046,9 +1046,13 @@ button.visit-flow__stage-summary {
 
 .site-footer__inner {
   display: grid;
-  grid-template-columns: 0.6fr 1fr auto;
+  grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr) minmax(0, auto);
   gap: 38px;
   align-items: end;
+}
+
+.site-footer__inner > * {
+  min-inline-size: 0;
 }
 
 .footer-brand__lockup {
@@ -1102,7 +1106,7 @@ button.visit-flow__stage-summary {
 }
 
 .site-footer small {
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .sticky-inquiry {

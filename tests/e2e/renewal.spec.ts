@@ -692,66 +692,87 @@ test("desktop visit flow changes the connected stage detail without moving the C
   await expectMethodCtaContained(page, "desktop visit-flow CTA", true);
 });
 
-test("enhanced VisitFlow reserves intrinsic panel space at 200% root text size", async ({ page }) => {
-  for (const width of [960, 1440]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto("/");
-    await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+test("enhanced VisitFlow reserves intrinsic panel space with wider font metrics at 200% root text size", async ({ page }) => {
+  for (const fontMetrics of ["normal", "wider-fallback"] as const) {
+    for (const width of [960, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.goto("/");
+      await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+      if (fontMetrics === "wider-fallback") {
+        await page.addStyleTag({
+          content: "body * { letter-spacing: 0.046em !important; }",
+        });
+      }
 
-    const flow = page.getByTestId("visit-flow");
-    await expect(flow.locator(".visit-flow")).toHaveAttribute("data-enhanced", "true");
-    const heights: number[] = [];
+      const flow = page.getByTestId("visit-flow");
+      await expect(flow.locator(".visit-flow")).toHaveAttribute("data-enhanced", "true");
+      const heights: number[] = [];
 
-    for (const stageName of ["사진으로 먼저 안내", "약속한 장소에서 함께 확인"]) {
-      const stageButton = visitStageButton(page, stageName);
-      await stageButton.click();
-      await page.mouse.move(0, 0);
-      await page.locator('[data-cta="header-phone"]').focus();
-      await waitForVisitFlowLayout(flow);
-      await expect(stageButton).toHaveAttribute("aria-expanded", "true");
+      for (const stageName of ["사진으로 먼저 안내", "약속한 장소에서 함께 확인"]) {
+        const stageButton = visitStageButton(page, stageName);
+        await stageButton.click();
+        await page.mouse.move(0, 0);
+        await page.locator('[data-cta="header-phone"]').focus();
+        await waitForVisitFlowLayout(flow);
+        await expect(stageButton).toHaveAttribute("aria-expanded", "true");
 
-      const panel = await visitStagePanel(stageButton, page);
-      const cta = flow.locator('[data-cta="method-kakao"]');
-      await expectUserVisible(panel, `${width}px ${stageName} panel at 200%`);
-      await expectExpandedTextToRemainReachableAtTextZoom(panel, `${width}px ${stageName} panel at 200%`);
-      await expectUserVisible(cta, `${width}px VisitFlow CTA at 200%`);
+        const panel = await visitStagePanel(stageButton, page);
+        const cta = flow.locator('[data-cta="method-kakao"]');
+        await expectUserVisible(panel, `${width}px ${stageName} panel at 200%`);
+        await expectExpandedTextToRemainReachableAtTextZoom(panel, `${width}px ${stageName} panel at 200%`);
+        await expectUserVisible(cta, `${width}px VisitFlow CTA at 200%`);
 
-      const geometry = await flow.locator(".visit-flow").evaluate((root, activePanelId) => {
-        const rect = (selector: string) => {
-          const element = root.querySelector<HTMLElement>(selector);
-          if (!element) throw new Error(`missing ${selector}`);
-          const box = element.getBoundingClientRect();
-          return { x: box.x, y: box.y, width: box.width, height: box.height };
-        };
-        const rootBox = root.getBoundingClientRect();
-        return {
-          root: { x: rootBox.x, y: rootBox.y, width: rootBox.width, height: rootBox.height },
-          stages: rect(".visit-flow__stages"),
-          summaries: [...root.querySelectorAll<HTMLElement>(".visit-flow__stage-summary")].map((element) => {
+        const geometry = await flow.locator(".visit-flow").evaluate((root, activePanelId) => {
+          const rect = (selector: string) => {
+            const element = root.querySelector<HTMLElement>(selector);
+            if (!element) throw new Error(`missing ${selector}`);
             const box = element.getBoundingClientRect();
             return { x: box.x, y: box.y, width: box.width, height: box.height };
-          }),
-          panel: rect(`#${activePanelId}`),
-          cta: rect('[data-cta="method-kakao"]'),
-          documentWidth: document.documentElement.scrollWidth,
-          viewportWidth: document.documentElement.clientWidth,
-        };
-      }, await panel.getAttribute("id"));
+          };
+          const rootBox = root.getBoundingClientRect();
+          return {
+            root: { x: rootBox.x, y: rootBox.y, width: rootBox.width, height: rootBox.height },
+            stages: rect(".visit-flow__stages"),
+            summaries: [...root.querySelectorAll<HTMLElement>(".visit-flow__stage-summary")].map((element) => {
+              const box = element.getBoundingClientRect();
+              return { x: box.x, y: box.y, width: box.width, height: box.height };
+            }),
+            panel: rect(`#${activePanelId}`),
+            cta: rect('[data-cta="method-kakao"]'),
+            documentWidth: document.documentElement.scrollWidth,
+            viewportWidth: document.documentElement.clientWidth,
+            overflowDiagnostics: [...document.querySelectorAll<HTMLElement>("body *")].flatMap((element) => {
+              if (element.closest(".sr-only")) return [];
+              const box = element.getBoundingClientRect();
+              if (box.right <= document.documentElement.clientWidth + 0.5 && element.scrollWidth <= element.clientWidth + 0.5) return [];
+              return [{
+                selector: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}${[...element.classList].map((name) => `.${name}`).join("")}`,
+                right: Math.round(box.right * 100) / 100,
+                clientWidth: element.clientWidth,
+                scrollWidth: element.scrollWidth,
+              }];
+            }),
+          };
+        }, await panel.getAttribute("id"));
 
-      expect(geometry.documentWidth, `${width}px document horizontal overflow at 200%`).toBeLessThanOrEqual(geometry.viewportWidth);
-      expect(geometry.summaries).toHaveLength(2);
-      for (const [index, summary] of geometry.summaries.entries()) {
-        expect(rectanglesOverlap(summary, geometry.panel), `${width}px summary ${index + 1}/panel overlap for ${stageName}`).toBe(false);
+        expect(
+          geometry.documentWidth,
+          `${width}px document horizontal overflow at 200% (${fontMetrics}); ${JSON.stringify(geometry.overflowDiagnostics)}`,
+        ).toBeLessThanOrEqual(geometry.viewportWidth);
+        expect(geometry.summaries).toHaveLength(2);
+        for (const [index, summary] of geometry.summaries.entries()) {
+          expect(rectanglesOverlap(summary, geometry.panel), `${width}px summary ${index + 1}/panel overlap for ${stageName}`).toBe(false);
+        }
+        expect(rectanglesOverlap(geometry.panel, geometry.cta), `${width}px panel/CTA overlap for ${stageName}`).toBe(false);
+        expect(geometry.panel.y).toBeGreaterThanOrEqual(geometry.stages.y - 0.5);
+        expect(geometry.panel.y + geometry.panel.height).toBeLessThanOrEqual(geometry.stages.y + geometry.stages.height + 0.5);
+        expect(geometry.cta.y + geometry.cta.height).toBeLessThanOrEqual(geometry.root.y + geometry.root.height + 0.5);
+        heights.push(geometry.root.height);
       }
-      expect(rectanglesOverlap(geometry.panel, geometry.cta), `${width}px panel/CTA overlap for ${stageName}`).toBe(false);
-      expect(geometry.panel.y).toBeGreaterThanOrEqual(geometry.stages.y - 0.5);
-      expect(geometry.panel.y + geometry.panel.height).toBeLessThanOrEqual(geometry.stages.y + geometry.stages.height + 0.5);
-      expect(geometry.cta.y + geometry.cta.height).toBeLessThanOrEqual(geometry.root.y + geometry.root.height + 0.5);
-      heights.push(geometry.root.height);
-    }
 
-    expect(heights[1], `${width}px VisitFlow height must remain stable between stages`).toBeCloseTo(heights[0], 0);
+      expect(heights[1], `${width}px VisitFlow height must remain stable between stages (${fontMetrics})`).toBeCloseTo(heights[0], 0);
+    }
   }
 });
 
