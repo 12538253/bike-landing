@@ -39,3 +39,11 @@ Lighthouse detail: FCP 0.8 s, LCP 2.4 s, TBT 20 ms, CLS 0. Output: `task-4-light
 ## Concerns
 
 - `npm audit --omit=dev` still requires explicit authority to transmit dependency metadata to the npm registry; it is the sole incomplete requested verification.
+
+## Follow-up review fixes — round 1
+
+- OG decode honesty: the export contract now performs a complete `raw().toBuffer()` pixel decode and asserts the expected 1200×630×3 RGB byte count. A temporary 500-byte fixture, created from the real exported JPEG and removed in `finally`, proves metadata alone can report JPEG/1200×630 while the full decode rejects the truncated file.
+- 200% text-zoom honesty: the reachability helper now begins with the target itself, checks its `scrollHeight <= clientHeight`, visible ancestors, rendered text ranges, and each text range against clipping bounds. The test injects a temporary target-only `max-height: 1px; overflow: hidden` style, verifies the helper rejects it (RED), removes the style in `finally`, and then verifies the normal page (GREEN).
+- Final CTA semantics: the 390px E2E contract explicitly requires the final Kakao link to expose `data-cta="final-kakao"`.
+- Focused results: static export suite 28/28; focused text-zoom/final-CTA E2E 2/2; build exit 0; full `npm run verify` exit 0 (28 static, 46 E2E); fresh `npx tsc --noEmit` and `git diff --check` exit 0.
+- `git diff --exit-code -- package.json package-lock.json` exit 0: dependency manifests are unchanged. The prior `npm audit --omit=dev` policy block remains; no audit workaround was attempted.

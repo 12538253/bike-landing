@@ -213,13 +213,44 @@ async function expectUserVisible(locator: Locator, label: string) {
 async function expectExpandedTextToRemainReachableAtTextZoom(locator: Locator, label: string) {
   await locator.scrollIntoViewIfNeeded();
   const result = await locator.evaluate((element) => {
+    if (!(element instanceof HTMLElement)) throw new Error("expected an HTML text element");
+
     const rect = element.getBoundingClientRect();
     const clippingAncestors: string[] = [];
+    const hiddenAncestors: string[] = [];
+    const clippingBounds: DOMRect[] = [];
 
-    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
       const styles = getComputedStyle(ancestor);
       const clipsVertically = [styles.overflow, styles.overflowY].some((value) => value === "hidden" || value === "clip" || value === "scroll" || value === "auto");
-      if (clipsVertically && ancestor.scrollHeight > ancestor.clientHeight + 1) clippingAncestors.push(ancestor.className || ancestor.tagName);
+      const label = ancestor.className || ancestor.tagName;
+      if (styles.display === "none" || styles.visibility === "hidden" || styles.visibility === "collapse") hiddenAncestors.push(label);
+      if (ancestor === element || clipsVertically) clippingBounds.push(ancestor.getBoundingClientRect());
+      if ((ancestor === element || clipsVertically) && ancestor.scrollHeight > ancestor.clientHeight + 1) clippingAncestors.push(label);
+    }
+
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const textNodesWithoutGeometry: string[] = [];
+    const textOutsideClippingBounds: string[] = [];
+    let renderedTextRectCount = 0;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent?.trim();
+      if (!text) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const textRects = [...range.getClientRects()].filter((candidate) => candidate.width > 0 && candidate.height > 0);
+      if (textRects.length === 0) {
+        textNodesWithoutGeometry.push(text);
+        continue;
+      }
+      renderedTextRectCount += textRects.length;
+      for (const textRect of textRects) {
+        const outsideBounds = clippingBounds.some((bound) => textRect.left < bound.left - 0.5
+          || textRect.right > bound.right + 0.5
+          || textRect.top < bound.top - 0.5
+          || textRect.bottom > bound.bottom + 0.5);
+        if (outsideBounds) textOutsideClippingBounds.push(text);
+      }
     }
 
     const fixedOverlays = [...document.querySelectorAll<HTMLElement>("body *")]
@@ -233,10 +264,24 @@ async function expectExpandedTextToRemainReachableAtTextZoom(locator: Locator, l
       })
       .map((candidate) => candidate.dataset.testid || candidate.className || candidate.tagName);
 
-    return { clippingAncestors, fixedOverlays };
+    return {
+      clippingAncestors,
+      fixedOverlays,
+      hiddenAncestors,
+      renderedTextRectCount,
+      targetClientHeight: element.clientHeight,
+      targetScrollHeight: element.scrollHeight,
+      textNodesWithoutGeometry,
+      textOutsideClippingBounds,
+    };
   });
 
+  expect(result.targetScrollHeight, `${label}: its full text must fit in the target layout box`).toBeLessThanOrEqual(result.targetClientHeight + 1);
   expect(result.clippingAncestors, `${label}: expanded text must not be vertically clipped`).toEqual([]);
+  expect(result.hiddenAncestors, `${label}: expanded text must remain visible through every ancestor`).toEqual([]);
+  expect(result.renderedTextRectCount, `${label}: expanded text must have rendered geometry`).toBeGreaterThan(0);
+  expect(result.textNodesWithoutGeometry, `${label}: every text node must render geometry`).toEqual([]);
+  expect(result.textOutsideClippingBounds, `${label}: rendered text must fit every clipping boundary`).toEqual([]);
   expect(result.fixedOverlays, `${label}: expanded text must not sit under fixed UI`).toEqual([]);
 }
 
@@ -700,6 +745,20 @@ test("200% text zoom keeps representative VisitFlow and support detail text reac
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 
   const visitDescription = page.locator(".visit-flow__stage--photoGuide .visit-flow__stage-panel > p");
+  await page.evaluate(() => {
+    const mutation = document.createElement("style");
+    mutation.id = "text-zoom-clipping-mutation";
+    mutation.textContent = ".visit-flow__stage--photoGuide .visit-flow__stage-panel > p { max-height: 1px !important; overflow: hidden !important; }";
+    document.head.append(mutation);
+  });
+  try {
+    await expect(
+      expectExpandedTextToRemainReachableAtTextZoom(visitDescription, "injected target clipping mutation"),
+    ).rejects.toThrow();
+  } finally {
+    await page.locator("#text-zoom-clipping-mutation").evaluate((element) => element.remove());
+  }
+
   await expectUserVisible(visitDescription, "200% text zoom VisitFlow description");
   await expectExpandedTextToRemainReachableAtTextZoom(visitDescription, "200% text zoom VisitFlow description");
 
@@ -750,6 +809,7 @@ test("390px renders final contact actions before location facts and links", asyn
   const finalPhone = location.locator('[data-cta="final-phone"]');
   await expectUserVisible(finalPhone, "final phone link");
   await expectUserVisible(finalKakao, "final Kakao link");
+  await expect(finalKakao).toHaveAttribute("data-cta", "final-kakao");
   const [kakaoBox, phoneBox, mapBox] = await Promise.all([finalKakao.boundingBox(), finalPhone.boundingBox(), map.boundingBox()]);
   expect(kakaoBox && phoneBox && mapBox).toBeTruthy();
   if (!kakaoBox || !phoneBox || !mapBox) return;

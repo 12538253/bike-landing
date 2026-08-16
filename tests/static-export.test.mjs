@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile, stat } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -84,14 +86,16 @@ test("exports the approved contact and canonical metadata", () => {
 test("exports a budgeted production-canonical Open Graph JPEG", async () => {
   const ogImagePath = "/images/og-bike-manager.jpg";
   const ogImage = new URL(`../out${ogImagePath}`, import.meta.url);
-  const [{ size }, metadata] = await Promise.all([
+  const [{ size }, metadata, pixels] = await Promise.all([
     stat(ogImage),
     sharp(fileURLToPath(ogImage)).metadata(),
+    sharp(fileURLToPath(ogImage)).raw().toBuffer(),
   ]);
 
   assert.equal(metadata.format, "jpeg", "the exported Open Graph asset must be a JPEG");
   assert.equal(metadata.width, 1200, "the exported Open Graph JPEG must be 1200px wide");
   assert.equal(metadata.height, 630, "the exported Open Graph JPEG must be 630px tall");
+  assert.equal(pixels.byteLength, 1200 * 630 * 3, "the exported Open Graph JPEG must fully decode to its RGB pixels");
   assert.ok(size <= 180 * 1024, `the exported Open Graph JPEG is ${Math.ceil(size / 1024)}KB`);
   assert.match(
     html,
@@ -99,6 +103,28 @@ test("exports a budgeted production-canonical Open Graph JPEG", async () => {
     "Open Graph metadata must use the production canonical origin",
   );
   assert.doesNotMatch(html, /og:image" content="https?:\/\/[^\"]*(?:pages\.dev|localhost|127\.0\.0\.1)/);
+});
+
+test("rejects a truncated Open Graph JPEG even when its header metadata is readable", async () => {
+  const fixtureDirectory = await mkdtemp(join(tmpdir(), "bike-manager-og-"));
+  const fixturePath = join(fixtureDirectory, "truncated-og.jpg");
+
+  try {
+    const exportedOgImage = await readFile(new URL("../out/images/og-bike-manager.jpg", import.meta.url));
+    await writeFile(fixturePath, exportedOgImage.subarray(0, 500));
+
+    const metadata = await sharp(fixturePath).metadata();
+    assert.equal(metadata.format, "jpeg", "the fixture must prove that header metadata alone is insufficient");
+    assert.equal(metadata.width, 1200);
+    assert.equal(metadata.height, 630);
+    await assert.rejects(
+      sharp(fixturePath).raw().toBuffer(),
+      undefined,
+      "the truncated fixture must fail a complete pixel decode",
+    );
+  } finally {
+    await rm(fixtureDirectory, { recursive: true, force: true });
+  }
 });
 
 test("exports only the approved BM favicon asset", async () => {
