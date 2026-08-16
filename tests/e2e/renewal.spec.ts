@@ -1087,6 +1087,57 @@ test("focus indicator maintains 3:1 contrast on the approved light and dark surf
   }
 });
 
+test("brighter preview keeps the brand frame dark and the decision surfaces light", async ({ page }) => {
+  const expectedBackgrounds = {
+    trust: "rgb(232, 225, 213)",
+    process: "rgb(246, 242, 233)",
+    cases: "rgb(255, 250, 243)",
+    quote: "rgb(241, 237, 228)",
+    support: "rgb(250, 247, 240)",
+    contact: "rgb(12, 26, 28)",
+  } as const;
+
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+
+    const surfaces = await page.evaluate(() => {
+      const state = (selector: string, textSelector?: string) => {
+        const surface = document.querySelector<HTMLElement>(selector);
+        if (!surface) throw new Error(`missing surface: ${selector}`);
+        const text = textSelector ? surface.querySelector<HTMLElement>(textSelector) : surface;
+        if (!text) throw new Error(`missing text: ${selector} ${textSelector}`);
+        return {
+          background: getComputedStyle(surface).backgroundColor,
+          color: getComputedStyle(text).color,
+        };
+      };
+
+      return {
+        hero: state(".hero"),
+        trust: state(".trust-bar", ".trust-point strong"),
+        process: state("#process", "h2"),
+        cases: state("#cases", "h2"),
+        quote: state('[data-testid="quote-checklist"]', "h2"),
+        support: state("#faq", "h2"),
+        contact: state("#contact", "h2"),
+      };
+    });
+
+    expect(surfaces.hero).toEqual({ background: "rgb(12, 26, 28)", color: "rgb(255, 255, 255)" });
+    expect(surfaces.contact).toEqual({ background: expectedBackgrounds.contact, color: "rgb(255, 255, 255)" });
+    for (const key of ["trust", "process", "cases", "quote", "support"] as const) {
+      expect(surfaces[key].background, `${viewport.width}px ${key} surface`).toBe(expectedBackgrounds[key]);
+    }
+    for (const key of ["trust", "process", "cases"] as const) {
+      expect(
+        contrastRatio(parseCssColor(surfaces[key].color), parseCssColor(surfaces[key].background)),
+        `${viewport.width}px ${key} text contrast`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  }
+});
+
 test("case cards load distinct local images", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
