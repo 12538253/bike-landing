@@ -56,7 +56,7 @@ export default function Hero() {
           <p className="hero__note">{site.hero.note}</p>
         </div>
 
-        <a className="hero__scroll" href="#trust" aria-label="신뢰 근거 보기">
+        <a className="hero__scroll" href="#process">
           <span>{site.hero.scrollLabel}</span>
           <ArrowDown aria-hidden="true" size={18} />
         </a>

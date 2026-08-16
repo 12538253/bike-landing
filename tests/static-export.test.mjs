@@ -25,7 +25,7 @@ const textContent = (markup) => markup
   .replace(/\s+/g, " ")
   .trim();
 
-const prohibitedMarketingTerms = /최고가|무조건|100%|즉시 출동|모든 차량/u;
+const prohibitedMarketingTerms = /최고가|무조건|100%|즉시 출동|모든 차량|전 기종/u;
 
 const marketingSurface = (markup) => {
   const withoutExecutableCode = markup
@@ -509,12 +509,18 @@ test("collects marketing terms from visible copy, metadata, ARIA labels, and JSO
     '<meta property="og:description" content="무조건 확인"/>',
     '<main aria-label="즉시 출동 상담">모든 차량 상담</main>',
     '<script type="application/ld+json">{"description":"100% 확인"}</script>',
+    '<p>전 기종 매입</p>',
     '<script>const implementationStyle = "width:100%";</script>',
   ].join("");
 
   const surface = marketingSurface(fixture);
-  for (const term of ["최고가", "무조건", "100%", "즉시 출동", "모든 차량"]) {
+  for (const term of ["최고가", "무조건", "100%", "즉시 출동", "모든 차량", "전 기종"]) {
     assert.match(surface, new RegExp(term, "u"), `expected the marketing-surface collector to detect ${term}`);
+    assert.match(
+      marketingSurface(`<main>${term}</main>`),
+      prohibitedMarketingTerms,
+      `expected the forbidden-marketing scanner to reject ${term} in isolation`,
+    );
   }
   assert.doesNotMatch(marketingSurface('<img style="width:100%"/>'), prohibitedMarketingTerms);
 });

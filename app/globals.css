@@ -404,8 +404,11 @@ section[id] {
   right: 0;
   bottom: 38px;
   display: flex;
+  min-height: 44px;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  padding-inline: 8px;
   color: rgba(255, 255, 255, 0.52);
   font-size: 0.78rem;
 }
@@ -833,8 +836,7 @@ button.visit-flow__stage-summary {
 
 @media (min-width: 960px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .visit-flow[data-enhanced="true"] .visit-flow__stages {
-    position: relative;
-    min-height: 364px;
+    grid-template-rows: auto auto;
   }
 
   .visit-flow[data-enhanced="true"] .visit-flow__stage {
@@ -848,15 +850,23 @@ button.visit-flow__stage-summary {
     transition: background 0.2s ease-out;
   }
 
+  .visit-flow[data-enhanced="true"] .visit-flow__stage--photoGuide .visit-flow__stage-summary {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .visit-flow[data-enhanced="true"] .visit-flow__stage--onsiteDeal .visit-flow__stage-summary {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .visit-flow[data-enhanced="true"] .visit-flow__stage[data-active="true"] .visit-flow__stage-summary {
     background: rgba(184, 138, 74, 0.13);
   }
 
   .visit-flow[data-enhanced="true"] .visit-flow__stage-panel {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    grid-column: 1 / -1;
+    grid-row: 2;
     min-height: 188px;
     padding: 28px clamp(23px, 3vw, 36px) 34px;
     border-top: 1px solid rgba(255, 255, 255, 0.18);

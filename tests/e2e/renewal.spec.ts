@@ -421,6 +421,16 @@ async function waitForVisitFlowLayout(flow: Locator) {
   );
 }
 
+function rectanglesOverlap(
+  left: { x: number; y: number; width: number; height: number },
+  right: { x: number; y: number; width: number; height: number },
+) {
+  return left.x < right.x + right.width
+    && left.x + left.width > right.x
+    && left.y < right.y + right.height
+    && left.y + left.height > right.y;
+}
+
 test("hero title keeps its two sentences in separate visual lines", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -431,6 +441,54 @@ test("hero title keeps its two sentences in separate visual lines", async ({ pag
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileLines = await renderedLines(page.locator(".hero h1"));
   expect(mobileLines).toEqual(["바이크는그대로두세요.", "직접찾아가매입합니다."]);
+});
+
+test("hero process link exposes its visible name and settles on the visit flow", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const processLink = page.getByRole("link", { name: "진행 방법 보기", exact: true });
+  await expect(processLink).toHaveText("진행 방법 보기");
+  await expect(processLink).toHaveAttribute("href", "#process");
+  await processLink.click();
+  await expect(page).toHaveURL(/#process$/u);
+  await waitForStablePosition(page.locator("#process"));
+  const processTop = await page.locator("#process").evaluate((element) => element.getBoundingClientRect().top);
+  expect(processTop).toBeGreaterThanOrEqual(72);
+  expect(processTop).toBeLessThan(900);
+});
+
+test("visible hero process links keep an unobstructed 44px keyboard and pointer target", async ({ page }) => {
+  for (const width of [768, 960, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+
+    const link = page.locator(".hero__scroll");
+    await expect(link, `${width}px hero process link`).toBeVisible();
+    const [linkBox, headerBox, copyBox, trustBox] = await Promise.all([
+      link.boundingBox(),
+      page.locator(".site-header").boundingBox(),
+      page.locator(".hero__copy").boundingBox(),
+      page.locator("#trust").boundingBox(),
+    ]);
+    expect(linkBox && headerBox && copyBox && trustBox, `${width}px landmarks must render`).toBeTruthy();
+    if (!linkBox || !headerBox || !copyBox || !trustBox) continue;
+
+    expect(linkBox.width, `${width}px hero process link width`).toBeGreaterThanOrEqual(44);
+    expect(linkBox.height, `${width}px hero process link height`).toBeGreaterThanOrEqual(44);
+    expect(rectanglesOverlap(linkBox, headerBox), `${width}px link/header overlap`).toBe(false);
+    expect(rectanglesOverlap(linkBox, copyBox), `${width}px link/hero-copy overlap`).toBe(false);
+    expect(rectanglesOverlap(linkBox, trustBox), `${width}px link/trust overlap`).toBe(false);
+
+    await link.focus();
+    await expect(link).toBeFocused();
+    await expect(link).toHaveCSS("outline-style", "solid");
+    const hitTarget = await page.evaluate(({ x, y }) => {
+      const hit = document.elementFromPoint(x, y);
+      return Boolean(hit?.closest(".hero__scroll"));
+    }, { x: linkBox.x + linkBox.width / 2, y: linkBox.y + linkBox.height / 2 });
+    expect(hitTarget, `${width}px hero process link center must hit the link`).toBe(true);
+  }
 });
 
 test("mobile keeps the hero title larger than section headings and readable", async ({ page }) => {
@@ -632,6 +690,69 @@ test("desktop visit flow changes the connected stage detail without moving the C
   await page.mouse.move(0, 0);
   await expect(onsiteDeal).toHaveAttribute("aria-expanded", "true");
   await expectMethodCtaContained(page, "desktop visit-flow CTA", true);
+});
+
+test("enhanced VisitFlow reserves intrinsic panel space at 200% root text size", async ({ page }) => {
+  for (const width of [960, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+
+    const flow = page.getByTestId("visit-flow");
+    await expect(flow.locator(".visit-flow")).toHaveAttribute("data-enhanced", "true");
+    const heights: number[] = [];
+
+    for (const stageName of ["사진으로 먼저 안내", "약속한 장소에서 함께 확인"]) {
+      const stageButton = visitStageButton(page, stageName);
+      await stageButton.click();
+      await page.mouse.move(0, 0);
+      await page.locator('[data-cta="header-phone"]').focus();
+      await waitForVisitFlowLayout(flow);
+      await expect(stageButton).toHaveAttribute("aria-expanded", "true");
+
+      const panel = await visitStagePanel(stageButton, page);
+      const cta = flow.locator('[data-cta="method-kakao"]');
+      await expectUserVisible(panel, `${width}px ${stageName} panel at 200%`);
+      await expectExpandedTextToRemainReachableAtTextZoom(panel, `${width}px ${stageName} panel at 200%`);
+      await expectUserVisible(cta, `${width}px VisitFlow CTA at 200%`);
+
+      const geometry = await flow.locator(".visit-flow").evaluate((root, activePanelId) => {
+        const rect = (selector: string) => {
+          const element = root.querySelector<HTMLElement>(selector);
+          if (!element) throw new Error(`missing ${selector}`);
+          const box = element.getBoundingClientRect();
+          return { x: box.x, y: box.y, width: box.width, height: box.height };
+        };
+        const rootBox = root.getBoundingClientRect();
+        return {
+          root: { x: rootBox.x, y: rootBox.y, width: rootBox.width, height: rootBox.height },
+          stages: rect(".visit-flow__stages"),
+          summaries: [...root.querySelectorAll<HTMLElement>(".visit-flow__stage-summary")].map((element) => {
+            const box = element.getBoundingClientRect();
+            return { x: box.x, y: box.y, width: box.width, height: box.height };
+          }),
+          panel: rect(`#${activePanelId}`),
+          cta: rect('[data-cta="method-kakao"]'),
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: document.documentElement.clientWidth,
+        };
+      }, await panel.getAttribute("id"));
+
+      expect(geometry.documentWidth, `${width}px document horizontal overflow at 200%`).toBeLessThanOrEqual(geometry.viewportWidth);
+      expect(geometry.summaries).toHaveLength(2);
+      for (const [index, summary] of geometry.summaries.entries()) {
+        expect(rectanglesOverlap(summary, geometry.panel), `${width}px summary ${index + 1}/panel overlap for ${stageName}`).toBe(false);
+      }
+      expect(rectanglesOverlap(geometry.panel, geometry.cta), `${width}px panel/CTA overlap for ${stageName}`).toBe(false);
+      expect(geometry.panel.y).toBeGreaterThanOrEqual(geometry.stages.y - 0.5);
+      expect(geometry.panel.y + geometry.panel.height).toBeLessThanOrEqual(geometry.stages.y + geometry.stages.height + 0.5);
+      expect(geometry.cta.y + geometry.cta.height).toBeLessThanOrEqual(geometry.root.y + geometry.root.height + 0.5);
+      heights.push(geometry.root.height);
+    }
+
+    expect(heights[1], `${width}px VisitFlow height must remain stable between stages`).toBeCloseTo(heights[0], 0);
+  }
 });
 
 test("reduced motion keeps both visit stages static and visible", async ({ page }) => {
@@ -1185,13 +1306,13 @@ test("390px secondary navigation links expose at least 44px touch targets", asyn
   }
 });
 
-test("trust anchor clears the fixed desktop header", async ({ page }) => {
+test("hero process anchor clears the fixed desktop header", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await page.locator(".hero__scroll").click();
 
   await expect
-    .poll(() => page.locator("#trust").evaluate((element) => element.getBoundingClientRect().top))
+    .poll(() => page.locator("#process").evaluate((element) => element.getBoundingClientRect().top))
     .toBeGreaterThanOrEqual(72);
 });
 
