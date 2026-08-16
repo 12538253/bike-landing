@@ -13,7 +13,7 @@ export default function StickyInquiryBar() {
 
   useEffect(() => {
     const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
-    const process = document.querySelector<HTMLElement>("[data-testid='transaction-paths']");
+    const process = document.querySelector<HTMLElement>("[data-testid='visit-flow']");
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
     if (!hero || !process || !finalCta) return;
 

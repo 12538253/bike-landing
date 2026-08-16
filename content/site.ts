@@ -98,29 +98,22 @@ export type FooterCopy = Readonly<{
   copyright: string;
 }>;
 
-export type TransactionPathKey = "directVisit" | "sendFirst";
+export type VisitStageKey = "photoGuide" | "onsiteDeal";
 
-export type TransactionPathSection = Readonly<{
-  eyebrow: string;
+export type VisitStage = Readonly<{
   title: string;
   description: string;
-  note: string;
-}>;
-
-export type TransactionPath = Readonly<{
-  eyebrow: string;
-  title: string;
-  steps: readonly string[];
-  description: string;
-  image: string;
-  imageAlt: string;
-  imagePosition: string;
-  sourceUrl: string;
+  facts: readonly string[];
   confirmation?: Readonly<{
     label: string;
     detail: string;
   }>;
-  cta?: ContactLink;
+}>;
+
+export type VisitFlowCopy = SectionCopy & Readonly<{
+  stages: Readonly<Record<VisitStageKey, VisitStage>>;
+  cta: ContactLink;
+  safety: DisclosureCopy;
 }>;
 
 const phoneNumber = "010-7616-4949";
@@ -208,47 +201,37 @@ export const site = {
       ctaId: "final-phone",
     } satisfies ContactLink,
   },
-  tradePathSection: {
-    eyebrow: "두 갈래 거래 경로",
-    title: "바이크는 그대로, 확인은 현장에서.",
-    description: "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
-    note:
-      "사진으로 예상 견적을 먼저 안내하고, 방문 일정에 맞춰 현장에서 거래를 진행합니다.",
-  } satisfies TransactionPathSection,
-  tradePaths: {
-    directVisit: {
-      eyebrow: "현장에서 확인",
-      title: "바이크매니저 직접 방문",
-      steps: ["방문 일정", "현장 확인", "최종 금액", "입금 확인", "상차"],
-      description:
-        "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.",
-      image: "/images/routes/direct-visit.webp",
-      imageAlt: "늦은 저녁 운송 차량에 실린 혼다 ADV350 스쿠터",
-      imagePosition: "center center",
-      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224355424035",
-      confirmation: {
-        label: "입금 확인",
-        detail: "확인 후 상차",
-      },
-      cta: {
-        label: "사진 보내고 방문 일정 확인",
-        href: kakaoChatUrl,
-        ctaId: "method-kakao",
-        external: true,
-      } satisfies ContactLink,
-    } satisfies TransactionPath,
-    sendFirst: {
-      eyebrow: "출발 전에 확인",
-      title: "차량을 먼저 보내는 방식",
-      steps: ["최종 금액·감가 기준", "반환 조건", "왕복 운임"],
-      description:
-        "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.",
-      image: "/images/routes/send-first.webp",
-      imageAlt: "측면에서 본 회색 혼다 PCX125 스쿠터",
-      imagePosition: "center center",
-      sourceUrl: "https://m.blog.naver.com/bikemanager4949/224362894515",
-    } satisfies TransactionPath,
-  } satisfies Readonly<Record<TransactionPathKey, TransactionPath>>,
+  visitFlow: {
+    eyebrow: "사진 확인부터 현장 거래까지",
+    title: "바이크는 그대로 두고, 사진만 보내주세요.",
+    description: "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
+    stages: {
+      photoGuide: {
+        title: "사진으로 먼저 안내",
+        description: "기종·연식·주행거리·지역과 사진을 보내주시면 예상 견적과 방문 가능한 시간을 안내합니다.",
+        facts: ["예상 견적", "방문 시간"],
+      } satisfies VisitStage,
+      onsiteDeal: {
+        title: "약속한 장소에서 함께 확인",
+        description: "차량과 서류를 함께 확인하고, 최종 금액과 판매대금 전액 입금을 확인한 뒤 상차합니다.",
+        facts: ["차량 상태", "최종 금액", "전액 입금", "상차"],
+        confirmation: {
+          label: "입금 확인",
+          detail: "확인 후 상차",
+        },
+      } satisfies VisitStage,
+    },
+    cta: {
+      label: "사진 보내고 방문 일정 확인",
+      href: kakaoChatUrl,
+      ctaId: "method-kakao",
+      external: true,
+    } satisfies ContactLink,
+    safety: {
+      summary: "차량을 보내는 거래라면 무엇을 확인해야 하나요?",
+      answer: "출발 전에 최종 금액과 감가 기준, 거래 중단 시 반환 조건, 왕복 운임 부담을 확인하세요. 바이크매니저는 약속한 장소로 직접 방문해 현장에서 거래합니다.",
+    },
+  } satisfies VisitFlowCopy,
   trustSection: {
     title: "거래 원칙",
     // Public source for the confirmed career claim: https://m.blog.naver.com/bikemanager4949

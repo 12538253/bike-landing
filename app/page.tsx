@@ -6,7 +6,7 @@ import Hero from "@/components/Hero";
 import LocationFinal from "@/components/LocationFinal";
 import PurchaseGuide from "@/components/PurchaseGuide";
 import QuoteChecklist from "@/components/QuoteChecklist";
-import TradeMethodComparison from "@/components/TradeMethodComparison";
+import VisitFlowSection from "@/components/VisitFlowSection";
 import TrustBar from "@/components/TrustBar";
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
       <main>
         <Hero />
         <TrustBar />
-        <TradeMethodComparison />
+        <VisitFlowSection />
         <CaseStudies />
         <QuoteChecklist />
         <PurchaseGuide />

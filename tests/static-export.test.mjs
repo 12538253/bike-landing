@@ -118,11 +118,11 @@ test("renders the benefit-led hero and trackable contact links", () => {
   assert.doesNotMatch(html, /구독자 660/);
 });
 
-test("points #process at transaction paths and exports the approved section order", () => {
-  const transactionPaths = html.match(
-    /<section\b(?=[^>]*id="process")(?=[^>]*data-testid="transaction-paths")[^>]*>[\s\S]*?<\/section>/,
+test("points #process at the sequential visit flow and exports the approved section order", () => {
+  const visitFlow = html.match(
+    /<section\b(?=[^>]*id="process")(?=[^>]*data-testid="visit-flow")[^>]*>[\s\S]*?<\/section>/,
   )?.[0];
-  assert.ok(transactionPaths, "expected #process to identify the transaction paths section");
+  assert.ok(visitFlow, "expected #process to identify the visit-flow section");
 
   const orderedMarkers = [
     'id="top"',
@@ -158,8 +158,6 @@ test("retains the approved short copy and seller decision facts", () => {
     "인천·서울·경기 중고 바이크 방문 매입",
     "바이크는 그대로 두세요.",
     "직접 찾아가 매입합니다.",
-    "바이크는 그대로, 확인은 현장에서.",
-    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
     "경력 10년 이상",
     "24시간 문의 접수",
     "직접 방문·현장 확인",
@@ -212,7 +210,8 @@ test("sources canonical landing section copy from typed site content", async () 
     "../components/Header.tsx",
     "../components/Hero.tsx",
     "../components/TrustBar.tsx",
-    "../components/TradeMethodComparison.tsx",
+    "../components/VisitFlowSection.tsx",
+    "../components/VisitFlow.tsx",
     "../components/CaseStudies.tsx",
     "../components/QuoteChecklist.tsx",
     "../components/PurchaseGuide.tsx",
@@ -225,9 +224,9 @@ test("sources canonical landing section copy from typed site content", async () 
   ]);
   const componentSource = componentSources.join("\n");
   const canonicalCopies = [
-    "두 갈래 거래 경로",
-    "바이크는 그대로, 확인은 현장에서.",
-    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
+    "사진 확인부터 현장 거래까지",
+    "바이크는 그대로 두고, 사진만 보내주세요.",
+    "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
     "말보다 실제 매입 기록으로 보여드립니다.",
     "원문 보기",
     "견적 준비",
@@ -262,11 +261,11 @@ test("moves official blog and Naver Place links into case studies", () => {
   assert.equal(casesSection.split("원문 보기").length - 1, 3, "expected one concise link per case");
 });
 
-test("exports exactly three FAQ details plus one purchase-guide details", () => {
+test("exports exactly three FAQ details plus purchase-guide and safety disclosures", () => {
   const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
   assert.ok(faqSection, "expected the FAQ section");
   assert.equal([...faqSection.matchAll(/<details\b/g)].length, 3, "expected exactly three FAQ details");
-  assert.equal([...html.matchAll(/<details\b/g)].length, 4, "expected one separate purchase-guide details");
+  assert.equal([...html.matchAll(/<details\b/g)].length, 5, "expected purchase-guide and visit-safety disclosures");
   for (const { question } of faqAnswerContracts) assert.ok(faqSection.includes(question));
 });
 
@@ -327,133 +326,54 @@ test("orders case studies around the core scooter customer", () => {
   assert.match(casesSection, /224362894515/);
 });
 
-test("exports the two transaction paths with local, budgeted route images", async () => {
-  const transactionPaths = html.match(
-    /<section\b(?=[^>]*data-testid="transaction-paths")[^>]*>[\s\S]*?<\/section>/,
+test("exports one sequential visit journey with neutral safety advice", () => {
+  const visitFlow = html.match(
+    /<section\b(?=[^>]*data-testid="visit-flow")[^>]*>[\s\S]*?<\/section>/,
   )?.[0];
-  assert.ok(transactionPaths, "expected the transaction paths section");
+  assert.ok(visitFlow, "expected the visit-flow section");
 
-  const countText = (markup, text) => textContent(markup).split(text).length - 1;
-  const transactionText = textContent(transactionPaths);
-  const heading = "바이크는 그대로, 확인은 현장에서.";
-  const introduction =
-    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.";
-  const directVisitTitle = "바이크매니저 직접 방문";
-  const sendFirstTitle = "차량을 먼저 보내는 방식";
-  const directVisitDescription =
-    "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.";
-  const sendFirstDescription =
-    "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.";
-  const pathArticles = [...transactionPaths.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(
-    ([, article]) => article,
-  );
-  assert.equal(pathArticles.length, 2, "expected one semantic article for each path");
-  const directVisit = pathArticles.find((article) => textContent(article).includes(directVisitTitle));
-  const sendFirst = pathArticles.find((article) => textContent(article).includes(sendFirstTitle));
-  assert.ok(directVisit, "expected a direct-visit path article");
-  assert.ok(sendFirst, "expected a send-first path article");
+  const visitText = textContent(visitFlow);
+  const stageOneTitle = "사진으로 먼저 안내";
+  const stageTwoTitle = "약속한 장소에서 함께 확인";
+  const safetySummary = "차량을 보내는 거래라면 무엇을 확인해야 하나요?";
+  const safetyAnswer = "출발 전에 최종 금액과 감가 기준, 거래 중단 시 반환 조건, 왕복 운임 부담을 확인하세요. 바이크매니저는 약속한 장소로 직접 방문해 현장에서 거래합니다.";
 
-  for (const [label, article] of [["direct visit", directVisit], ["send first", sendFirst]]) {
-    const summary = article.match(
-      /<(\w+)\b(?=[^>]*class="[^"]*\btransaction-path__summary\b[^"]*")[^>]*>/,
-    );
-    assert.ok(summary, `expected a ${label} summary container`);
-    assert.equal(summary[1], "div", `expected the exported ${label} summary to be non-interactive`);
-    assert.doesNotMatch(summary[0], /\b(?:aria-expanded|aria-controls|role)=/);
+  for (const copy of [
+    "사진 확인부터 현장 거래까지",
+    "바이크는 그대로 두고, 사진만 보내주세요.",
+    "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
+    stageOneTitle,
+    "기종·연식·주행거리·지역과 사진을 보내주시면 예상 견적과 방문 가능한 시간을 안내합니다.",
+    "예상 견적",
+    "방문 시간",
+    stageTwoTitle,
+    "차량과 서류를 함께 확인하고, 최종 금액과 판매대금 전액 입금을 확인한 뒤 상차합니다.",
+    "차량 상태",
+    "최종 금액",
+    "전액 입금",
+    "상차",
+    "입금 확인",
+    "확인 후 상차",
+    "사진 보내고 방문 일정 확인",
+    safetySummary,
+    safetyAnswer,
+  ]) {
+    assert.ok(visitText.includes(copy), `expected visit journey copy: ${copy}`);
   }
-  assert.doesNotMatch(
-    transactionPaths,
-    /<button\b(?=[^>]*class="[^"]*\btransaction-path__summary\b)/,
-    "the JavaScript-off fallback must not expose no-op path buttons",
-  );
 
-  const assertOrderedSteps = (article, title, description, steps, label) => {
-    const articleText = textContent(article);
-    const titleStart = articleText.indexOf(title);
-    const titleEnd = titleStart + title.length;
-    const descriptionStart = articleText.indexOf(description);
-    assert.ok(titleStart >= 0 && descriptionStart > titleEnd, `expected ${label} steps before its description`);
-
-    // "입금 확인" also belongs to the direct path's explanatory copy and confirmation card.
-    // The title-to-description span is the content-defined step group, independent of its wrappers.
-    const stepsText = articleText.slice(titleEnd, descriptionStart);
-    let previousIndex = -1;
-    for (const step of steps) {
-      const stepIndex = stepsText.indexOf(step);
-      assert.ok(stepIndex >= 0, `expected ${label} step: ${step}`);
-      assert.equal(
-        stepsText.indexOf(step, stepIndex + step.length),
-        -1,
-        `expected one ${label} step: ${step}`,
-      );
-      assert.ok(stepIndex > previousIndex, `expected ${label} step order to include ${step}`);
-      previousIndex = stepIndex;
-    }
-  };
-
-  assert.equal(countText(transactionPaths, heading), 1, "expected one transaction paths heading");
-  assert.equal(countText(transactionPaths, introduction), 1, "expected one transaction paths introduction");
-  assert.equal(countText(directVisit, directVisitTitle), 1, "expected direct visit copy once");
-  assert.equal(countText(directVisit, directVisitDescription), 1, "expected direct visit description once");
-  assert.equal(countText(sendFirst, sendFirstTitle), 1, "expected send-first copy once");
-  assert.equal(countText(sendFirst, sendFirstDescription), 1, "expected send-first description once");
-  assert.ok(textContent(directVisit).includes("입금 확인"), "expected the payment-confirmation card copy");
-  assert.doesNotMatch(transactionPaths, /가격만 보면 개인 거래가 더 유리할 수 있습니다\./);
-  assertOrderedSteps(
-    directVisit,
-    directVisitTitle,
-    directVisitDescription,
-    ["방문 일정", "현장 확인", "최종 금액", "입금 확인", "상차"],
-    "direct visit",
-  );
-  assertOrderedSteps(
-    sendFirst,
-    sendFirstTitle,
-    sendFirstDescription,
-    ["최종 금액·감가 기준", "반환 조건", "왕복 운임"],
-    "send first",
-  );
   assert.ok(
-    transactionText.indexOf(directVisitTitle) < transactionText.indexOf(sendFirstTitle),
-    "expected direct visit to precede send-first in the DOM",
+    visitText.indexOf(stageOneTitle) < visitText.indexOf(stageTwoTitle),
+    "expected photo guidance before onsite dealing in DOM order",
   );
-  assert.equal([...html.matchAll(/data-testid="transaction-paths"/g)].length, 1, "expected one transaction paths section");
-  assert.doesNotMatch(html, /거래 방식부터 비교하세요/);
-  assert.doesNotMatch(html, /바이크를 보내기 전에 최종 금액과 반환 조건을 확인하세요/);
-  assert.doesNotMatch(html, /차량이 내 손을 떠나는 시점이 다르면 확인해야 할 조건도 달라집니다/);
-
-  const kakaoLink = [...directVisit.matchAll(/<a\b[^>]*>/g)]
-    .map(([link]) => link)
-    .find((link) => link.includes('data-cta="method-kakao"'));
-  assert.ok(kakaoLink, "expected the direct-visit Kakao CTA to be a real link");
-  assert.match(kakaoLink, /href="https:\/\/pf\.kakao\.com\/_MzgSn\/chat"/);
-
-  const expectedImages = [
-    { article: directVisit, label: "direct visit", imagePath: "/images/routes/direct-visit.webp" },
-    { article: sendFirst, label: "send first", imagePath: "/images/routes/send-first.webp" },
-  ];
-  for (const { article, label, imagePath } of expectedImages) {
-    const imageTags = [...article.matchAll(/<img\b[^>]*>/g)].map(([image]) => image);
-    assert.ok(
-      imageTags.some((image) => image.includes(`src="${imagePath}"`)),
-      `expected the ${label} article to use ${imagePath}`,
-    );
-
-    const otherImagePath = imagePath === "/images/routes/direct-visit.webp"
-      ? "/images/routes/send-first.webp"
-      : "/images/routes/direct-visit.webp";
-    assert.ok(
-      imageTags.every((image) => !image.includes(`src="${otherImagePath}"`)),
-      `expected the ${label} article not to use the other path image`,
-    );
-
-    const imageUrl = new URL(`../public${imagePath}`, import.meta.url);
-    const [{ size }, metadata] = await Promise.all([stat(imageUrl), sharp(fileURLToPath(imageUrl)).metadata()]);
-    assert.ok(metadata.width && metadata.height, `expected dimensions for ${imagePath}`);
-    assert.ok(Math.max(metadata.width, metadata.height) <= 800, `${imagePath} longest edge must be <=800px`);
-    assert.ok(size < 180 * 1024, `${imagePath} must be smaller than 180KB`);
-  }
-  assert.doesNotMatch(transactionPaths, /pstatic\.net/);
+  assert.equal([...visitFlow.matchAll(/class="[^"]*\bvisit-flow__stage(?:\s|")[^"]*"/g)].length, 2);
+  assert.match(visitFlow, /class="[^"]*\bvisit-flow__progress\b[^"]*"/);
+  assert.doesNotMatch(visitFlow, /transaction-path|direct-visit\.webp|send-first\.webp/u);
+  assert.equal([...visitFlow.matchAll(/<details\b/g)].length, 1, "expected one neutral safety disclosure");
+  assert.ok(visitFlow.includes(`<summary>${safetySummary}</summary>`));
+  assert.match(visitFlow, /data-cta="method-kakao"/);
+  assert.match(visitFlow, /href="https:\/\/pf\.kakao\.com\/_MzgSn\/chat"/);
+  assert.doesNotMatch(visitFlow, /바이크매니저 직접 방문|차량을 먼저 보내는 방식|두 갈래 거래 경로/u);
+  assert.doesNotMatch(html, /data-testid="transaction-paths"/);
 });
 
 test("binds each case model to its official post and budgeted local image", async () => {

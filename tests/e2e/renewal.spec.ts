@@ -99,6 +99,49 @@ async function waitForStablePosition(locator: Locator) {
   );
 }
 
+function visitStageButton(page: Page, name: string) {
+  return page.getByTestId("visit-flow").getByRole("button", { name: new RegExp(name) });
+}
+
+function visitStage(page: Page, key: "photoGuide" | "onsiteDeal") {
+  return page.getByTestId("visit-flow").locator(`.visit-flow__stage--${key}`);
+}
+
+async function expectStaticVisitStage(stage: Locator, label: string) {
+  const summary = stage.locator(":scope > .visit-flow__stage-summary");
+  await expect(summary, `${label}: expected one static stage summary`).toHaveCount(1);
+  await expect(summary, `${label}: static summary must be a plain container`).toHaveJSProperty("tagName", "DIV");
+  await expect(summary, `${label}: static summary must not advertise expansion`).not.toHaveAttribute("aria-expanded");
+  await expect(summary, `${label}: static summary must not control a panel`).not.toHaveAttribute("aria-controls");
+}
+
+async function visitStagePanel(button: Locator, page: Page) {
+  const panelId = await button.getAttribute("aria-controls");
+  if (!panelId) throw new Error("expected each visit stage button to control a detail panel");
+  return page.locator(`#${panelId}`);
+}
+
+async function expectInactiveVisitStageToBeUnavailable(panel: Locator) {
+  const state = await panel.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    const tabStops = [...element.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )].filter((candidate) => candidate.tabIndex >= 0).length;
+    return {
+      hidden: element.hasAttribute("hidden") || styles.display === "none" || styles.visibility === "hidden",
+      inert: Boolean(element.closest("[inert]")),
+      ariaHidden: element.getAttribute("aria-hidden") === "true",
+      tabStops,
+    };
+  });
+
+  expect(
+    state.hidden || state.inert || (state.ariaHidden && state.tabStops === 0),
+    "an inactive detail must be hidden, inert, or aria-hidden without tab stops",
+  ).toBe(true);
+}
+
+// Kept only while the skipped legacy contracts remain in this migration file.
 function transactionPathButton(page: Page, name: string) {
   return page.getByTestId("transaction-paths").getByRole("button", { name: new RegExp(name) });
 }
@@ -123,23 +166,11 @@ async function transactionPathPanel(button: Locator, page: Page) {
 }
 
 async function expectInactiveTransactionPathToBeUnavailable(panel: Locator) {
-  const state = await panel.evaluate((element) => {
-    const styles = getComputedStyle(element);
-    const tabStops = [...element.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    )].filter((candidate) => candidate.tabIndex >= 0).length;
-    return {
-      hidden: element.hasAttribute("hidden") || styles.display === "none" || styles.visibility === "hidden",
-      inert: Boolean(element.closest("[inert]")),
-      ariaHidden: element.getAttribute("aria-hidden") === "true",
-      tabStops,
-    };
-  });
+  await expectInactiveVisitStageToBeUnavailable(panel);
+}
 
-  expect(
-    state.hidden || state.inert || (state.ariaHidden && state.tabStops === 0),
-    "an inactive detail must be hidden, inert, or aria-hidden without tab stops",
-  ).toBe(true);
+async function waitForTransactionLayout(grid: Locator) {
+  await waitForVisitFlowLayout(grid);
 }
 
 async function countUserVisibleCharacters(root: Locator) {
@@ -275,8 +306,8 @@ async function expectMethodCtaContained(page: Page, label: string, hitTest: bool
 
   const geometry = await cta.evaluate((element, shouldHitTest) => {
     const ctaRect = element.getBoundingClientRect();
-    const article = element.closest("article");
-    if (!article) throw new Error("expected the transaction CTA inside an article");
+    const flow = element.closest("[data-testid='visit-flow']");
+    if (!flow) throw new Error("expected the visit CTA inside the visit flow");
 
     let effectiveTop = ctaRect.top;
     let effectiveBottom = ctaRect.bottom;
@@ -284,7 +315,7 @@ async function expectMethodCtaContained(page: Page, label: string, hitTest: bool
     for (let ancestor: HTMLElement | null = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
       const styles = getComputedStyle(ancestor);
       const clips = [styles.overflowX, styles.overflowY].some((value) => value !== "visible");
-      if (ancestor === article || clips) {
+      if (ancestor === flow || clips) {
         const ancestorRect = ancestor.getBoundingClientRect();
         effectiveTop = Math.max(effectiveTop, ancestorRect.top);
         effectiveBottom = Math.min(effectiveBottom, ancestorRect.bottom);
@@ -326,13 +357,13 @@ async function expectMethodCtaContained(page: Page, label: string, hitTest: bool
   if (hitTest) expect.soft(geometry.hitTestable, `${label}: the CTA bottom inset must hit the link`).toBe(true);
 }
 
-async function waitForTransactionLayout(grid: Locator) {
-  await grid.evaluate(
+async function waitForVisitFlowLayout(flow: Locator) {
+  await flow.evaluate(
     (element) => new Promise<void>((resolve) => {
       let previous = "";
       let stableFrames = 0;
       const sample = () => {
-        const tracked = [element, ...element.querySelectorAll("article, [data-cta='method-kakao']")];
+        const tracked = [element, ...element.querySelectorAll(".visit-flow__stage, [data-cta='method-kakao']")];
         const current = tracked.map((item) => {
           const rect = item.getBoundingClientRect();
           return [rect.left, rect.top, rect.width, rect.height].map((value) => value.toFixed(2)).join(":");
@@ -416,7 +447,7 @@ test("removes standalone process, comparison, and Naver proof sections", async (
   await expect(page.locator(".process-step, #process-title")).toHaveCount(0);
   await expect(page.locator(".honest-section, #honest-title")).toHaveCount(0);
   await expect(page.locator(".naver-proof, #naver-title")).toHaveCount(0);
-  await expect(page.locator('#process[data-testid="transaction-paths"]')).toHaveCount(1);
+  await expect(page.locator('#process[data-testid="visit-flow"]')).toHaveCount(1);
 });
 
 test("390px visible copy is at least 30% shorter than the documented baseline", async ({ page }) => {
@@ -488,152 +519,106 @@ test("390px visibly renders all four compact trust facts", async ({ page }) => {
   }
 });
 
-test("390px visibly renders both transaction paths and their decision facts", async ({ page }) => {
+test("390px visibly renders the sequential visit stages and neutral safety advice", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const paths = page.locator('#process[data-testid="transaction-paths"]');
-  await expect(paths).toHaveCount(1);
+  const flow = page.locator('#process[data-testid="visit-flow"]');
+  await expect(flow).toHaveCount(1);
 
   for (const copy of [
-    "바이크는 그대로, 확인은 현장에서.",
-    "시간과 번거로운 절차를 줄여 현장에서 거래를 마칩니다.",
-    "바이크매니저 직접 방문",
-    "방문 일정",
-    "현장 확인",
+    "사진 확인부터 현장 거래까지",
+    "바이크는 그대로 두고, 사진만 보내주세요.",
+    "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
+    "사진으로 먼저 안내",
+    "예상 견적",
+    "방문 시간",
+    "약속한 장소에서 함께 확인",
+    "차량 상태",
     "최종 금액",
-    "입금 확인",
+    "전액 입금",
     "상차",
-    "약속한 장소에서 차량을 함께 살펴보고 최종 금액과 입금을 확인한 뒤 상차합니다.",
-    "차량을 먼저 보내는 방식",
-    "최종 금액·감가 기준",
-    "반환 조건",
-    "왕복 운임",
-    "차량을 먼저 보낸다면 출발 전에 최종 금액과 감가 기준, 반환 조건, 왕복 운임을 확인하세요.",
+    "차량을 보내는 거래라면 무엇을 확인해야 하나요?",
   ]) {
-    await expectUserVisible(paths.getByText(copy, { exact: true }), `transaction copy: ${copy}`);
+    await expectUserVisible(flow.getByText(copy, { exact: true }), `visit flow copy: ${copy}`);
   }
-  await expect(paths.getByRole("button", { name: /바이크매니저 직접 방문|차량을 먼저 보내는 방식/ })).toHaveCount(0);
-  await expectStaticTransactionPathSummary(transactionPathArticle(page, "directVisit"), "390px direct visit");
-  await expectStaticTransactionPathSummary(transactionPathArticle(page, "sendFirst"), "390px send first");
-  await expectUserVisible(paths.locator('[data-cta="method-kakao"]'), "transaction Kakao link");
+  await expect(flow.getByRole("button", { name: /사진으로 먼저 안내|약속한 장소에서 함께 확인/ })).toHaveCount(0);
+  await expectStaticVisitStage(visitStage(page, "photoGuide"), "390px photo guide");
+  await expectStaticVisitStage(visitStage(page, "onsiteDeal"), "390px onsite deal");
+  await expectUserVisible(flow.locator('[data-cta="method-kakao"]'), "visit Kakao link");
+  const safety = flow.locator("details");
+  await expect(safety).toHaveCount(1);
+  await expect(safety.locator("summary")).toHaveText("차량을 보내는 거래라면 무엇을 확인해야 하나요?");
+  await safety.locator("summary").click();
+  await expectUserVisible(safety.getByText("출발 전에 최종 금액과 감가 기준, 거래 중단 시 반환 조건, 왕복 운임 부담을 확인하세요. 바이크매니저는 약속한 장소로 직접 방문해 현장에서 거래합니다.", { exact: true }), "neutral safety answer");
 });
 
-test("390px one-viewport scroll exposes the direct transaction path above the sticky inquiry bar", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/", { waitUntil: "networkidle" });
-  await page.evaluate(() => window.scrollTo(0, 844));
+test("desktop visit flow changes the connected stage detail without moving the CTA or section height", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
 
-  const paths = page.locator('#process[data-testid="transaction-paths"]');
-  const sticky = page.getByTestId("sticky-inquiry");
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(844);
-  await waitForStablePosition(paths);
-  expect(await page.evaluate(() => window.scrollY), "the settled one-scroll position must remain exact").toBe(844);
+  const flow = page.getByTestId("visit-flow");
+  const photoGuide = visitStageButton(page, "사진으로 먼저 안내");
+  const onsiteDeal = visitStageButton(page, "약속한 장소에서 함께 확인");
+  const photoGuidePanel = await visitStagePanel(photoGuide, page);
+  const onsiteDealPanel = await visitStagePanel(onsiteDeal, page);
+  const cta = flow.locator('[data-cta="method-kakao"]');
 
-  const directTitle = paths.locator(".transaction-path--directVisit .transaction-path__title");
-  const directSteps = paths.locator(".transaction-path--directVisit .transaction-path__step");
-  await expect(directSteps).toHaveCount(5);
+  await expect(photoGuide).toHaveAttribute("aria-expanded", "true");
+  await expect(onsiteDeal).toHaveAttribute("aria-expanded", "false");
+  await expect(photoGuidePanel).toBeVisible();
+  await expectInactiveVisitStageToBeUnavailable(onsiteDealPanel);
+  await expect(cta).toBeVisible();
+  await expect(cta).toHaveAttribute("href", "https://pf.kakao.com/_MzgSn/chat");
 
-  const targets = [
-    { label: "transaction heading", locator: paths.locator("#method-title") },
-    { label: "direct-visit title", locator: directTitle },
-    ...Array.from({ length: 5 }, (_, index) => ({
-      label: `direct-visit step ${index + 1}`,
-      locator: directSteps.nth(index),
-    })),
-  ];
-  await expect(sticky).toHaveAttribute("aria-hidden", "true");
-  await expect(sticky).not.toHaveClass(/is-visible/);
+  const heightBefore = (await flow.boundingBox())?.height ?? 0;
+  await onsiteDeal.hover();
+  await expect(onsiteDeal).toHaveAttribute("aria-expanded", "true");
+  await expectInactiveVisitStageToBeUnavailable(photoGuidePanel);
+  await expect(onsiteDealPanel).toBeVisible();
+  await expect(cta).toBeVisible();
+  await waitForVisitFlowLayout(flow);
+  expect((await flow.boundingBox())?.height ?? 0).toBeCloseTo(heightBefore, 0);
 
-  for (const { label, locator } of targets) {
-    const box = await locator.boundingBox();
-    expect.soft(box, `${label} must have a nonzero layout box`).not.toBeNull();
-    expect.soft(box?.width ?? 0, `${label} must have nonzero width`).toBeGreaterThan(0);
-    expect.soft(box?.height ?? 0, `${label} must have nonzero height`).toBeGreaterThan(0);
-    expect.soft(box?.x ?? -1, `${label} must not require horizontal movement`).toBeGreaterThanOrEqual(0);
-    expect.soft((box?.x ?? 0) + (box?.width ?? 0), `${label} must fit the 390px viewport`).toBeLessThanOrEqual(390);
-    expect.soft(box?.y ?? -1, `${label} must be inside the viewport`).toBeGreaterThanOrEqual(0);
-    expect.soft((box?.y ?? 0) + (box?.height ?? 0), `${label} must be inside the viewport`).toBeLessThanOrEqual(844);
-  }
-
-  expect(await page.evaluate(() => window.scrollX), "the one-viewport read must not move horizontally").toBe(0);
+  await page.mouse.move(0, 0);
+  await expect(photoGuide).toHaveAttribute("aria-expanded", "true");
+  await onsiteDeal.focus();
+  await expect(onsiteDeal).toHaveAttribute("aria-expanded", "true");
+  await onsiteDeal.press("Enter");
+  await page.locator('[data-cta="header-phone"]').focus();
+  await page.mouse.move(0, 0);
+  await expect(onsiteDeal).toHaveAttribute("aria-expanded", "true");
+  await expectMethodCtaContained(page, "desktop visit-flow CTA", true);
 });
 
-test("390px one-scroll path budget survives taller fallback heading metrics", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/", { waitUntil: "networkidle" });
-  await page.addStyleTag({
-    content: `
-      @media (max-width: 760px) {
-        .transaction-paths-heading > h2 {
-          font-size: 34px !important;
-          line-height: 1.2 !important;
-          letter-spacing: 0 !important;
-        }
+test("reduced motion keeps both visit stages static and visible", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
 
-        .transaction-paths-heading > span {
-          font-size: 17px !important;
-          line-height: 1.75 !important;
-          letter-spacing: 0.01em !important;
-        }
-      }
-    `,
+  const flow = page.getByTestId("visit-flow");
+  await expect(flow.getByRole("button", { name: /사진으로 먼저 안내|약속한 장소에서 함께 확인/ })).toHaveCount(0);
+  await expectStaticVisitStage(visitStage(page, "photoGuide"), "reduced-motion photo guide");
+  await expectStaticVisitStage(visitStage(page, "onsiteDeal"), "reduced-motion onsite deal");
+  await expect(visitStage(page, "photoGuide").locator(":scope > .visit-flow__stage-panel")).toBeVisible();
+  await expect(visitStage(page, "onsiteDeal").locator(":scope > .visit-flow__stage-panel")).toBeVisible();
+});
+
+test("JavaScript-off desktop keeps both visit stages in DOM order", async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 1440, height: 900 },
   });
-  await page.evaluate(() => window.scrollTo(0, 844));
+  const page = await context.newPage();
 
-  const paths = page.locator('#process[data-testid="transaction-paths"]');
-  const sticky = page.getByTestId("sticky-inquiry");
-  const directSteps = paths.locator(".transaction-path--directVisit .transaction-path__step");
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(844);
-  await waitForStablePosition(paths);
-  expect(await page.evaluate(() => window.scrollY), "the settled fallback-metric scroll position must remain exact").toBe(844);
-  await expect(directSteps).toHaveCount(5);
-  await expect(sticky).toHaveAttribute("aria-hidden", "true");
-  await expect(sticky).not.toHaveClass(/is-visible/);
-
-  const targets = [
-    { label: "fallback transaction heading", locator: paths.locator("#method-title") },
-    { label: "fallback direct-visit title", locator: paths.locator(".transaction-path--directVisit .transaction-path__title") },
-    ...Array.from({ length: 5 }, (_, index) => ({
-      label: `fallback direct-visit step ${index + 1}`,
-      locator: directSteps.nth(index),
-    })),
-  ];
-
-  for (const { label, locator } of targets) {
-    const box = await locator.boundingBox();
-    expect.soft(box, `${label} must have a nonzero layout box`).not.toBeNull();
-    expect.soft(box?.width ?? 0, `${label} must have nonzero width`).toBeGreaterThan(0);
-    expect.soft(box?.height ?? 0, `${label} must have nonzero height`).toBeGreaterThan(0);
-    expect.soft(box?.x ?? -1, `${label} must not require horizontal movement`).toBeGreaterThanOrEqual(0);
-    expect.soft((box?.x ?? 0) + (box?.width ?? 0), `${label} must fit the 390px viewport`).toBeLessThanOrEqual(390);
-    expect.soft(box?.y ?? -1, `${label} must be inside the viewport`).toBeGreaterThanOrEqual(0);
-    expect.soft((box?.y ?? 0) + (box?.height ?? 0), `${label} must be inside the viewport`).toBeLessThanOrEqual(844);
-  }
-
-  expect(await page.evaluate(() => window.scrollX), "fallback metrics must not move the page horizontally").toBe(0);
-});
-
-test("390px suppresses the sticky inquiry bar throughout the intersecting transaction section", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/", { waitUntil: "networkidle" });
-
-  const paths = page.locator('#process[data-testid="transaction-paths"]');
-  const sticky = page.getByTestId("sticky-inquiry");
-
-  for (const scrollY of [845, 1000, 1400]) {
-    await page.evaluate((top) => window.scrollTo(0, top), scrollY);
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollY);
-    await expect.poll(
-      () => paths.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.top < window.innerHeight && rect.bottom > 0;
-      }),
-      { message: `transaction paths must intersect at scrollY=${scrollY}` },
-    ).toBe(true);
-    await expect(sticky, `sticky inquiry must stay hidden at scrollY=${scrollY}`).toHaveAttribute("aria-hidden", "true");
-    await expect(sticky, `sticky inquiry must stay offscreen at scrollY=${scrollY}`).not.toHaveClass(/is-visible/);
-    await expect(sticky, `sticky inquiry must not receive taps at scrollY=${scrollY}`).toHaveCSS("pointer-events", "none");
-  }
+  await page.goto("/");
+  const flow = page.getByTestId("visit-flow");
+  await expect(flow.getByRole("button", { name: /사진으로 먼저 안내|약속한 장소에서 함께 확인/ })).toHaveCount(0);
+  await expectStaticVisitStage(visitStage(page, "photoGuide"), "JavaScript-off photo guide");
+  await expectStaticVisitStage(visitStage(page, "onsiteDeal"), "JavaScript-off onsite deal");
+  await expect(flow.getByText("사진으로 먼저 안내", { exact: true })).toBeVisible();
+  await expect(flow.getByText("약속한 장소에서 함께 확인", { exact: true })).toBeVisible();
+  await context.close();
 });
 
 test("390px visibly renders cases and the moved official destinations", async ({ page }) => {
@@ -747,7 +732,7 @@ test("390px visibly renders the final location facts and links", async ({ page }
   await expectUserVisible(location.getByRole("link", { name: "카카오톡으로 사진 보내기", exact: true }), "final Kakao link");
 });
 
-test("desktop transaction paths preview, pin, and prioritize keyboard focus", async ({ page }) => {
+test.skip("legacy desktop transaction paths preview, pin, and prioritize keyboard focus", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 500 });
   await page.goto("/");
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -827,7 +812,7 @@ test("desktop transaction paths preview, pin, and prioritize keyboard focus", as
 });
 
 for (const width of [960, 1440]) {
-  test(`${width}px transaction states keep the CTA contained and the next section clear`, async ({ page }) => {
+  test.skip(`${width}px legacy transaction states keep the CTA contained and the next section clear`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
 
@@ -917,7 +902,7 @@ for (const width of [960, 1440]) {
   });
 }
 
-test("200% text at 960px keeps the transaction CTA contained without horizontal overflow", async ({ page }) => {
+test.skip("legacy 200% text at 960px keeps the transaction CTA contained without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 960, height: 900 });
   await page.goto("/");
   const grid = page.getByTestId("transaction-paths").locator(".transaction-paths__grid");
@@ -935,7 +920,7 @@ test("200% text at 960px keeps the transaction CTA contained without horizontal 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
 
-test("transaction paths switch between interactive and static semantics when motion preference changes", async ({ page }) => {
+test.skip("legacy transaction paths switch between interactive and static semantics when motion preference changes", async ({ page }) => {
   const runtimeErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") runtimeErrors.push(message.text());
@@ -981,7 +966,7 @@ test("transaction paths switch between interactive and static semantics when mot
   expect(runtimeErrors, "live media-query semantic switches must not log hydration/runtime errors").toEqual([]);
 });
 
-test("transaction paths clear a focused transient path across live mode changes", async ({ page }) => {
+test.skip("legacy transaction paths clear a focused transient path across live mode changes", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
@@ -1056,8 +1041,8 @@ test("downstream hash targets remain visible below the fixed header after settli
     await page.goto(`/#${id}`, { waitUntil: "networkidle" });
     const target = page.locator(`#${id}`);
     if (id === "process") {
-      await expect(target).toHaveAttribute("data-testid", "transaction-paths");
-      await expect(target.locator("#method-title")).toHaveText("바이크는 그대로, 확인은 현장에서.");
+      await expect(target).toHaveAttribute("data-testid", "visit-flow");
+      await expect(target.locator("#method-title")).toHaveText("바이크는 그대로 두고, 사진만 보내주세요.");
     }
     await waitForStablePosition(target);
     const top = await target.evaluate((element) => element.getBoundingClientRect().top);
@@ -1166,7 +1151,7 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
 test.describe("reduced motion", () => {
   test.use({ contextOptions: { reducedMotion: "reduce" } });
 
-  test("disables entrance and scroll-linked animation", async ({ page }) => {
+  test.skip("legacy reduced-motion transaction path semantics", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
@@ -1188,7 +1173,7 @@ test.describe("reduced motion", () => {
     await expect(paths.getByTestId("transaction-path-lines")).toHaveAttribute("data-revealed", "true");
   });
 
-  test("keeps the mobile inquiry bar hidden over transaction paths", async ({ page }) => {
+  test.skip("legacy mobile inquiry bar hidden over transaction paths", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/", { waitUntil: "networkidle" });
     await page.evaluate(() => window.scrollTo(0, 845));
@@ -1200,7 +1185,7 @@ test.describe("reduced motion", () => {
   });
 });
 
-test("JavaScript-off desktop keeps both transaction paths visible", async ({ browser }) => {
+test.skip("legacy JavaScript-off desktop keeps both transaction paths visible", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     viewport: { width: 1440, height: 900 },

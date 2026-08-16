@@ -7,6 +7,6 @@
 - Use `content/site.ts` as the single source for phone, address, external links, case studies, FAQ, and metadata.
 - Keep marketing claims factual. Do not add fake live activity, fixed review counts, unsupported badges, or absolute price/time guarantees.
 - Treat `24시간` as inquiry availability, not a guaranteed dispatch time.
-- Keep `TransactionPaths` and `StickyInquiryBar` as the only client components; every client boundary must remain justified.
+- Keep `VisitFlow` and `StickyInquiryBar` as the only client components; every client boundary must remain justified.
 - Preserve reduced-motion, keyboard focus, text selection, mobile safe-area, and static fallbacks.
 - Run `npm run verify` and `npm audit --omit=dev` before publishing a preview branch.
