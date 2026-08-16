@@ -610,6 +610,7 @@ section[id] {
 }
 
 .case-card__link {
+  min-height: 44px;
   align-items: center;
   gap: 6px;
   color: white;

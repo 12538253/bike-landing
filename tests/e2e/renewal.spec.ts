@@ -724,6 +724,28 @@ test("case studies keep one featured proof and a readable compact pair at 320px"
   expect(mobilePcx.width).toBeGreaterThanOrEqual(130);
 });
 
+test("compact case source links keep a 44px unclipped touch target at every supported width", async ({ page }) => {
+  const cards = page.locator("article.case-card");
+
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+
+    for (let index = 0; index < await cards.count(); index += 1) {
+      const card = cards.nth(index);
+      const sourceLink = card.locator("a.case-card__link");
+      const [cardBox, linkBox] = await Promise.all([card.boundingBox(), sourceLink.boundingBox()]);
+      expect(cardBox && linkBox, `${width}px card ${index + 1} must render`).toBeTruthy();
+      if (!cardBox || !linkBox) continue;
+      expect(linkBox.height, `${width}px card ${index + 1} source link height`).toBeGreaterThanOrEqual(44);
+      expect(linkBox.x, `${width}px card ${index + 1} source link left edge`).toBeGreaterThanOrEqual(cardBox.x - 1);
+      expect(linkBox.y, `${width}px card ${index + 1} source link top edge`).toBeGreaterThanOrEqual(cardBox.y - 1);
+      expect(linkBox.x + linkBox.width, `${width}px card ${index + 1} source link right edge`).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+      expect(linkBox.y + linkBox.height, `${width}px card ${index + 1} source link bottom edge`).toBeLessThanOrEqual(cardBox.y + cardBox.height + 1);
+    }
+  }
+});
+
 test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 

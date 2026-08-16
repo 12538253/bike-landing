@@ -39,3 +39,34 @@ Result: exit 0. `eslint` passed, production static build passed, 26 static contr
 ## Concerns
 
 None. The deferred coarse-pointer test was intentionally left to Task 3.
+
+## Fix round 1 — compact case source-link touch target
+
+### RED
+
+Command:
+
+```sh
+npm run test:e2e -- --grep "compact case source links"
+```
+
+Result: 1 failed as intended. At 320px, the first compact case source link measured `18.109375px` high, below the 44px minimum.
+
+### GREEN
+
+Command:
+
+```sh
+npm run build && npm run test:e2e -- --grep "compact case source links" && npm run test:static
+```
+
+Result: exit 0. Production build passed, the focused four-width link-rect E2E contract passed, and 26 static contracts passed.
+
+### Change
+
+- Added a real-rendered E2E contract for all three compact case source links at 320, 390, 768, and 1440px. It checks a minimum 44px height and that each rect stays inside its compact card.
+- Added `min-height: 44px` to the existing `.case-card__link` only. The standalone source link remains the only case link; no full-card image/advertising link was restored.
+
+### Scope
+
+- Deliberately did not address the three deferred Minor findings.
