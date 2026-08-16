@@ -191,7 +191,7 @@ export const site = {
       ctaId: "header-phone",
     } satisfies ContactLink,
     stickyKakao: {
-      label: "카카오톡 문의",
+      label: "사진 보내기",
       href: kakaoChatUrl,
       ctaId: "sticky-kakao",
       external: true,

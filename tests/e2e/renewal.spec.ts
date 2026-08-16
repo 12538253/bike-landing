@@ -1114,10 +1114,10 @@ test("mobile inquiry bar appears after hero actions and stays available through 
   await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), actionBottom + 24);
   await expect(bar).toHaveClass(/is-visible/);
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#process")!.offsetTop + 40));
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#process")!.offsetTop - 40));
   await expect(bar, "the visit-flow section alone must not suppress contact actions").toHaveClass(/is-visible/);
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
   await expect(bar, "the FAQ section alone must not suppress contact actions").toHaveClass(/is-visible/);
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
@@ -1156,14 +1156,16 @@ test("sticky inquiry yields only when a real FAQ control overlaps its fixed slot
   const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
   const faq = page.locator("#faq");
   const summary = faq.locator("summary").first();
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
   await expect(bar, "FAQ presence without geometric overlap must keep the sticky inquiry visible").toHaveClass(/is-visible/);
 
   await stickyKakao.focus();
   const overlapScrollTop = await summary.evaluate((element) => {
     const bar = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']")!;
     const targetDocumentTop = element.getBoundingClientRect().top + window.scrollY;
-    return targetDocumentTop - (bar.getBoundingClientRect().top + 4);
+    const bottom = Number.parseFloat(getComputedStyle(bar).bottom) || 0;
+    const fixedSlotTop = window.innerHeight - bottom - bar.offsetHeight;
+    return targetDocumentTop - (fixedSlotTop + 4);
   });
   await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), overlapScrollTop);
   await expect(bar).toHaveAttribute("inert", "");
@@ -1172,7 +1174,7 @@ test("sticky inquiry yields only when a real FAQ control overlaps its fixed slot
   await page.locator('[data-cta="header-phone"]').focus();
   await expect(faq).not.toHaveAttribute("tabindex");
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
   await expect(bar, "the sticky inquiry must return after the control leaves its slot").toHaveClass(/is-visible/);
 });
 

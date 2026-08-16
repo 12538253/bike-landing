@@ -13,7 +13,7 @@
 - Work only on `codex/trust-first-renewal`; do not change `main`, production, DNS, or analytics.
 - The sticky bar is mobile-only at `760px` and below.
 - Hide while the hero actions are visible and when the final CTA is visible.
-- Keep the bar visible through ordinary process, case, quote, and FAQ reading; hide only when a main-content `a`, `button`, or `summary` physically overlaps the fixed bar.
+- Keep the bar visible through ordinary process, case, quote, and FAQ reading; hide only when a main-content `a`, `button`, `summary`, or expanded support answer physically overlaps the fixed bar.
 - Preserve `aria-hidden`, `inert`, safe focus transfer, safe-area inset, and a minimum 58px target height.
 - Kakao copy is exactly `사진 보내기`; the Kakao half is `#FEE500` with black text.
 - Store the unmodified official Kakao PNG locally; do not hotlink, recolor, crop, stretch, or combine it with the BM mark.
@@ -128,7 +128,7 @@ const [contentActionOverlaps, setContentActionOverlaps] = useState(false);
 const [finalVisible, setFinalVisible] = useState(false);
 ```
 
-Observe `[data-testid='hero-actions']` and `[data-testid='final-cta']`. Collect real `main a[href], main button, main summary` controls while excluding hero/final controls. On scroll, resize, and captured `toggle`, compare each control rectangle with the fixed bar rectangle. When a collision begins and focus is inside the bar, move focus to the colliding control's closest labelled section using the existing temporary-`tabindex` restoration pattern.
+Observe `[data-testid='hero-actions']` and `[data-testid='final-cta']`. Collect real `main a[href], main button, main summary` controls and expanded support answers while excluding hero/final controls. On scroll, resize, and captured `toggle`, compare each obstacle rectangle with the fixed bar rectangle. When a collision begins and focus is inside the bar, move focus to the colliding obstacle's closest labelled section using the existing temporary-`tabindex` restoration pattern.
 
 Derive:
 

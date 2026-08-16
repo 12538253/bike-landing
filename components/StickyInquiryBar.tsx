@@ -1,26 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 
 import { site } from "@/content/site";
 
 export default function StickyInquiryBar() {
   const barRef = useRef<HTMLElement>(null);
-  const [heroPassed, setHeroPassed] = useState(false);
-  const [processVisible, setProcessVisible] = useState(false);
-  const [faqVisible, setFaqVisible] = useState(false);
-  const [caseActionVisible, setCaseActionVisible] = useState(false);
+  const [heroActionsVisible, setHeroActionsVisible] = useState(true);
+  const [contentObstacleOverlaps, setContentObstacleOverlaps] = useState(false);
   const [finalVisible, setFinalVisible] = useState(false);
 
   useEffect(() => {
-    const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
-    const process = document.querySelector<HTMLElement>("[data-testid='visit-flow']");
-    const faq = document.querySelector<HTMLElement>("#faq");
-    const caseSection = document.querySelector<HTMLElement>("#cases");
-    const caseActions = [...document.querySelectorAll<HTMLElement>("#cases a[href]")];
+    const heroActions = document.querySelector<HTMLElement>("[data-testid='hero-actions']");
+    const main = document.querySelector<HTMLElement>("main");
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
-    if (!hero || !process || !faq || !caseSection || !finalCta) return;
+    if (!heroActions || !main || !finalCta) return;
 
     const moveFocusTo = (destination: HTMLElement, previousDestination?: HTMLElement) => {
       const activeElement = document.activeElement;
@@ -37,38 +33,27 @@ export default function StickyInquiryBar() {
       if (document.activeElement !== destination) restoreTabIndex();
     };
 
-    const heroObserver = new IntersectionObserver(
+    const heroActionsObserver = new IntersectionObserver(
       ([entry]) => {
-        setHeroPassed(!entry.isIntersecting && entry.boundingClientRect.bottom <= 0);
-      },
-      { threshold: 0 },
-    );
-    const processObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) moveFocusTo(process);
-        setProcessVisible(entry.isIntersecting);
+        setHeroActionsVisible(entry.isIntersecting);
       },
       { threshold: 0 },
     );
     const finalObserver = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) moveFocusTo(finalCta, faq);
+        if (entry.isIntersecting) moveFocusTo(finalCta);
         setFinalVisible(entry.isIntersecting);
       },
       { threshold: 0.1 },
     );
-    const faqObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) moveFocusTo(faq);
-        setFaqVisible(entry.isIntersecting);
-      },
-      { threshold: 0 },
-    );
-    let caseActionIsVisible = false;
-    const updateCaseActionVisibility = () => {
+    let contentObstacleIsOverlapping = false;
+    const updateContentObstacleOverlap = () => {
       const bar = barRef.current;
       if (!bar) return;
 
+      const contentObstacles = [...main.querySelectorAll<HTMLElement>(
+        "a[href], button, summary, details[open] .support-answer",
+      )].filter((element) => !element.closest("[data-testid='hero']") && !element.closest("[data-testid='final-cta']"));
       const styles = window.getComputedStyle(bar);
       const bottom = Number.parseFloat(styles.bottom) || 0;
       const barRect = bar.getBoundingClientRect();
@@ -76,35 +61,49 @@ export default function StickyInquiryBar() {
       const visibleBarBottom = window.innerHeight - bottom;
       const visibleBarLeft = barRect.left;
       const visibleBarRight = barRect.right;
-      const caseActionOverlapsBar = caseActions.some((action) => {
-        const rect = action.getBoundingClientRect();
-        return rect.right > visibleBarLeft && rect.left < visibleBarRight
+      const overlappingObstacle = contentObstacles.find((element) => {
+        const rect = element.getBoundingClientRect();
+        const elementStyles = window.getComputedStyle(element);
+        return elementStyles.display !== "none" && elementStyles.visibility !== "hidden"
+          && rect.width > 0 && rect.height > 0
+          && rect.right > visibleBarLeft && rect.left < visibleBarRight
           && rect.bottom > visibleBarTop && rect.top < visibleBarBottom;
       });
-      if (caseActionOverlapsBar && !caseActionIsVisible) moveFocusTo(caseSection);
-      caseActionIsVisible = caseActionOverlapsBar;
-      setCaseActionVisible(caseActionOverlapsBar);
+      const overlaps = Boolean(overlappingObstacle);
+      if (overlappingObstacle && !contentObstacleIsOverlapping) {
+        const destination = overlappingObstacle.closest<HTMLElement>("section[id]") ?? overlappingObstacle;
+        moveFocusTo(destination);
+      }
+      contentObstacleIsOverlapping = overlaps;
+      setContentObstacleOverlaps(overlaps);
+    };
+    let toggleFrame: number | null = null;
+    const updateAfterToggle = () => {
+      if (toggleFrame !== null) window.cancelAnimationFrame(toggleFrame);
+      toggleFrame = window.requestAnimationFrame(() => {
+        toggleFrame = null;
+        updateContentObstacleOverlap();
+      });
     };
 
-    heroObserver.observe(hero);
-    processObserver.observe(process);
-    faqObserver.observe(faq);
+    heroActionsObserver.observe(heroActions);
     finalObserver.observe(finalCta);
-    window.addEventListener("scroll", updateCaseActionVisibility, { passive: true });
-    window.addEventListener("resize", updateCaseActionVisibility);
-    updateCaseActionVisibility();
+    window.addEventListener("scroll", updateContentObstacleOverlap, { passive: true });
+    window.addEventListener("resize", updateContentObstacleOverlap);
+    document.addEventListener("toggle", updateAfterToggle, true);
+    updateContentObstacleOverlap();
 
     return () => {
-      heroObserver.disconnect();
-      processObserver.disconnect();
-      faqObserver.disconnect();
+      heroActionsObserver.disconnect();
       finalObserver.disconnect();
-      window.removeEventListener("scroll", updateCaseActionVisibility);
-      window.removeEventListener("resize", updateCaseActionVisibility);
+      window.removeEventListener("scroll", updateContentObstacleOverlap);
+      window.removeEventListener("resize", updateContentObstacleOverlap);
+      document.removeEventListener("toggle", updateAfterToggle, true);
+      if (toggleFrame !== null) window.cancelAnimationFrame(toggleFrame);
     };
   }, []);
 
-  const visible = heroPassed && !processVisible && !faqVisible && !caseActionVisible && !finalVisible;
+  const visible = !heroActionsVisible && !contentObstacleOverlaps && !finalVisible;
   const kakao = site.contact.stickyKakao;
 
   return (
@@ -127,8 +126,15 @@ export default function StickyInquiryBar() {
         rel="noreferrer"
         tabIndex={visible ? 0 : -1}
       >
-        <MessageCircle aria-hidden="true" size={20} />
-        카카오톡
+        <Image
+          className="sticky-inquiry__kakao-mark"
+          src="/images/kakao-talk-mark.png"
+          alt=""
+          aria-hidden="true"
+          width={68}
+          height={69}
+        />
+        {kakao.label}
       </a>
     </aside>
   );

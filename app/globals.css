@@ -1126,7 +1126,7 @@ button.visit-flow__stage-summary {
   pointer-events: none;
   transform: translateY(calc(100% + 28px));
   visibility: hidden;
-  transition: opacity 0.24s ease, transform 0.24s ease, visibility 0s linear 0.24s;
+  transition: opacity 0.24s ease, transform 0.24s ease, visibility 0s linear;
 }
 
 .sticky-inquiry.is-visible {
@@ -1150,12 +1150,14 @@ button.visit-flow__stage-summary {
 }
 
 .sticky-inquiry a + a {
-  background: var(--orange);
+  background: #fee500;
   color: var(--ink);
 }
 
-.sticky-inquiry a + a svg {
-  color: var(--yellow);
+.sticky-inquiry__kakao-mark {
+  width: auto;
+  height: 22px;
+  flex: 0 0 auto;
 }
 
 @media (hover: hover) {

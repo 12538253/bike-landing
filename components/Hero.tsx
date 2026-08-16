@@ -36,7 +36,7 @@ export default function Hero() {
           </h1>
           <p className="hero__description">{site.hero.description}</p>
 
-          <div className="hero__actions">
+          <div className="hero__actions" data-testid="hero-actions">
             <a
               className="button button--primary"
               href={kakao.href}
