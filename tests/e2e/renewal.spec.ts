@@ -858,7 +858,7 @@ test("mobile inquiry bar appears after the hero and hides at the final call to a
   const bar = page.getByTestId("sticky-inquiry");
   await expect(bar).not.toHaveClass(/is-visible/);
 
-  await page.locator("#cases").scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
   await expect(bar).toHaveClass(/is-visible/);
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
@@ -873,7 +873,7 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
 
     const bar = page.getByTestId("sticky-inquiry");
     const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
-    await page.locator("#cases").scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
     await expect(bar, `${reducedMotion}: sticky inquiry should become visible before each transition`).toHaveClass(/is-visible/);
 
     await stickyKakao.focus();
@@ -887,7 +887,7 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
     await expect(page.locator("#process"), `${reducedMotion}: the temporary process tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
     await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
 
-    await page.locator("#cases").scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
     await expect(bar, `${reducedMotion}: sticky inquiry should reappear away from the process`).toHaveClass(/is-visible/);
     await stickyKakao.focus();
     await page.locator("#contact").scrollIntoViewIfNeeded();
@@ -909,7 +909,7 @@ test("sticky inquiry yields to the labelled FAQ section and restores its tempora
   const bar = page.getByTestId("sticky-inquiry");
   const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
   const faq = page.locator("#faq");
-  await page.locator("#cases").scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
   await expect(bar).toHaveClass(/is-visible/);
 
   await stickyKakao.focus();
@@ -922,7 +922,7 @@ test("sticky inquiry yields to the labelled FAQ section and restores its tempora
 });
 
 test("761px through 960px header preserves navigation without exposing the Kakao header action early", async ({ page }) => {
-  for (const width of [761, 768, 960]) {
+  for (const width of [761, 768, 960, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/");
 
@@ -943,6 +943,29 @@ test("761px through 960px header preserves navigation without exposing the Kakao
     const kakao = page.locator(".header-kakao");
     if (width < 960) await expect(kakao).toBeHidden();
     else await expect(kakao).toBeVisible();
+
+    const regions = [
+      { label: "brand", locator: page.locator(".brand-mark") },
+      { label: "navigation", locator: nav },
+      { label: "header actions", locator: page.locator(".site-header__actions") },
+    ];
+    const regionBoxes = await Promise.all(regions.map(async ({ label, locator }) => ({ label, box: await locator.boundingBox() })));
+    for (const { label, box } of regionBoxes) expect(box, `${width}px ${label} must have a box`).not.toBeNull();
+    for (let index = 1; index < regionBoxes.length; index += 1) {
+      const previous = regionBoxes[index - 1].box;
+      const current = regionBoxes[index].box;
+      if (!previous || !current) continue;
+      expect(previous.x + previous.width, `${width}px ${regionBoxes[index - 1].label} must precede ${regionBoxes[index].label}`).toBeLessThanOrEqual(current.x + 1);
+      expect(previous.y + previous.height, `${width}px ${regionBoxes[index - 1].label} must vertically overlap ${regionBoxes[index].label}`).toBeGreaterThan(current.y);
+      expect(current.y + current.height, `${width}px ${regionBoxes[index].label} must vertically overlap ${regionBoxes[index - 1].label}`).toBeGreaterThan(previous.y);
+    }
+
+    for (const link of await nav.getByRole("link").all()) {
+      const box = await link.boundingBox();
+      expect(box, `${width}px navigation link must have a box`).not.toBeNull();
+      expect(box?.width ?? 0, `${width}px navigation link must be at least 44px wide`).toBeGreaterThanOrEqual(44);
+      expect(box?.height ?? 0, `${width}px navigation link must be at least 44px tall`).toBeGreaterThanOrEqual(44);
+    }
   }
 });
 
@@ -990,7 +1013,7 @@ test("390px default main and visit flow remain intrinsically compact", async ({ 
 
   const [mainBox, flowBox] = await Promise.all([page.locator("main").boundingBox(), page.getByTestId("visit-flow").boundingBox()]);
   expect(mainBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(5400);
-  expect(flowBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(1000);
+  expect(flowBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(985);
 });
 
 test("wide coarse-pointer visit flow remains a static two-stage fallback", async ({ browser }) => {
@@ -1055,6 +1078,63 @@ test("loads without console, page, or hydration errors", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("fixed header and mobile sticky inquiry leave every visible action hit-testable", async ({ page }) => {
+  for (const viewport of [
+    { width: 320, height: 700 },
+    { width: 390, height: 844 },
+    { width: 768, height: 900 },
+    { width: 960, height: 900 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+
+    const defaultHits = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('a[href], button, summary')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        const styles = getComputedStyle(element);
+        const inViewport = rect.width > 0 && rect.height > 0
+          && rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight;
+        const hit = inViewport ? document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2) : null;
+        return { name: element.textContent?.trim(), inViewport, visible: styles.visibility !== "hidden" && styles.display !== "none", hit: Boolean(hit && element.contains(hit)) };
+      })
+      .filter((candidate) => candidate.visible && candidate.inViewport && !candidate.hit));
+    expect(defaultHits, `${viewport.width}px fixed header must not cover a visible action`).toEqual([]);
+
+    if (viewport.width > 760) continue;
+    await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 500));
+    const sticky = page.getByTestId("sticky-inquiry");
+    await expect(sticky).toHaveClass(/is-visible/);
+    const safeStickyHits = await sticky.locator("a").evaluateAll((elements) => elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return Boolean(hit && element.contains(hit));
+    }));
+    expect(safeStickyHits, `${viewport.width}px sticky actions must receive their center hit-tests`).toEqual([true, true]);
+
+    await page.locator("#cases").scrollIntoViewIfNeeded();
+    await expect(sticky).not.toHaveClass(/is-visible/);
+    const overlap = await page.evaluate(() => {
+      const sticky = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']");
+      if (!sticky) return { hidden: true, covered: [] as string[] };
+      const stickyRect = sticky.getBoundingClientRect();
+      const covered = [...document.querySelectorAll<HTMLElement>('a[href], button, summary')]
+        .filter((element) => !sticky.contains(element))
+        .filter((element) => {
+          const rect = element.getBoundingClientRect();
+          const styles = getComputedStyle(element);
+          return styles.visibility !== "hidden" && styles.display !== "none" && rect.width > 0 && rect.height > 0
+            && rect.right > stickyRect.left && rect.left < stickyRect.right && rect.bottom > stickyRect.top && rect.top < stickyRect.bottom;
+        })
+        .map((element) => element.textContent?.trim() ?? "unnamed action");
+      return { hidden: false, covered };
+    });
+    expect(overlap.hidden).toBe(false);
+    expect(overlap.covered, `${viewport.width}px sticky inquiry must not cover a visible action`).toEqual([]);
+  }
+});
+
 for (const viewport of [
   { width: 320, height: 700 },
   { width: 390, height: 844 },
@@ -1080,7 +1160,7 @@ for (const viewport of [
     }
 
     if (viewport.width <= 760) {
-      await page.getByTestId("quote-checklist").scrollIntoViewIfNeeded();
+      await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 500));
       const sticky = page.getByTestId("sticky-inquiry");
       await expect(sticky).toHaveClass(/is-visible/);
       const stickyLinks = sticky.locator("a");

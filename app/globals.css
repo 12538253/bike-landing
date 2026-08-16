@@ -207,6 +207,14 @@ section[id] {
   color: white;
 }
 
+.site-nav a {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
 .site-header__actions {
   gap: 10px;
 }
@@ -1305,7 +1313,7 @@ button.visit-flow__stage-summary {
   }
 
   .visit-flow__stage-panel {
-    padding: 0 21px 25px;
+    padding: 0 21px 17px;
   }
 
   .visit-flow__stage-title {
@@ -1318,7 +1326,7 @@ button.visit-flow__stage-summary {
   }
 
   .visit-flow__safety {
-    margin-top: 20px;
+    margin-top: 18px;
   }
 
   .trust-bar__grid,

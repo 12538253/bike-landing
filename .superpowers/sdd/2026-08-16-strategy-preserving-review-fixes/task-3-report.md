@@ -71,3 +71,29 @@ Output: ESLint passed; static export tests `26/26` passed; Playwright E2E tests 
 - No fixed CSS heights were added for content budgets; mobile reductions are padding/margin only and text remains intrinsic.
 - The focus handoff only occurs when the active element is in the sticky bar (or the FAQ temporary destination when handing off to final CTA), so ordinary FAQ scrolling does not steal focus.
 - `git diff --check` passed.
+
+## Round 1 — touch targets, layout margin, and overlay audit
+
+### RED
+
+```sh
+npm run build && npx playwright test tests/e2e/renewal.spec.ts --grep '761px through|390px default main|fixed header and mobile sticky' --workers=1
+```
+
+Output: `3 failed` as intended.
+
+- At 761px the smallest navigation link measured `43.140625px` wide (and had no 44px height contract).
+- `VisitFlow` still measured `999.578125px`, failing the strengthened `≤985px` contract.
+- At 320px the visible sticky inquiry covered `공식 블로그에서 더 많은 사례 보기` in the actual rectangle-overlap audit.
+
+### GREEN
+
+```sh
+npm run build && npx playwright test tests/e2e/renewal.spec.ts --grep 'mobile inquiry bar appears|sticky inquiry becomes inert|sticky inquiry yields|761px through|390px default main|fixed header and mobile sticky' --workers=1
+```
+
+Output: `6 passed`.
+
+- Each visible navigation link is now an inline-flex 44×44px target at 761/768/960/1440px.  The browser regression also asserts ordered, pairwise non-overlapping brand → navigation → header-actions rectangles at 761/768/960px.
+- Mobile VisitFlow uses 17px stage-panel end padding and 18px safety-note margin.  At 390×844 it now measures `981.578125px`, leaving `18.421875px` below the 1000px original budget and passing the ≤985px regression; `main` measures `5030.75px`.
+- Sticky visibility now checks case-action rectangles against the bar's actual fixed viewport slot on scroll/resize.  It hides only while a case action would overlap that slot, preserving a usable sticky bar in safe scroll positions.  The five-width audit uses center `elementFromPoint` checks for visible actions and confirms no visible non-sticky action intersects the bar at the case section.

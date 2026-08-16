@@ -10,12 +10,14 @@ export default function StickyInquiryBar() {
   const [heroPassed, setHeroPassed] = useState(false);
   const [processVisible, setProcessVisible] = useState(false);
   const [faqVisible, setFaqVisible] = useState(false);
+  const [caseActionVisible, setCaseActionVisible] = useState(false);
   const [finalVisible, setFinalVisible] = useState(false);
 
   useEffect(() => {
     const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
     const process = document.querySelector<HTMLElement>("[data-testid='visit-flow']");
     const faq = document.querySelector<HTMLElement>("#faq");
+    const caseActions = [...document.querySelectorAll<HTMLElement>("#cases a[href]")];
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
     if (!hero || !process || !faq || !finalCta) return;
 
@@ -61,21 +63,43 @@ export default function StickyInquiryBar() {
       },
       { threshold: 0 },
     );
+    const updateCaseActionVisibility = () => {
+      const bar = barRef.current;
+      if (!bar) return;
+
+      const styles = window.getComputedStyle(bar);
+      const bottom = Number.parseFloat(styles.bottom) || 0;
+      const barRect = bar.getBoundingClientRect();
+      const visibleBarTop = window.innerHeight - bottom - bar.offsetHeight;
+      const visibleBarBottom = window.innerHeight - bottom;
+      const visibleBarLeft = barRect.left;
+      const visibleBarRight = barRect.right;
+      setCaseActionVisible(caseActions.some((action) => {
+        const rect = action.getBoundingClientRect();
+        return rect.right > visibleBarLeft && rect.left < visibleBarRight
+          && rect.bottom > visibleBarTop && rect.top < visibleBarBottom;
+      }));
+    };
 
     heroObserver.observe(hero);
     processObserver.observe(process);
     faqObserver.observe(faq);
     finalObserver.observe(finalCta);
+    window.addEventListener("scroll", updateCaseActionVisibility, { passive: true });
+    window.addEventListener("resize", updateCaseActionVisibility);
+    updateCaseActionVisibility();
 
     return () => {
       heroObserver.disconnect();
       processObserver.disconnect();
       faqObserver.disconnect();
       finalObserver.disconnect();
+      window.removeEventListener("scroll", updateCaseActionVisibility);
+      window.removeEventListener("resize", updateCaseActionVisibility);
     };
   }, []);
 
-  const visible = heroPassed && !processVisible && !faqVisible && !finalVisible;
+  const visible = heroPassed && !processVisible && !faqVisible && !caseActionVisible && !finalVisible;
   const kakao = site.contact.stickyKakao;
 
   return (
