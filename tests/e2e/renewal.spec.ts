@@ -4,22 +4,22 @@ type Rgb = readonly [number, number, number];
 
 const faqAnswerContracts = [
   {
-    question: "사진 견적이 최종 금액인가요?",
+    question: "최종 금액은 어떻게 정하나요?",
     answer:
-      "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
-    facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
+      "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고, 변동 사유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
+    facts: ["사진으로 예상 금액", "차량과 서류", "변동 사유", "최종 금액", "동의하신 금액"],
   },
   {
-    question: "당일이나 늦은 시간에도 방문할 수 있나요?",
+    question: "방문 시간은 어떻게 정하나요?",
     answer:
-      "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
-    facts: ["24시간", "인천·서울·경기", "당일·야간 방문", "일정", "빠르게 조율"],
+      "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
+    facts: ["24시간", "인천·서울·경기", "당일 일정", "방문 가능한 시간", "늦은 시간"],
   },
   {
-    question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+    question: "개인 거래와 업체 매입은 어떻게 다른가요?",
     answer:
-      "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
-    facts: ["등록 상태", "본인 소유", "서류"],
+      "일정 조율과 현장 처리를 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격을 가장 우선한다면 개인 거래도 함께 비교해 보세요.",
+    facts: ["일정 조율", "현장 처리", "업체 매입", "가격", "개인 거래"],
   },
 ] as const;
 
@@ -389,7 +389,7 @@ test("mobile keeps the hero title larger than section headings and readable", as
 });
 
 test("wide section headings do not gain avoidable extra lines", async ({ page }) => {
-  const headingIds = ["method-title", "cases-title", "quote-title", "guide-title", "faq-title", "final-title"];
+  const headingIds = ["method-title", "cases-title", "quote-title", "faq-title", "final-title"];
 
   await page.setViewportSize({ width: 1200, height: 900 });
   await page.goto("/");
@@ -440,8 +440,8 @@ test("390px first view exposes the seller decision facts and contact paths", asy
   }
 
   const decisionFacts = page.locator("#top .hero__description");
-  await expect(decisionFacts).toContainText("현장에서 차량 상태와 최종 금액을 확인하고");
-  await expect(decisionFacts).toContainText("판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.");
+  await expect(decisionFacts).toContainText("약속한 장소에서 차량과 최종 금액을 함께 확인하고");
+  await expect(decisionFacts).toContainText("판매대금 전액 입금 후 상차합니다.");
   const decisionFactsBox = await decisionFacts.boundingBox();
   expect(decisionFactsBox, "the transaction facts need a rendered first-view box").not.toBeNull();
   expect(decisionFactsBox?.y ?? -1, "the transaction facts must start inside the 390px viewport").toBeGreaterThanOrEqual(0);
@@ -482,7 +482,7 @@ test("390px visibly renders all four compact trust facts", async ({ page }) => {
   await page.goto("/");
   const trust = page.locator("#trust");
 
-  for (const fact of ["경력 10년 이상", "24시간 문의 접수", "직접 방문·현장 확인", "입금 확인 후 상차"]) {
+  for (const fact of ["24시간 문의 접수", "인천·서울·경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"]) {
     await expectUserVisible(trust.getByText(fact, { exact: true }), `trust fact: ${fact}`);
   }
 });
@@ -595,8 +595,9 @@ test("390px visibly renders cases and the moved official destinations", async ({
   const cases = page.locator("#cases");
 
   for (const copy of [
-    "말보다 실제 매입 기록으로 보여드립니다.",
-    "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
+    "공식 블로그에 남긴 실제 매입 기록입니다.",
+    "늦은 저녁 자택 방문 · 현장 확인 후 대금 지급",
+    "공식 블로그 매입 기록",
     "ADV350",
     "PCX125",
     "아이언883",
@@ -620,7 +621,7 @@ test("390px visibly renders the quote checklist facts", async ({ page }) => {
 
   for (const copy of [
     "사진 몇 장과 기본 정보만 보내주세요.",
-    "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
+    "밝은 곳에서 차량 전체와 확인이 필요한 부위를 가까이 찍어주세요.",
     "기종",
     "연식",
     "주행거리",
@@ -634,20 +635,20 @@ test("390px visibly renders the quote checklist facts", async ({ page }) => {
   }
 });
 
-test("390px opens the separate purchase guide disclosure and renders its facts", async ({ page }) => {
+test("390px opens the merged support document disclosure and renders its facts", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const guide = page.locator('section[aria-labelledby="guide-title"]');
+  const guide = page.locator("#faq");
 
   for (const copy of [
-    "스쿠터부터 대형 바이크까지 매입 상담합니다.",
-    "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
+    "스쿠터부터 대형 바이크까지 상담합니다.",
+    "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
   ]) {
     await expectUserVisible(guide.getByText(copy, { exact: true }), `guide copy: ${copy}`);
   }
 
-  const details = guide.locator("details");
-  await expect(details).toHaveCount(1);
+  const details = guide.locator("details").filter({ hasText: "명의·서류가 다른 경우" });
+  await expect(guide.locator("details")).toHaveCount(4);
   const summary = details.locator(":scope > summary");
   await expect(summary).toHaveText("명의·서류가 다른 경우");
   await expectUserVisible(summary, "purchase guide summary");
@@ -655,7 +656,7 @@ test("390px opens the separate purchase guide disclosure and renders its facts",
   await expect(details).toHaveAttribute("open", "");
   await expectUserVisible(details, "opened purchase guide disclosure");
   const answerText = await visibleDetailsContent(details, "purchase guide answer");
-  for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "추가 확인"]) {
+  for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "현재 상태", "필요한 확인 사항과 서류"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
 });
@@ -685,7 +686,7 @@ for (const { question, answer: expectedAnswer, facts } of faqAnswerContracts) {
   });
 }
 
-test("390px visibly renders the final location facts and links", async ({ page }) => {
+test("390px renders final contact actions before location facts and links", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const location = page.locator("#contact");
@@ -696,45 +697,31 @@ test("390px visibly renders the final location facts and links", async ({ page }
   const map = location.getByRole("link", { name: "네이버 지도에서 위치·리뷰 보기", exact: true });
   await expectUserVisible(map, "final Naver map/review link");
   await expect(map).toHaveAttribute("href", "https://naver.me/F1rPbAcV");
-  await expectUserVisible(location.locator('[data-cta="final-phone"]'), "final phone link");
-  await expectUserVisible(location.getByRole("link", { name: "카카오톡으로 사진 보내기", exact: true }), "final Kakao link");
+  const finalKakao = location.getByRole("link", { name: "사진 보내고 예상 견적 확인", exact: true });
+  const finalPhone = location.locator('[data-cta="final-phone"]');
+  await expectUserVisible(finalPhone, "final phone link");
+  await expectUserVisible(finalKakao, "final Kakao link");
+  const [kakaoBox, phoneBox, mapBox] = await Promise.all([finalKakao.boundingBox(), finalPhone.boundingBox(), map.boundingBox()]);
+  expect(kakaoBox && phoneBox && mapBox).toBeTruthy();
+  if (!kakaoBox || !phoneBox || !mapBox) return;
+  expect(kakaoBox.y).toBeLessThan(mapBox.y);
+  expect(phoneBox.y).toBeLessThan(mapBox.y);
 });
 
-test("case studies use the featured and portrait layout at each breakpoint", async ({ page }) => {
+test("case studies keep one featured proof and a readable compact pair at 320px", async ({ page }) => {
   const cards = (model: string) =>
     page.locator("article.case-card", { has: page.getByRole("heading", { name: model, exact: true }) });
 
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  const [wideAdv, widePcx, wideIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
-  expect(wideAdv && widePcx && wideIron).toBeTruthy();
-  if (!wideAdv || !widePcx || !wideIron) return;
-  expect(Math.abs(wideAdv.y - widePcx.y)).toBeLessThan(2);
-  expect(Math.abs(widePcx.y - wideIron.y)).toBeLessThan(2);
-  expect(wideAdv.width).toBeGreaterThan(widePcx.width * 1.7);
-  expect(Math.abs(widePcx.width - wideIron.width)).toBeLessThan(3);
-
-  await page.setViewportSize({ width: 768, height: 900 });
-  await page.goto("/");
-  const [tabletAdv, tabletPcx, tabletIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
-  expect(tabletAdv && tabletPcx && tabletIron).toBeTruthy();
-  if (!tabletAdv || !tabletPcx || !tabletIron) return;
-  expect(tabletAdv.x).toBeLessThan(tabletPcx.x);
-  expect(Math.abs(tabletPcx.x - tabletIron.x)).toBeLessThan(2);
-  expect(Math.abs(tabletAdv.y - tabletPcx.y)).toBeLessThan(16);
-  expect(tabletIron.y).toBeGreaterThan(tabletPcx.y + tabletPcx.height - 2);
-  expect(tabletAdv.height).toBeGreaterThan(tabletPcx.height * 1.7);
-  expect(Math.abs(tabletAdv.y + tabletAdv.height - (tabletIron.y + tabletIron.height))).toBeLessThan(16);
-
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 320, height: 844 });
   await page.goto("/");
   const [mobileAdv, mobilePcx, mobileIron] = await Promise.all([cards("ADV350").boundingBox(), cards("PCX125").boundingBox(), cards("아이언883").boundingBox()]);
   expect(mobileAdv && mobilePcx && mobileIron).toBeTruthy();
   if (!mobileAdv || !mobilePcx || !mobileIron) return;
-  expect(Math.abs(mobileAdv.x - mobilePcx.x)).toBeLessThan(2);
-  expect(Math.abs(mobilePcx.x - mobileIron.x)).toBeLessThan(2);
+  expect(mobileAdv.width).toBeGreaterThan(mobilePcx.width * 1.8);
+  expect(Math.abs(mobilePcx.y - mobileIron.y)).toBeLessThan(2);
+  expect(mobileIron.x).toBeGreaterThan(mobilePcx.x + mobilePcx.width - 2);
   expect(mobilePcx.y).toBeGreaterThan(mobileAdv.y + mobileAdv.height - 2);
-  expect(mobileIron.y).toBeGreaterThan(mobilePcx.y + mobilePcx.height - 2);
+  expect(mobilePcx.width).toBeGreaterThanOrEqual(130);
 });
 
 test("downstream hash targets remain visible below the fixed header after settling", async ({ page }) => {

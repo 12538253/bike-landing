@@ -28,7 +28,7 @@ export type CaseStudy = Readonly<{
   layout: "featured" | "portrait";
   region: string;
   model: string;
-  summary?: string;
+  proof: string;
   sourceUrl: string;
   sourceLabel: string;
   image: string;
@@ -63,20 +63,15 @@ export type QuoteSectionCopy = SectionCopy & Readonly<{
 }>;
 
 export type CaseStudySectionCopy = SectionCopy & Readonly<{
-  description: string;
+  description?: string;
   cardLinkLabel: string;
   indexLink: ContactLink;
   placeLink: ExternalLink;
 }>;
 
-export type PurchaseGuideCopy = SectionCopy & Readonly<{
+export type SupportSectionCopy = SectionCopy & Readonly<{
   description: string;
   disclosure: DisclosureCopy;
-}>;
-
-export type FaqSectionCopy = Readonly<{
-  eyebrow: string;
-  title: string;
   items: readonly FaqItem[];
 }>;
 
@@ -146,7 +141,7 @@ export const site = {
     officialBlog: officialBlogUrl,
   },
   navigation: [
-    { label: "거래 경로", href: "#process" },
+    { label: "진행 방법", href: "#process" },
     { label: "매입 사례", href: "#cases" },
     { label: "자주 묻는 질문", href: "#faq" },
   ] satisfies readonly NavigationLink[],
@@ -172,10 +167,9 @@ export const site = {
       "직접 찾아가 매입합니다.",
     ],
     description:
-      "사진을 보내주시면 예상 견적과 방문 시간을 먼저 알려드립니다. 현장에서 차량 상태와 최종 금액을 확인하고 판매대금 전액이 입금된 것을 확인한 뒤 상차합니다.",
-    note:
-      "사진으로 예상 금액을 먼저 안내하고, 최종 금액은 현장에서 차량 상태를 함께 확인한 뒤 확정합니다.",
-    scrollLabel: "거래 원칙 확인하기",
+      "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 약속한 장소에서 차량과 최종 금액을 함께 확인하고, 판매대금 전액 입금 후 상차합니다.",
+    note: "경력 10년 이상 · 입금 확인 후 상차",
+    scrollLabel: "진행 방법 보기",
   },
   contact: {
     heroKakao: {
@@ -184,8 +178,14 @@ export const site = {
       ctaId: "hero-kakao",
       external: true,
     } satisfies ContactLink,
+    finalKakao: {
+      label: "사진 보내고 예상 견적 확인",
+      href: kakaoChatUrl,
+      ctaId: "hero-kakao",
+      external: true,
+    } satisfies ContactLink,
     headerPhone: {
-      label: "24시간 문의",
+      label: "전화 상담",
       href: `tel:${phoneNumber}`,
       ctaId: "header-phone",
     } satisfies ContactLink,
@@ -196,7 +196,7 @@ export const site = {
       external: true,
     } satisfies ContactLink,
     finalPhone: {
-      label: "전화로 상담하기",
+      label: "전화로 차량 상담하기",
       href: `tel:${phoneNumber}`,
       ctaId: "final-phone",
     } satisfies ContactLink,
@@ -234,19 +234,17 @@ export const site = {
   } satisfies VisitFlowCopy,
   trustSection: {
     title: "거래 원칙",
-    // Public source for the confirmed career claim: https://m.blog.naver.com/bikemanager4949
-    points: ["경력 10년 이상", "24시간 문의 접수", "직접 방문·현장 확인", "입금 확인 후 상차"],
+    points: ["24시간 문의 접수", "인천·서울·경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"],
   } satisfies TrustSectionCopy,
   quoteSection: {
     eyebrow: "견적 준비",
     title: "사진 몇 장과 기본 정보만 보내주세요.",
-    description: "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
+    description: "밝은 곳에서 차량 전체와 확인이 필요한 부위를 가까이 찍어주세요.",
     items: ["기종", "연식", "주행거리", "하자 내역", "폐지 여부", "검사 여부", "지역", "바이크 사진"],
   } satisfies QuoteSectionCopy,
   caseStudySection: {
     eyebrow: "실제 매입 사례",
-    title: "말보다 실제 매입 기록으로 보여드립니다.",
-    description: "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
+    title: "공식 블로그에 남긴 실제 매입 기록입니다.",
     cardLinkLabel: "원문 보기",
     indexLink: {
       label: "공식 블로그에서 더 많은 사례 보기",
@@ -265,8 +263,7 @@ export const site = {
       layout: "featured",
       region: "서울 은평구",
       model: "ADV350",
-      summary:
-        "늦은 저녁 자택으로 찾아가 차량을 확인하고 현장에서 대금을 지급했습니다.",
+      proof: "늦은 저녁 자택 방문 · 현장 확인 후 대금 지급",
       sourceUrl: "https://m.blog.naver.com/bikemanager4949/224355424035",
       sourceLabel: "공식 블로그에서 서울 은평구 ADV350 매입 기록 보기",
       image: "/images/cases/adv350.webp",
@@ -277,6 +274,7 @@ export const site = {
       layout: "portrait",
       region: "인천 부평",
       model: "PCX125",
+      proof: "공식 블로그 매입 기록",
       sourceUrl: "https://m.blog.naver.com/bikemanager4949/224362894515",
       sourceLabel: "공식 블로그에서 인천 부평 PCX125 매입 기록 보기",
       image: "/images/cases/pcx125.webp",
@@ -287,6 +285,7 @@ export const site = {
       layout: "portrait",
       region: "부천",
       model: "아이언883",
+      proof: "공식 블로그 매입 기록",
       sourceUrl: "https://m.blog.naver.com/bikemanager4949/224351926598",
       sourceLabel: "공식 블로그에서 부천 아이언883 매입 기록 보기",
       image: "/images/cases/iron883.webp",
@@ -294,37 +293,33 @@ export const site = {
       imagePosition: "center 52%",
     },
   ] satisfies readonly CaseStudy[],
-  purchaseGuide: {
-    eyebrow: "매입 가능 범위",
-    title: "스쿠터부터 대형 바이크까지 매입 상담합니다.",
-    description: "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
+  supportSection: {
+    eyebrow: "상담·서류 안내",
+    title: "스쿠터부터 대형 바이크까지 상담합니다.",
+    description: "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
     disclosure: {
       summary: "명의·서류가 다른 경우",
       answer:
-        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 추가 확인 후 필요한 서류와 진행 방법을 안내합니다.",
+        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 현재 상태를 알려주시면 필요한 확인 사항과 서류를 안내합니다.",
     },
-  } satisfies PurchaseGuideCopy,
-  faqSection: {
-    eyebrow: "자주 묻는 질문",
-    title: "문의할 때 많이 묻는 내용입니다.",
     items: [
       {
-        question: "사진 견적이 최종 금액인가요?",
+        question: "최종 금액은 어떻게 정하나요?",
         answer:
-          "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
+          "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고, 변동 사유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
       },
       {
-        question: "당일이나 늦은 시간에도 방문할 수 있나요?",
+        question: "방문 시간은 어떻게 정하나요?",
         answer:
-          "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
+          "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
       },
       {
-        question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+        question: "개인 거래와 업체 매입은 어떻게 다른가요?",
         answer:
-          "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
+          "일정 조율과 현장 처리를 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격을 가장 우선한다면 개인 거래도 함께 비교해 보세요.",
       },
     ],
-  } satisfies FaqSectionCopy,
+  } satisfies SupportSectionCopy,
   locationSection: {
     storeLabel: "인천 오프라인 매장",
     hours: "24시간 문의 접수 · 방문 전 연락",

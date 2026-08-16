@@ -52,22 +52,22 @@ const disclosureParts = (detailsMarkup) => {
 
 const faqAnswerContracts = [
   {
-    question: "사진 견적이 최종 금액인가요?",
+    question: "최종 금액은 어떻게 정하나요?",
     answer:
-      "사진 견적은 예상 금액입니다. 현장에서 차량과 서류를 확인하고 달라지는 이유와 최종 금액을 설명한 뒤 판매자가 동의하면 거래합니다.",
-    facts: ["사진 견적은 예상 금액", "차량과 서류", "최종 금액", "판매자가", "동의"],
+      "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고, 변동 사유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
+    facts: ["사진으로 예상 금액", "차량과 서류", "변동 사유", "최종 금액", "동의하신 금액"],
   },
   {
-    question: "당일이나 늦은 시간에도 방문할 수 있나요?",
+    question: "방문 시간은 어떻게 정하나요?",
     answer:
-      "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
-    facts: ["24시간", "인천·서울·경기", "당일·야간 방문", "일정", "빠르게 조율"],
+      "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
+    facts: ["24시간", "인천·서울·경기", "당일 일정", "방문 가능한 시간", "늦은 시간"],
   },
   {
-    question: "번호판이 있거나 폐지 전인 차량도 상담할 수 있나요?",
+    question: "개인 거래와 업체 매입은 어떻게 다른가요?",
     answer:
-      "가능합니다. 등록 상태와 본인 소유 여부를 먼저 확인하고 필요한 서류와 절차를 알려드립니다.",
-    facts: ["등록 상태", "본인 소유", "서류"],
+      "일정 조율과 현장 처리를 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격을 가장 우선한다면 개인 거래도 함께 비교해 보세요.",
+    facts: ["일정 조율", "현장 처리", "업체 매입", "가격", "개인 거래"],
   },
 ];
 
@@ -130,7 +130,6 @@ test("points #process at the sequential visit flow and exports the approved sect
     'id="process"',
     'id="cases"',
     'id="quote-title"',
-    'id="guide-title"',
     'id="faq"',
     'id="contact"',
   ];
@@ -158,19 +157,25 @@ test("retains the approved short copy and seller decision facts", () => {
     "인천·서울·경기 중고 바이크 방문 매입",
     "바이크는 그대로 두세요.",
     "직접 찾아가 매입합니다.",
-    "경력 10년 이상",
     "24시간 문의 접수",
-    "직접 방문·현장 확인",
-    "입금 확인 후 상차",
-    "말보다 실제 매입 기록으로 보여드립니다.",
-    "당시 차량 사진과 거래 내용은 원문에서 확인하세요.",
+    "인천·서울·경기 직접 방문",
+    "스쿠터부터 대형 바이크까지",
+    "공식 블로그 실제 사례",
+    "공식 블로그에 남긴 실제 매입 기록입니다.",
+    "늦은 저녁 자택 방문 · 현장 확인 후 대금 지급",
+    "공식 블로그 매입 기록",
     "공식 블로그에서 더 많은 사례 보기",
     "네이버 플레이스·리뷰 보기",
     "사진 몇 장과 기본 정보만 보내주세요.",
-    "밝은 곳에서 차량 전체와 하자 부위를 가까이 찍어주세요.",
-    "스쿠터부터 대형 바이크까지 매입 상담합니다.",
-    "차량 상태와 등록 정보를 먼저 확인하고 매입 가능 여부와 필요한 서류를 알려드립니다.",
+    "밝은 곳에서 차량 전체와 확인이 필요한 부위를 가까이 찍어주세요.",
+    "스쿠터부터 대형 바이크까지 상담합니다.",
+    "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
     "명의·서류가 다른 경우",
+    "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 약속한 장소에서 차량과 최종 금액을 함께 확인하고, 판매대금 전액 입금 후 상차합니다.",
+    "경력 10년 이상 · 입금 확인 후 상차",
+    "진행 방법 보기",
+    "사진 보내고 예상 견적 확인",
+    "전화로 차량 상담하기",
     "예상 견적부터 방문 일정까지 빠르게 안내합니다.",
     "24시간 문의 접수 · 방문 전 연락",
     "네이버 지도에서 위치·리뷰 보기",
@@ -185,17 +190,17 @@ test("retains the approved short copy and seller decision facts", () => {
   }
 });
 
-test("keeps full sale-payment confirmation before loading the bike", () => {
+test("keeps full sale-payment wording before loading the bike", () => {
   const hero = html.match(/<section\b(?=[^>]*id="top")[^>]*>[\s\S]*?<\/section>/)?.[0];
   assert.ok(hero, "expected the hero section");
   const heroText = textContent(hero);
   const salePaymentIndex = heroText.indexOf("판매대금 전액");
-  const confirmationIndex = heroText.indexOf("입금된 것을 확인");
+  const paymentIndex = heroText.indexOf("판매대금 전액 입금");
   const loadingIndex = heroText.indexOf("상차");
 
   assert.ok(salePaymentIndex >= 0, "expected the hero to state full sale-payment amount");
-  assert.ok(confirmationIndex > salePaymentIndex, "expected payment confirmation after the full sale-payment amount");
-  assert.ok(loadingIndex > confirmationIndex, "expected loading only after payment confirmation");
+  assert.ok(paymentIndex >= salePaymentIndex, "expected full sale-payment wording to include payment");
+  assert.ok(loadingIndex > paymentIndex, "expected loading only after payment");
 });
 
 test("omits every globally forbidden defensive phrase", () => {
@@ -214,8 +219,7 @@ test("sources canonical landing section copy from typed site content", async () 
     "../components/VisitFlow.tsx",
     "../components/CaseStudies.tsx",
     "../components/QuoteChecklist.tsx",
-    "../components/PurchaseGuide.tsx",
-    "../components/FAQSection.tsx",
+    "../components/SupportSection.tsx",
     "../components/LocationFinal.tsx",
   ];
   const [siteSource, ...componentSources] = await Promise.all([
@@ -227,22 +231,21 @@ test("sources canonical landing section copy from typed site content", async () 
     "사진 확인부터 현장 거래까지",
     "바이크는 그대로 두고, 사진만 보내주세요.",
     "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
-    "말보다 실제 매입 기록으로 보여드립니다.",
+    "공식 블로그에 남긴 실제 매입 기록입니다.",
     "원문 보기",
     "견적 준비",
     "사진 몇 장과 기본 정보만 보내주세요.",
-    "매입 가능 범위",
     "명의·서류가 다른 경우",
-    "자주 묻는 질문",
-    "문의할 때 많이 묻는 내용입니다.",
+    "스쿠터부터 대형 바이크까지 상담합니다.",
+    "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
     "인천 오프라인 매장",
-    "당일이나 늦은 시간에도 방문할 수 있나요?",
-    "24시간 편하게 문의하세요. 인천·서울·경기 지역은 당일·야간 방문도 일정에 맞춰 최대한 빠르게 조율해드립니다.",
+    "방문 시간은 어떻게 정하나요?",
+    "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
     "예상 견적부터 방문 일정까지 빠르게 안내합니다.",
     "네이버 지도에서 위치·리뷰 보기",
     "사진부터 보내주세요.",
-    "카카오톡으로 사진 보내기",
-    "전화로 상담하기",
+    "사진 보내고 예상 견적 확인",
+    "전화로 차량 상담하기",
   ];
 
   for (const copy of canonicalCopies) {
@@ -257,26 +260,30 @@ test("moves official blog and Naver Place links into case studies", () => {
   assert.match(casesSection, /data-cta="naver-proof"/);
   assert.match(casesSection, /href="https:\/\/m\.blog\.naver\.com\/bikemanager4949"/);
   assert.match(casesSection, /href="https:\/\/naver\.me\/F1rPbAcV"/);
-  assert.doesNotMatch(casesSection, /공식 블로그 사례|원문과 사진 보기/);
+  assert.doesNotMatch(casesSection, /당시 차량 사진과 거래 내용은 원문에서 확인하세요/);
   assert.equal(casesSection.split("원문 보기").length - 1, 3, "expected one concise link per case");
 });
 
-test("exports exactly three FAQ details plus purchase-guide and safety disclosures", () => {
+test("exports one merged server-rendered support section with document and FAQ disclosures", async () => {
   const faqSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
   assert.ok(faqSection, "expected the FAQ section");
-  assert.equal([...faqSection.matchAll(/<details\b/g)].length, 3, "expected exactly three FAQ details");
-  assert.equal([...html.matchAll(/<details\b/g)].length, 5, "expected purchase-guide and visit-safety disclosures");
+  assert.equal([...faqSection.matchAll(/<details\b/g)].length, 4, "expected document plus three FAQ details");
+  assert.equal([...html.matchAll(/<details\b/g)].length, 5, "expected support and visit-safety disclosures");
+  const [pageSource, supportSource] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../components/SupportSection.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(pageSource, /<SupportSection\s*\/>/);
+  assert.doesNotMatch(pageSource, /<PurchaseGuide\s*\/>|<FAQSection\s*\/>/);
+  assert.doesNotMatch(supportSource, /"use client"|'use client'/);
   for (const { question } of faqAnswerContracts) assert.ok(faqSection.includes(question));
 });
 
-test("keeps purchase-guide facts in its native disclosure content", () => {
-  const guideSection = html.match(
-    /<section\b(?=[^>]*aria-labelledby="guide-title")[^>]*>[\s\S]*?<\/section>/,
-  )?.[0];
-  assert.ok(guideSection, "expected the purchase-guide section");
-  const guideDetails = [...guideSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)];
-  assert.equal(guideDetails.length, 1, "expected one native purchase-guide disclosure");
-  const disclosure = disclosureParts(guideDetails[0][1]);
+test("keeps document facts in the merged support disclosure", () => {
+  const supportSection = html.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(supportSection, "expected the merged support section");
+  const guideDetails = [...supportSection.matchAll(/<details\b[^>]*>([\s\S]*?)<\/details>/g)];
+  const disclosure = disclosureParts(guideDetails[0]?.[1] ?? "");
   assert.ok(disclosure, "expected a native purchase-guide summary and detail content");
   assert.equal(disclosure.summary, "명의·서류가 다른 경우");
   for (const fact of [
@@ -287,10 +294,19 @@ test("keeps purchase-guide facts in its native disclosure content", () => {
     "미성년자",
     "서류 분실",
     "차대번호",
-    "추가 확인",
+    "현재 상태를 알려주시면",
+    "필요한 확인 사항과 서류",
   ]) {
     assert.ok(disclosure.content.includes(fact), `expected purchase-guide detail fact: ${fact}`);
   }
+});
+
+test("puts final contact actions before location facts in DOM order", () => {
+  const finalSection = html.match(/<section\b(?=[^>]*id="contact")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(finalSection, "expected final CTA/location section");
+  assert.ok(finalSection.indexOf("사진 보내고 예상 견적 확인") < finalSection.indexOf("인천 남동구 백범로 411 1층"));
+  assert.ok(finalSection.indexOf("전화로 차량 상담하기") < finalSection.indexOf("인천 남동구 백범로 411 1층"));
+  assert.match(finalSection, /data-cta="final-phone"/);
 });
 
 for (const { question, answer: expectedAnswer, facts } of faqAnswerContracts) {
@@ -406,13 +422,13 @@ test("binds each case model to its official post and budgeted local image", asyn
   assert.doesNotMatch(casesSection, /pstatic\.net/);
 });
 
-test("keys responsive case image size hints by content layout", async () => {
+test("keys compact proof thumbnail image size hints by content layout", async () => {
   const component = await readFile(new URL("../components/CaseStudies.tsx", import.meta.url), "utf8");
 
-  assert.match(component, /featured:\s*"\(max-width: 760px\) 100vw, \(max-width: 1119px\) 67vw, 50vw"/);
-  assert.match(component, /portrait:\s*"\(max-width: 760px\) 100vw, \(max-width: 1119px\) 33vw, 25vw"/);
+  assert.match(component, /featured:\s*"\(max-width: 760px\) 100vw, 420px"/);
+  assert.match(component, /portrait:\s*"\(max-width: 760px\) 50vw, 300px"/);
   assert.match(component, /sizes=\{caseImageSizes\[caseStudy\.layout\]\}/);
-  assert.doesNotMatch(component, /sizes="\(max-width: 760px\) 100vw, 33vw"/);
+  assert.doesNotMatch(component, /case-card__overlay/);
 });
 
 test("declares image tooling as a direct development dependency", async () => {

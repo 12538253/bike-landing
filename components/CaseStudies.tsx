@@ -4,8 +4,8 @@ import { ArrowUpRight } from "lucide-react";
 import { site } from "@/content/site";
 
 const caseImageSizes = {
-  featured: "(max-width: 760px) 100vw, (max-width: 1119px) 67vw, 50vw",
-  portrait: "(max-width: 760px) 100vw, (max-width: 1119px) 33vw, 25vw",
+  featured: "(max-width: 760px) 100vw, 420px",
+  portrait: "(max-width: 760px) 50vw, 300px",
 } satisfies Record<(typeof site.cases)[number]["layout"], string>;
 
 export default function CaseStudies() {
@@ -15,7 +15,6 @@ export default function CaseStudies() {
         <div className="section-heading section-heading--light">
           <p>{site.caseStudySection.eyebrow}</p>
           <h2 id="cases-title">{site.caseStudySection.title}</h2>
-          <span>{site.caseStudySection.description}</span>
         </div>
 
         <div className="case-grid">
@@ -24,33 +23,24 @@ export default function CaseStudies() {
               className={`case-card case-card--${caseStudy.layout}`}
               key={`${caseStudy.region}-${caseStudy.model}`}
             >
-              <a
-                href={caseStudy.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div className="case-card__media">
-                  <Image
-                    src={caseStudy.image}
-                    alt={caseStudy.imageAlt}
-                    fill
-                    sizes={caseImageSizes[caseStudy.layout]}
-                    style={{ objectPosition: caseStudy.imagePosition }}
-                  />
-                </div>
-                <div className="case-card__overlay" />
-                <div className="case-card__content">
-                  <p>{caseStudy.region}</p>
-                  <h3>{caseStudy.model}</h3>
-                  {caseStudy.summary ? (
-                    <span className="case-card__summary">{caseStudy.summary}</span>
-                  ) : null}
-                  <span className="case-card__link">
-                    <span className="sr-only">{caseStudy.sourceLabel}. </span>
-                    {site.caseStudySection.cardLinkLabel} <ArrowUpRight aria-hidden="true" size={17} />
-                  </span>
-                </div>
-              </a>
+              <div className="case-card__media">
+                <Image
+                  src={caseStudy.image}
+                  alt={caseStudy.imageAlt}
+                  fill
+                  sizes={caseImageSizes[caseStudy.layout]}
+                  style={{ objectPosition: caseStudy.imagePosition }}
+                />
+              </div>
+              <div className="case-card__content">
+                <p>{caseStudy.region}</p>
+                <h3>{caseStudy.model}</h3>
+                <span className="case-card__proof">{caseStudy.proof}</span>
+                <a className="case-card__link" href={caseStudy.sourceUrl} target="_blank" rel="noreferrer">
+                  <span className="sr-only">{caseStudy.sourceLabel}. </span>
+                  {site.caseStudySection.cardLinkLabel} <ArrowUpRight aria-hidden="true" size={17} />
+                </a>
+              </div>
             </article>
           ))}
         </div>
