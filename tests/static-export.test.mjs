@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -165,6 +166,34 @@ test("renders the benefit-led hero and trackable contact links", () => {
   assert.match(html, /검사 여부/);
   assert.doesNotMatch(html, /naver-proof__mark[^>]*>N</);
   assert.doesNotMatch(html, /구독자 660/);
+});
+
+test("exports the official KakaoTalk mark in the mobile photo contact action", async () => {
+  const stickyInquiry = html.match(
+    /<aside\b(?=[^>]*data-testid="sticky-inquiry")[^>]*>[\s\S]*?<\/aside>/,
+  )?.[0];
+  assert.ok(stickyInquiry, "expected the exported mobile sticky inquiry");
+  assert.match(stickyInquiry, /data-cta="sticky-kakao"/);
+  assert.match(stickyInquiry, /src="\/images\/kakao-talk-mark\.png"/);
+  assert.match(textContent(stickyInquiry), /전화 상담 사진 보내기/);
+
+  let bytes;
+  try {
+    bytes = await readFile(new URL("../public/images/kakao-talk-mark.png", import.meta.url));
+  } catch {
+    assert.fail("expected the locally stored official KakaoTalk mark");
+  }
+
+  assert.equal(
+    createHash("sha256").update(bytes).digest("hex"),
+    "fe005f9ca27ae6795c8875bd82492f6de5483538d4c2003a1afd606d021edf2a",
+    "the official KakaoTalk mark must remain byte-for-byte unchanged",
+  );
+  const metadata = await sharp(bytes).metadata();
+  assert.deepEqual(
+    { width: metadata.width, height: metadata.height, format: metadata.format },
+    { width: 68, height: 69, format: "png" },
+  );
 });
 
 test("points #process at the sequential visit flow and exports the approved section order", () => {

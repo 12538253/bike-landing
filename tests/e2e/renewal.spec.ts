@@ -1102,21 +1102,29 @@ test("case cards load distinct local images", async ({ page }) => {
   }
 });
 
-test("mobile inquiry bar appears after the hero and hides at the final call to action", async ({ page }) => {
+test("mobile inquiry bar appears after hero actions and stays available through ordinary content", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
   const bar = page.getByTestId("sticky-inquiry");
+  const heroActions = page.locator(".hero__actions");
   await expect(bar).not.toHaveClass(/is-visible/);
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
+  const actionBottom = await heroActions.evaluate((element) => element.getBoundingClientRect().bottom + window.scrollY);
+  await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), actionBottom + 24);
   await expect(bar).toHaveClass(/is-visible/);
+
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#process")!.offsetTop + 40));
+  await expect(bar, "the visit-flow section alone must not suppress contact actions").toHaveClass(/is-visible/);
+
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await expect(bar, "the FAQ section alone must not suppress contact actions").toHaveClass(/is-visible/);
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
   await expect(bar).not.toHaveClass(/is-visible/);
 });
 
-test("sticky inquiry becomes inert and returns focus to visible process and contact destinations", async ({ page }) => {
+test("sticky inquiry becomes inert and returns focus to the final contact destination", async ({ page }) => {
   for (const reducedMotion of ["no-preference", "reduce"] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion });
@@ -1127,19 +1135,6 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
     await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
     await expect(bar, `${reducedMotion}: sticky inquiry should become visible before each transition`).toHaveClass(/is-visible/);
 
-    await stickyKakao.focus();
-    await page.locator("#process").scrollIntoViewIfNeeded();
-    await expect(bar, `${reducedMotion}: process transition must make the bar inert`).toHaveAttribute("inert", "");
-    await expect(bar).toHaveAttribute("aria-hidden", "true");
-    await expect(page.locator("#process"), `${reducedMotion}: process is the logical visible focus destination`).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(stickyKakao, `${reducedMotion}: the old hidden link must not regain focus through Enter`).not.toBeFocused();
-    await page.locator('[data-cta="header-phone"]').focus();
-    await expect(page.locator("#process"), `${reducedMotion}: the temporary process tabindex must be cleaned up after focus leaves`).not.toHaveAttribute("tabindex");
-    await expect(stickyKakao.click({ timeout: 500 }), `${reducedMotion}: the old hidden link must reject pointer activation`).rejects.toThrow();
-
-    await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
-    await expect(bar, `${reducedMotion}: sticky inquiry should reappear away from the process`).toHaveClass(/is-visible/);
     await stickyKakao.focus();
     await page.locator("#contact").scrollIntoViewIfNeeded();
     await expect(bar, `${reducedMotion}: contact transition must make the bar inert`).toHaveAttribute("inert", "");
@@ -1153,23 +1148,63 @@ test("sticky inquiry becomes inert and returns focus to visible process and cont
   }
 });
 
-test("sticky inquiry yields to the labelled FAQ section and restores its temporary tabindex", async ({ page }) => {
+test("sticky inquiry yields only when a real FAQ control overlaps its fixed slot", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
   const bar = page.getByTestId("sticky-inquiry");
   const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
   const faq = page.locator("#faq");
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
-  await expect(bar).toHaveClass(/is-visible/);
+  const summary = faq.locator("summary").first();
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await expect(bar, "FAQ presence without geometric overlap must keep the sticky inquiry visible").toHaveClass(/is-visible/);
 
   await stickyKakao.focus();
-  await faq.scrollIntoViewIfNeeded();
+  const overlapScrollTop = await summary.evaluate((element) => {
+    const bar = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']")!;
+    const targetDocumentTop = element.getBoundingClientRect().top + window.scrollY;
+    return targetDocumentTop - (bar.getBoundingClientRect().top + 4);
+  });
+  await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), overlapScrollTop);
   await expect(bar).toHaveAttribute("inert", "");
   await expect(bar).toHaveAttribute("aria-hidden", "true");
   await expect(faq).toBeFocused();
   await page.locator('[data-cta="header-phone"]').focus();
   await expect(faq).not.toHaveAttribute("tabindex");
+
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 80));
+  await expect(bar, "the sticky inquiry must return after the control leaves its slot").toHaveClass(/is-visible/);
+});
+
+test("Kakao contact uses the official local mark and yellow photo action", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 500));
+
+  const bar = page.getByTestId("sticky-inquiry");
+  await expect(bar).toHaveClass(/is-visible/);
+  const kakao = bar.getByRole("link", { name: "사진 보내기" });
+  await expect(kakao).toHaveAttribute("data-cta", "sticky-kakao");
+  const mark = kakao.locator('img[src="/images/kakao-talk-mark.png"]');
+  await expect(mark).toHaveCount(1);
+  const state = await kakao.evaluate((element) => {
+    const image = element.querySelector("img") as HTMLImageElement | null;
+    const rect = element.getBoundingClientRect();
+    const imageRect = image?.getBoundingClientRect();
+    return {
+      background: getComputedStyle(element).backgroundColor,
+      height: rect.height,
+      complete: image?.complete ?? false,
+      naturalWidth: image?.naturalWidth ?? 0,
+      naturalHeight: image?.naturalHeight ?? 0,
+      renderedRatio: imageRect ? imageRect.width / imageRect.height : 0,
+    };
+  });
+  expect(state.background).toBe("rgb(254, 229, 0)");
+  expect(state.height).toBeGreaterThanOrEqual(58);
+  expect(state.complete).toBe(true);
+  expect({ width: state.naturalWidth, height: state.naturalHeight }).toEqual({ width: 68, height: 69 });
+  expect(state.renderedRatio).toBeCloseTo(68 / 69, 2);
 });
 
 test("case-action overlap moves focus out of sticky inquiry before making it inert", async ({ page }) => {
