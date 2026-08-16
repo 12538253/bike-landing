@@ -97,3 +97,11 @@ Output: `6 passed`.
 - Each visible navigation link is now an inline-flex 44×44px target at 761/768/960/1440px.  The browser regression also asserts ordered, pairwise non-overlapping brand → navigation → header-actions rectangles at 761/768/960px.
 - Mobile VisitFlow uses 17px stage-panel end padding and 18px safety-note margin.  At 390×844 it now measures `981.578125px`, leaving `18.421875px` below the 1000px original budget and passing the ≤985px regression; `main` measures `5030.75px`.
 - Sticky visibility now checks case-action rectangles against the bar's actual fixed viewport slot on scroll/resize.  It hides only while a case action would overlap that slot, preserving a usable sticky bar in safe scroll positions.  The five-width audit uses center `elementFromPoint` checks for visible actions and confirms no visible non-sticky action intersects the bar at the case section.
+
+### Round 1 final verification
+
+```sh
+npm run verify
+```
+
+Output: ESLint passed; static export tests `26/26` passed; Playwright E2E tests `44/44` passed.
