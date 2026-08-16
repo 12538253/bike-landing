@@ -26,3 +26,15 @@ Final review correction: the earlier 200% closure only exercised the 390px stati
 Final review fix wave: all 3 Important issues and the scanner Minor are addressed with RED/GREEN regressions; independent re-review found no remaining code issue. Fresh `npm run verify` passed 28 static and 49 Chromium E2E tests.
 Task 4 audit correction: fresh authorized `npm audit --omit=dev` completed with 0 vulnerabilities, so the policy-blocked audit concern is closed.
 Local final-review fixes are complete in the final fix-wave commit. Push/Cloudflare preview verification remains open, and `main` must not be merged before that operational check.
+CI deployment gate: GitHub Verify run `31926676650` failed reproducibly on Ubuntu at 960px/200% with document width 992px. Root cause was footer grid max-content pressure from wide Korean fallback font metrics, not VisitFlow.
+CI font fix: commit `260b086` adds intrinsic footer shrink/wrapping and deterministic wider-font regression coverage. Scoped review found Critical 0, Important 0, Minor 0.
+Operational verification: GitHub Verify run `31927214881` passed on Ubuntu with all 49 Chromium tests. The Cloudflare branch preview now serves the new VisitFlow and compact case content; the page and all three case images plus the 1200x630 Open Graph JPEG return HTTP 200 with the expected preview-only `X-Robots-Tag: noindex` header.
+Final local verification on `260b086`: lint/build/static 28/28/Chromium 49/49 passed. Lighthouse mobile measured Performance 97, Accessibility 100, Best Practices 100, SEO 100. `origin/main` remains `d36c2e5`; production merge, DNS, and the live domain are unchanged.
+
+## Compound learning
+
+- Completed: simplified the service story into one direct-visit journey, retained blog/Daangn conversion facts as compact evidence, hardened sticky/focus/zoom fallbacks, and verified the branch preview without touching production.
+- Plan deviation: a local macOS pass did not expose the Ubuntu fallback-font width regression; whole-branch review also found that the first 200% check covered only the mobile fallback, not the enhanced desktop state.
+- Root cause: acceptance tests initially checked the intended component in isolation but not document-wide intrinsic sizing under wider Korean font metrics, and the review ledger closed deferred coverage before the enhanced state was exercised.
+- Future action: test 960px and 1440px at 200% in every enhanced state, include deterministic wider-font stress, assert document width as well as component containment, and close deferred review items only after the exact promised state has a regression test.
+- Reflection location: this task ledger only. No `AGENTS.md` or reusable skill change is warranted until the same pattern recurs in another project.
