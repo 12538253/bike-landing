@@ -692,6 +692,33 @@ test("desktop visit flow changes the connected stage detail without moving the C
   await expectMethodCtaContained(page, "desktop visit-flow CTA", true);
 });
 
+test("desktop visit flow swaps stage details without a faded intermediate frame", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+
+  const onsiteDeal = visitStageButton(page, "약속한 장소에서 함께 확인");
+  const onsiteDealPanel = await visitStagePanel(onsiteDeal, page);
+  await onsiteDeal.scrollIntoViewIfNeeded();
+  const onsiteBox = await onsiteDeal.boundingBox();
+  expect(onsiteBox).not.toBeNull();
+
+  await page.mouse.move(
+    onsiteBox!.x + onsiteBox!.width / 2,
+    onsiteBox!.y + onsiteBox!.height / 2,
+  );
+
+  await expect(onsiteDeal).toHaveAttribute("aria-expanded", "true");
+  await expect(onsiteDealPanel).toBeVisible();
+  const transitionFrame = await onsiteDealPanel.evaluate((panel) => ({
+    opacity: Number.parseFloat(getComputedStyle(panel).opacity),
+    transitionDuration: getComputedStyle(panel).transitionDuration,
+  }));
+
+  expect(transitionFrame.opacity).toBe(1);
+  expect(transitionFrame.transitionDuration).toBe("0s");
+});
+
 test("enhanced VisitFlow reserves intrinsic panel space with wider font metrics at 200% root text size", async ({ page }) => {
   for (const fontMetrics of ["normal", "wider-fallback"] as const) {
     for (const width of [960, 1440]) {

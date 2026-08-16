@@ -878,7 +878,7 @@ button.visit-flow__stage-summary {
     border-top: 1px solid var(--line);
     background: var(--surface-card);
     opacity: 1;
-    transition: opacity 0.18s ease-out;
+    transition: none;
   }
 
   .visit-flow[data-enhanced="true"] .visit-flow__stage-panel[aria-hidden="true"] {
