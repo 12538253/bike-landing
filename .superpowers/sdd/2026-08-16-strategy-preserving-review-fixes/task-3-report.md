@@ -105,3 +105,31 @@ npm run verify
 ```
 
 Output: ESLint passed; static export tests `26/26` passed; Playwright E2E tests `44/44` passed.
+
+## Round 2 — case-overlap focus handoff
+
+### RED
+
+```sh
+npm run build && npx playwright test tests/e2e/renewal.spec.ts --grep 'case-action overlap' --workers=1
+```
+
+Output: `1 failed` as intended.  With focus on the visible sticky Kakao link, scrolling until a case action entered the fixed bar slot made the bar inert/`aria-hidden`, while focus remained inactive instead of moving to `#cases`.
+
+### GREEN
+
+```sh
+npm run build && npx playwright test tests/e2e/renewal.spec.ts --grep 'case-action overlap|sticky inquiry becomes inert|fixed header and mobile sticky' --workers=1
+```
+
+Output: `3 passed`.
+
+`StickyInquiryBar` now detects the false → true case-overlap transition, calls the existing no-scroll temporary-tabindex focus helper on the labelled `#cases` section before it sets the inert state, and preserves the helper's blur cleanup.  The new browser regression verifies transfer, `inert`/`aria-hidden`, tabindex restoration, and that the hidden sticky link cannot retain focus.
+
+### Round 2 final verification
+
+```sh
+npm run verify
+```
+
+Output: ESLint passed; static export tests `26/26` passed; Playwright E2E tests `45/45` passed.

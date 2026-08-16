@@ -921,6 +921,27 @@ test("sticky inquiry yields to the labelled FAQ section and restores its tempora
   await expect(faq).not.toHaveAttribute("tabindex");
 });
 
+test("case-action overlap moves focus out of sticky inquiry before making it inert", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const bar = page.getByTestId("sticky-inquiry");
+  const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
+  const cases = page.locator("#cases");
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 225));
+  await expect(bar).toHaveClass(/is-visible/);
+
+  await stickyKakao.focus();
+  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#cases")!.offsetTop + 25));
+  await expect(bar).toHaveAttribute("inert", "");
+  await expect(bar).toHaveAttribute("aria-hidden", "true");
+  await expect(cases).toBeFocused();
+  await page.locator('[data-cta="header-phone"]').focus();
+  await expect(cases).not.toHaveAttribute("tabindex");
+  await expect(stickyKakao).not.toBeFocused();
+});
+
 test("761px through 960px header preserves navigation without exposing the Kakao header action early", async ({ page }) => {
   for (const width of [761, 768, 960, 1440]) {
     await page.setViewportSize({ width, height: 844 });

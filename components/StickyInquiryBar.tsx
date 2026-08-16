@@ -17,9 +17,10 @@ export default function StickyInquiryBar() {
     const hero = document.querySelector<HTMLElement>("[data-testid='hero']");
     const process = document.querySelector<HTMLElement>("[data-testid='visit-flow']");
     const faq = document.querySelector<HTMLElement>("#faq");
+    const caseSection = document.querySelector<HTMLElement>("#cases");
     const caseActions = [...document.querySelectorAll<HTMLElement>("#cases a[href]")];
     const finalCta = document.querySelector<HTMLElement>("[data-testid='final-cta']");
-    if (!hero || !process || !faq || !finalCta) return;
+    if (!hero || !process || !faq || !caseSection || !finalCta) return;
 
     const moveFocusTo = (destination: HTMLElement, previousDestination?: HTMLElement) => {
       const activeElement = document.activeElement;
@@ -63,6 +64,7 @@ export default function StickyInquiryBar() {
       },
       { threshold: 0 },
     );
+    let caseActionIsVisible = false;
     const updateCaseActionVisibility = () => {
       const bar = barRef.current;
       if (!bar) return;
@@ -74,11 +76,14 @@ export default function StickyInquiryBar() {
       const visibleBarBottom = window.innerHeight - bottom;
       const visibleBarLeft = barRect.left;
       const visibleBarRight = barRect.right;
-      setCaseActionVisible(caseActions.some((action) => {
+      const caseActionOverlapsBar = caseActions.some((action) => {
         const rect = action.getBoundingClientRect();
         return rect.right > visibleBarLeft && rect.left < visibleBarRight
           && rect.bottom > visibleBarTop && rect.top < visibleBarBottom;
-      }));
+      });
+      if (caseActionOverlapsBar && !caseActionIsVisible) moveFocusTo(caseSection);
+      caseActionIsVisible = caseActionOverlapsBar;
+      setCaseActionVisible(caseActionOverlapsBar);
     };
 
     heroObserver.observe(hero);
