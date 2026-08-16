@@ -10,9 +10,9 @@ const caseImageSizes = {
 
 export default function CaseStudies() {
   return (
-    <section className="section section--ink" id="cases" aria-labelledby="cases-title">
+    <section className="section case-section" id="cases" aria-labelledby="cases-title">
       <div className="site-shell">
-        <div className="section-heading section-heading--light">
+        <div className="section-heading">
           <p>{site.caseStudySection.eyebrow}</p>
           <h2 id="cases-title">{site.caseStudySection.title}</h2>
         </div>

@@ -10,7 +10,7 @@ export default function VisitFlowSection() {
       data-testid="visit-flow"
     >
       <div className="site-shell">
-        <div className="section-heading section-heading--light visit-flow-heading">
+        <div className="section-heading visit-flow-heading">
           <p>{site.visitFlow.eyebrow}</p>
           <h2 id="method-title">{site.visitFlow.title}</h2>
           <span>{site.visitFlow.description}</span>
