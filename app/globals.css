@@ -1026,17 +1026,6 @@ button.visit-flow__stage-summary {
   margin-top: 32px;
 }
 
-.final-copy__phone {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  margin-top: 24px;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: clamp(1.1rem, 2vw, 1.45rem);
-  font-weight: 760;
-  letter-spacing: 0.03em;
-}
-
 .site-footer {
   padding-block: 46px calc(46px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line-light);

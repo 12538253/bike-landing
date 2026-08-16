@@ -951,6 +951,11 @@ test("390px renders final contact actions before location facts and links", asyn
   const finalPhone = location.locator('[data-cta="final-phone"]');
   await expectUserVisible(finalPhone, "final phone link");
   await expectUserVisible(finalKakao, "final Kakao link");
+  await expect(
+    location.locator('a[href="tel:010-7616-4949"]'),
+    "the final section should expose one clear phone action without a duplicate number link",
+  ).toHaveCount(1);
+  await expect(location.getByRole("link", { name: "010-7616-4949", exact: true })).toHaveCount(0);
   await expect(finalKakao).toHaveAttribute("data-cta", "final-kakao");
   const [kakaoBox, phoneBox, mapBox] = await Promise.all([finalKakao.boundingBox(), finalPhone.boundingBox(), map.boundingBox()]);
   expect(kakaoBox && phoneBox && mapBox).toBeTruthy();
@@ -1353,7 +1358,6 @@ test("390px secondary navigation links expose at least 44px touch targets", asyn
   const targets = [
     { label: "header brand home", locator: page.locator(".brand-mark") },
     { label: "final map and review", locator: page.locator(".final-location > a") },
-    { label: "final phone number", locator: page.locator(".final-copy__phone") },
   ];
 
   for (const { label, locator } of targets) {

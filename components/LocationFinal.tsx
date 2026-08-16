@@ -29,9 +29,6 @@ export default function LocationFinal() {
               {phone.label}
             </a>
           </div>
-          <a className="final-copy__phone" href={site.phone.href}>
-            {site.phone.display}
-          </a>
         </div>
         <div className="final-location">
           <span className="final-location__icon">
