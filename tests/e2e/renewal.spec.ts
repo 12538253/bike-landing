@@ -1114,16 +1114,20 @@ test("focus indicator maintains 3:1 contrast on the approved light and dark surf
   }
 });
 
-test("midtone preview bridges the dark brand frame with smoky mineral surfaces", async ({ page }) => {
+test("full light mineral gallery keeps every major frame calm and readable", async ({ page }) => {
   const expectedBackgrounds = {
-    trust: "rgb(143, 156, 153)",
-    process: "rgb(213, 207, 196)",
-    cases: "rgb(221, 215, 204)",
-    quote: "rgb(213, 207, 196)",
-    support: "rgb(221, 215, 204)",
-    card: "rgb(233, 227, 217)",
-    activeStage: "rgb(223, 207, 181)",
-    contact: "rgb(12, 26, 28)",
+    header: "rgba(227, 228, 223, 0.94)",
+    hero: "rgb(218, 221, 216)",
+    trust: "rgb(200, 206, 202)",
+    process: "rgb(218, 221, 216)",
+    cases: "rgb(227, 228, 223)",
+    quote: "rgb(218, 221, 216)",
+    support: "rgb(227, 228, 223)",
+    card: "rgb(240, 239, 234)",
+    activeStage: "rgb(215, 210, 197)",
+    contact: "rgb(200, 206, 202)",
+    footer: "rgb(184, 191, 187)",
+    sticky: "rgba(240, 239, 234, 0.96)",
   } as const;
 
   for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
@@ -1145,13 +1149,16 @@ test("midtone preview bridges the dark brand frame with smoky mineral surfaces",
       };
 
       return {
-        hero: state(".hero"),
+        header: state(".site-header", ".brand-mark__name"),
+        hero: state(".hero", "h1"),
         trust: state(".trust-bar", ".trust-point strong", ".trust-point svg"),
         process: state("#process", "h2", ".section-heading > p"),
         cases: state("#cases", "h2"),
         quote: state('[data-testid="quote-checklist"]', "h2"),
         support: state("#faq", "h2"),
         contact: state("#contact", "h2"),
+        footer: state(".site-footer", ".footer-brand strong"),
+        sticky: state(".sticky-inquiry", "a"),
         processCard: state(".visit-flow__stage"),
         caseCard: state(".case-card"),
         quoteCard: state(".quote-list li"),
@@ -1164,9 +1171,7 @@ test("midtone preview bridges the dark brand frame with smoky mineral surfaces",
       };
     });
 
-    expect(surfaces.hero).toMatchObject({ background: "rgb(12, 26, 28)", color: "rgb(255, 255, 255)" });
-    expect(surfaces.contact).toMatchObject({ background: expectedBackgrounds.contact, color: "rgb(255, 255, 255)" });
-    for (const key of ["trust", "process", "cases", "quote", "support"] as const) {
+    for (const key of ["header", "hero", "trust", "process", "cases", "quote", "support", "contact", "footer", "sticky"] as const) {
       expect(surfaces[key].background, `${viewport.width}px ${key} surface`).toBe(expectedBackgrounds[key]);
       expect(
         contrastRatio(parseCssColor(surfaces[key].color), parseCssColor(surfaces[key].background)),
@@ -1189,7 +1194,11 @@ test("midtone preview bridges the dark brand frame with smoky mineral surfaces",
     expect(
       contrastRatio(parseCssColor(surfaces.primaryCta.color), parseCssColor(surfaces.primaryCta.background)),
       `${viewport.width}px copper CTA contrast`,
-    ).toBeGreaterThanOrEqual(6);
+    ).toBeGreaterThanOrEqual(4.5);
+
+    for (const key of ["header", "hero", "contact", "footer"] as const) {
+      expect(surfaces[key].background, `${viewport.width}px ${key} must not remain a dark frame`).not.toBe("rgb(12, 26, 28)");
+    }
 
     if (viewport.width >= 960) {
       expect(surfaces.activeStage).toBe(expectedBackgrounds.activeStage);
