@@ -135,10 +135,10 @@ section[id] {
   z-index: 100;
   inset: 0 0 auto;
   height: var(--header-height);
-  border-bottom: 1px solid var(--line-light);
-  background: rgba(12, 26, 28, 0.9);
-  color: white;
-  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+  background: rgba(227, 228, 223, 0.94);
+  color: var(--ink);
+  backdrop-filter: blur(16px);
 }
 
 .site-header__inner {
@@ -168,7 +168,7 @@ section[id] {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(184, 138, 74, 0.72);
+  border: 1px solid rgba(106, 79, 44, 0.68);
   border-radius: 50%;
   color: var(--brass);
   font-size: 0.7rem;
@@ -194,7 +194,7 @@ section[id] {
 }
 
 .brand-mark__english {
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--muted);
   font-size: 0.52rem;
   font-weight: 760;
   letter-spacing: 0.14em;
@@ -206,11 +206,11 @@ section[id] {
   gap: 30px;
   margin-left: auto;
   font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
 }
 
 .site-nav a:hover {
-  color: white;
+  color: var(--ink);
 }
 
 .site-nav a {
@@ -237,9 +237,9 @@ section[id] {
 
 .header-kakao {
   padding-inline: 15px;
-  border: 1px solid rgba(120, 144, 148, 0.5);
-  background: rgba(120, 144, 148, 0.12);
-  color: white;
+  border: 1px solid rgba(12, 26, 28, 0.24);
+  background: rgba(240, 239, 234, 0.58);
+  color: var(--ink);
 }
 
 .header-kakao svg {
@@ -248,8 +248,8 @@ section[id] {
 
 .header-phone {
   padding-inline: 17px;
-  border: 1px solid rgba(255, 102, 69, 0.42);
-  color: white;
+  border: 1px solid rgba(255, 102, 69, 0.52);
+  color: var(--ink);
 }
 
 .header-phone__hours {
@@ -261,8 +261,8 @@ section[id] {
   display: grid;
   min-height: max(760px, 100svh);
   overflow: hidden;
-  background: var(--ink);
-  color: white;
+  background: var(--gallery-canvas);
+  color: var(--ink);
   isolation: isolate;
 }
 
@@ -289,15 +289,14 @@ section[id] {
   height: 100%;
   object-fit: cover;
   object-position: 58% center;
-  filter: saturate(0.72) contrast(1.05) brightness(0.78);
+  filter: saturate(0.82) contrast(1) brightness(1.06);
 }
 
 .hero__shade {
   z-index: -2;
   background:
-    linear-gradient(90deg, rgba(12, 26, 28, 0.95) 0%, rgba(12, 26, 28, 0.78) 42%, rgba(12, 26, 28, 0.14) 76%),
-    linear-gradient(0deg, rgba(12, 26, 28, 0.82) 0%, transparent 46%),
-    radial-gradient(circle at 70% 48%, transparent 0%, rgba(12, 26, 28, 0.3) 72%);
+    linear-gradient(90deg, rgba(218, 221, 216, 0.98) 0%, rgba(218, 221, 216, 0.94) 36%, rgba(218, 221, 216, 0.34) 64%, rgba(218, 221, 216, 0.05) 100%),
+    linear-gradient(0deg, rgba(218, 221, 216, 0.32) 0%, transparent 48%);
 }
 
 .hero__inner {
@@ -347,7 +346,7 @@ section[id] {
 .hero__description {
   max-width: 680px;
   margin-top: 28px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
   font-size: clamp(1rem, 1.7vw, 1.18rem);
   line-height: 1.78;
 }
@@ -388,9 +387,9 @@ section[id] {
 }
 
 .button--ghost {
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(12, 26, 28, 0.34);
-  color: white;
+  border-color: rgba(12, 26, 28, 0.34);
+  background: rgba(240, 239, 234, 0.34);
+  color: var(--ink);
 }
 
 .button--ghost:hover {
@@ -400,7 +399,7 @@ section[id] {
 .hero__note {
   max-width: 650px;
   margin-top: 18px;
-  color: rgba(255, 255, 255, 0.53);
+  color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.65;
 }
@@ -415,7 +414,7 @@ section[id] {
   justify-content: center;
   gap: 8px;
   padding-inline: 8px;
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--muted);
   font-size: 0.78rem;
 }
 
@@ -960,8 +959,8 @@ button.visit-flow__stage-summary {
   position: relative;
   overflow: hidden;
   padding-block: clamp(86px, 11vw, 150px);
-  background: var(--ink);
-  color: white;
+  background: var(--gallery-bridge);
+  color: var(--ink);
 }
 
 .final-section__grid {
@@ -969,8 +968,8 @@ button.visit-flow__stage-summary {
   inset: 0;
   opacity: 0.1;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+    linear-gradient(rgba(12, 26, 28, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 26, 28, 0.24) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: linear-gradient(90deg, black, transparent 76%);
 }
@@ -992,8 +991,8 @@ button.visit-flow__stage-summary {
   grid-column: 1;
   grid-row: 1;
   padding: clamp(28px, 4vw, 44px);
-  border: 1px solid var(--line-light);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  background: var(--gallery-card);
 }
 
 .final-location__icon {
@@ -1017,7 +1016,7 @@ button.visit-flow__stage-summary {
 .final-location > span {
   display: block;
   margin-top: 14px;
-  color: var(--muted-light);
+  color: var(--muted);
   font-size: 0.83rem;
 }
 
@@ -1027,7 +1026,7 @@ button.visit-flow__stage-summary {
   align-items: center;
   gap: 6px;
   margin-top: 28px;
-  color: white;
+  color: var(--ink);
   font-size: 0.82rem;
   font-weight: 760;
 }
@@ -1046,9 +1045,9 @@ button.visit-flow__stage-summary {
 
 .site-footer {
   padding-block: 46px calc(46px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line-light);
-  background: #071315;
-  color: white;
+  border-top: 1px solid var(--line);
+  background: var(--gallery-footer);
+  color: var(--ink);
 }
 
 .site-footer__inner {
@@ -1074,7 +1073,7 @@ button.visit-flow__stage-summary {
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(184, 138, 74, 0.72);
+  border: 1px solid rgba(106, 79, 44, 0.68);
   border-radius: 50%;
   color: var(--brass);
   font-size: 0.72rem;
@@ -1094,7 +1093,7 @@ button.visit-flow__stage-summary {
 
 .footer-brand__lockup em {
   margin-top: 5px;
-  color: rgba(255, 255, 255, 0.48);
+  color: var(--muted);
   font-size: 0.55rem;
   font-style: normal;
   font-weight: 760;
@@ -1103,7 +1102,7 @@ button.visit-flow__stage-summary {
 
 .site-footer p,
 .site-footer small {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.8;
 }
@@ -1125,10 +1124,10 @@ button.visit-flow__stage-summary {
   display: none;
   min-height: 58px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(12, 26, 28, 0.18);
   border-radius: 11px;
-  background: var(--ink-soft);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+  background: rgba(240, 239, 234, 0.96);
+  box-shadow: 0 14px 36px rgba(12, 26, 28, 0.16);
   opacity: 0;
   pointer-events: none;
   transform: translateY(calc(100% + 28px));
@@ -1151,7 +1150,7 @@ button.visit-flow__stage-summary {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: white;
+  color: var(--ink);
   font-size: 0.92rem;
   font-weight: 820;
 }
@@ -1210,8 +1209,8 @@ button.visit-flow__stage-summary {
 
   .hero__shade {
     background:
-      linear-gradient(90deg, rgba(12, 26, 28, 0.97) 0%, rgba(12, 26, 28, 0.78) 62%, rgba(12, 26, 28, 0.42) 100%),
-      linear-gradient(0deg, rgba(12, 26, 28, 0.92) 0%, transparent 56%);
+      linear-gradient(90deg, rgba(218, 221, 216, 0.97) 0%, rgba(218, 221, 216, 0.88) 62%, rgba(218, 221, 216, 0.56) 100%),
+      linear-gradient(0deg, rgba(218, 221, 216, 0.86) 0%, rgba(218, 221, 216, 0.24) 64%);
   }
 
   .trust-bar__grid {
@@ -1294,6 +1293,12 @@ button.visit-flow__stage-summary {
 
   .hero__image {
     object-position: center;
+  }
+
+  .hero__shade {
+    background:
+      linear-gradient(0deg, rgba(218, 221, 216, 0.99) 0%, rgba(218, 221, 216, 0.94) 42%, rgba(218, 221, 216, 0.54) 76%, rgba(218, 221, 216, 0.26) 100%),
+      linear-gradient(90deg, rgba(218, 221, 216, 0.82) 0%, rgba(218, 221, 216, 0.38) 100%);
   }
 
   .hero__description {
