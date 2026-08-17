@@ -1402,7 +1402,7 @@ test("761px through 960px header preserves navigation without exposing the Kakao
   }
 });
 
-test("footer small type remains 13–14px with readable contrast", async ({ page }) => {
+test("footer small type remains 13–14px and all supporting text meets AA contrast", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
@@ -1415,7 +1415,20 @@ test("footer small type remains 13–14px with readable contrast", async ({ page
   });
   expect(metrics.fontSize).toBeGreaterThanOrEqual(13);
   expect(metrics.fontSize).toBeLessThanOrEqual(14);
-  expect(contrastRatio(parseCssColor(metrics.color), parseCssColor(metrics.background))).toBeGreaterThanOrEqual(3);
+  expect(contrastRatio(parseCssColor(metrics.color), parseCssColor(metrics.background))).toBeGreaterThanOrEqual(4.5);
+
+  const supportingText = footer.locator(".footer-brand__badge, .footer-brand__lockup em, p, small");
+  for (const element of await supportingText.all()) {
+    const colors = await element.evaluate((node) => {
+      const styles = getComputedStyle(node);
+      const footerStyles = getComputedStyle(node.closest(".site-footer")!);
+      return { foreground: styles.color, background: footerStyles.backgroundColor };
+    });
+    expect(
+      contrastRatio(parseCssColor(colors.foreground), parseCssColor(colors.background)),
+      `${colors.foreground} must remain readable on ${colors.background}`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
 });
 
 test("focus indicator is a 2–3px high-contrast ring on light and dark controls", async ({ page }) => {

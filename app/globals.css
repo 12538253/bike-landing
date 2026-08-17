@@ -1073,9 +1073,9 @@ button.visit-flow__stage-summary {
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(106, 79, 44, 0.68);
+  border: 1px solid rgba(85, 59, 24, 0.68);
   border-radius: 50%;
-  color: var(--brass);
+  color: #553b18;
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -1093,7 +1093,7 @@ button.visit-flow__stage-summary {
 
 .footer-brand__lockup em {
   margin-top: 5px;
-  color: var(--muted);
+  color: #344346;
   font-size: 0.55rem;
   font-style: normal;
   font-weight: 760;
@@ -1102,7 +1102,7 @@ button.visit-flow__stage-summary {
 
 .site-footer p,
 .site-footer small {
-  color: var(--muted);
+  color: #344346;
   font-size: 0.8125rem;
   line-height: 1.8;
 }
