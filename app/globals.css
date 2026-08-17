@@ -449,6 +449,56 @@ section[id] {
   font-size: 0.97rem;
 }
 
+.channel-proof {
+  display: grid;
+  grid-template-columns: minmax(138px, 0.7fr) minmax(0, 3fr);
+  align-items: center;
+  gap: 20px;
+  padding-block: 18px;
+  border-top: 1px solid var(--line-light);
+}
+
+.channel-proof__label {
+  color: var(--brass);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.channel-proof__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.channel-proof__item {
+  display: flex;
+  min-width: 0;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid var(--line-light);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.84rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.channel-proof__item img {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+a.channel-proof__item:hover {
+  border-color: rgba(184, 138, 74, 0.65);
+  background: rgba(255, 255, 255, 0.085);
+}
+
 .section {
   position: relative;
   padding-block: clamp(88px, 10vw, 150px);
@@ -1368,6 +1418,36 @@ button.visit-flow__stage-summary {
 
   .trust-point strong {
     font-size: 0.82rem;
+  }
+
+  .channel-proof {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-block: 14px 16px;
+  }
+
+  .channel-proof__label {
+    text-align: center;
+  }
+
+  .channel-proof__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .channel-proof__item {
+    min-height: 62px;
+    flex-direction: column;
+    gap: 5px;
+    padding: 7px 4px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .channel-proof__item img {
+    width: 20px;
+    height: 20px;
   }
 
   .section {

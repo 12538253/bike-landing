@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BadgeCheck, Clock3, MapPinCheck, WalletCards } from "lucide-react";
 
 import { site } from "@/content/site";
@@ -20,6 +21,39 @@ export default function TrustBar() {
             </div>
           );
         })}
+      </div>
+      <div className="site-shell channel-proof" aria-label={site.trustSection.channelLabel}>
+        <strong className="channel-proof__label">{site.trustSection.channelLabel}</strong>
+        <div className="channel-proof__grid">
+          {site.trustSection.channels.map((channel) => {
+            const content = (
+              <>
+                <Image src={channel.icon} alt="" aria-hidden="true" width={22} height={22} />
+                <span>{channel.label}</span>
+              </>
+            );
+
+            if ("href" in channel) {
+              return (
+                <a
+                  className={`channel-proof__item channel-proof__item--${channel.id}`}
+                  href={channel.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={channel.id}
+                >
+                  {content}
+                </a>
+              );
+            }
+
+            return (
+              <span className={`channel-proof__item channel-proof__item--${channel.id}`} key={channel.id}>
+                {content}
+              </span>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -53,9 +53,20 @@ export type DisclosureCopy = Readonly<{
   answer: string;
 }>;
 
+export type ChannelProofId = "naver" | "kakao" | "daangn";
+
+export type ChannelProof = Readonly<{
+  id: ChannelProofId;
+  label: string;
+  icon: string;
+  href?: string;
+}>;
+
 export type TrustSectionCopy = Readonly<{
   title: string;
   points: readonly [string, string, string, string];
+  channelLabel: string;
+  channels: readonly [ChannelProof, ChannelProof, ChannelProof];
 }>;
 
 export type QuoteSectionCopy = SectionCopy & Readonly<{
@@ -114,6 +125,7 @@ export type VisitFlowCopy = SectionCopy & Readonly<{
 
 const phoneNumber = "010-7616-4949";
 const kakaoChatUrl = "https://pf.kakao.com/_MzgSn/chat";
+const kakaoChannelUrl = "https://pf.kakao.com/_MzgSn";
 const naverPlaceUrl = "https://naver.me/F1rPbAcV";
 const officialBlogUrl = "https://m.blog.naver.com/bikemanager4949";
 
@@ -236,6 +248,12 @@ export const site = {
   trustSection: {
     title: "거래 원칙",
     points: ["24시간 문의 접수", "인천·서울·경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"],
+    channelLabel: "바이크매니저 채널",
+    channels: [
+      { id: "naver", label: "네이버 플레이스", icon: "/images/naver-icon.png", href: naverPlaceUrl },
+      { id: "kakao", label: "카카오 공식채널", icon: "/images/kakao-talk-mark.png", href: kakaoChannelUrl },
+      { id: "daangn", label: "당근 거래 활동", icon: "/images/daangn-icon.png" },
+    ] satisfies readonly [ChannelProof, ChannelProof, ChannelProof],
   } satisfies TrustSectionCopy,
   quoteSection: {
     eyebrow: "견적 준비",

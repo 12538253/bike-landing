@@ -620,6 +620,41 @@ test("390px visibly renders all four compact trust facts", async ({ page }) => {
   }
 });
 
+test("channel proof keeps three factual badges in one responsive row", async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+
+    const proof = page.locator(".channel-proof");
+    const items = proof.locator(".channel-proof__item");
+    await expect(items).toHaveCount(3);
+    await expect(proof.getByText("네이버 플레이스", { exact: true })).toBeVisible();
+    await expect(proof.getByText("카카오 공식채널", { exact: true })).toBeVisible();
+    await expect(proof.getByText("당근 거래 활동", { exact: true })).toBeVisible();
+
+    const boxes = await items.evaluateAll((nodes) => nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { top: box.top, right: box.right, bottom: box.bottom, left: box.left };
+    }));
+    expect(Math.max(...boxes.map((box) => box.top)) - Math.min(...boxes.map((box) => box.top))).toBeLessThan(2);
+
+    for (const link of await proof.getByRole("link").all()) {
+      const box = await link.boundingBox();
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+
+    const daangn = proof.locator(".channel-proof__item--daangn");
+    expect(await daangn.evaluate((element) => element.tagName)).toBe("SPAN");
+    await expect(daangn).not.toHaveAttribute("href", /.+/);
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  }
+});
+
 test("390px visibly renders the sequential visit stages and neutral safety advice", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
