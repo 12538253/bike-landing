@@ -1193,8 +1193,15 @@ test("full light mineral gallery keeps every major frame calm and readable", asy
     ).toBeGreaterThanOrEqual(4.5);
     expect(
       contrastRatio(parseCssColor(surfaces.primaryCta.color), parseCssColor(surfaces.primaryCta.background)),
-      `${viewport.width}px copper CTA contrast`,
+      `${viewport.width}px eucalyptus CTA contrast`,
     ).toBeGreaterThanOrEqual(4.5);
+    expect(surfaces.primaryCta.background, `${viewport.width}px eucalyptus CTA background`).toBe("rgb(47, 93, 85)");
+    expect(surfaces.primaryCta.color, `${viewport.width}px eucalyptus CTA foreground`).toBe("rgb(245, 241, 232)");
+
+    const heroImage = page.locator(".hero__image");
+    await expect(heroImage).toHaveJSProperty("complete", true);
+    expect(await heroImage.getAttribute("src")).toBe("/images/hero-bg-v2.webp");
+    expect(await page.locator(".hero source").getAttribute("srcset")).toBe("/images/hero-mobile-v2.webp");
 
     for (const key of ["header", "hero", "contact", "footer"] as const) {
       expect(surfaces[key].background, `${viewport.width}px ${key} must not remain a dark frame`).not.toBe("rgb(12, 26, 28)");

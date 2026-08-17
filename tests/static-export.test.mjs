@@ -85,7 +85,7 @@ test("exports the approved contact and canonical metadata", () => {
 });
 
 test("exports a budgeted production-canonical Open Graph JPEG", async () => {
-  const ogImagePath = "/images/og-bike-manager.jpg";
+  const ogImagePath = "/images/og-bike-manager-v2.jpg";
   const ogImage = new URL(`../out${ogImagePath}`, import.meta.url);
   const [{ size }, metadata, pixels] = await Promise.all([
     stat(ogImage),
@@ -100,7 +100,7 @@ test("exports a budgeted production-canonical Open Graph JPEG", async () => {
   assert.ok(size <= 180 * 1024, `the exported Open Graph JPEG is ${Math.ceil(size / 1024)}KB`);
   assert.match(
     html,
-    /<meta property="og:image" content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager\.jpg"\/>/,
+    /<meta property="og:image" content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v2\.jpg"\/>/,
     "Open Graph metadata must use the production canonical origin",
   );
   assert.doesNotMatch(html, /og:image" content="https?:\/\/[^\"]*(?:pages\.dev|localhost|127\.0\.0\.1)/);
@@ -111,7 +111,7 @@ test("rejects a truncated Open Graph JPEG even when its header metadata is reada
   const fixturePath = join(fixtureDirectory, "truncated-og.jpg");
 
   try {
-    const exportedOgImage = await readFile(new URL("../out/images/og-bike-manager.jpg", import.meta.url));
+    const exportedOgImage = await readFile(new URL("../out/images/og-bike-manager-v2.jpg", import.meta.url));
     await writeFile(fixturePath, exportedOgImage.subarray(0, 500));
 
     const metadata = await sharp(fixturePath).metadata();
@@ -125,6 +125,32 @@ test("rejects a truncated Open Graph JPEG even when its header metadata is reada
     );
   } finally {
     await rm(fixtureDirectory, { recursive: true, force: true });
+  }
+});
+
+test("exports versioned local hero assets within the approved budgets", async () => {
+  assert.match(html, /src="\/images\/hero-bg-v2\.webp"/);
+  assert.match(html, /srcSet="\/images\/hero-mobile-v2\.webp"/);
+  assert.match(html, /content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v2\.jpg"/);
+  assert.doesNotMatch(html, /src="\/images\/hero-bg\.webp"|srcSet="\/images\/hero-mobile\.webp"/);
+
+  for (const contract of [
+    { path: "hero-bg-v2.webp", width: 1440, height: 900, max: 300 * 1024, format: "webp" },
+    { path: "hero-mobile-v2.webp", width: 640, height: 1100, max: 180 * 1024, format: "webp" },
+    { path: "og-bike-manager-v2.jpg", width: 1200, height: 630, max: 180 * 1024, format: "jpeg" },
+  ]) {
+    const asset = new URL(`../out/images/${contract.path}`, import.meta.url);
+    const [{ size }, metadata, pixels] = await Promise.all([
+      stat(asset),
+      sharp(fileURLToPath(asset)).metadata(),
+      sharp(fileURLToPath(asset)).raw().toBuffer(),
+    ]);
+
+    assert.equal(metadata.format, contract.format, `${contract.path} format`);
+    assert.equal(metadata.width, contract.width, `${contract.path} width`);
+    assert.equal(metadata.height, contract.height, `${contract.path} height`);
+    assert.ok(pixels.byteLength > 0, `${contract.path} must fully decode`);
+    assert.ok(size <= contract.max, `${contract.path} is ${Math.ceil(size / 1024)}KB`);
   }
 });
 
@@ -562,11 +588,14 @@ test("removes fabricated social proof and fake live activity", () => {
   assert.doesNotMatch(marketingSurface(html), prohibitedMarketingTerms);
 });
 
-test("exports the approved petrol, ivory, brass, and copper palette", () => {
+test("exports the approved petrol, ivory, brass, and eucalyptus palette", () => {
   assert.match(stylesheet, /--ink:#0c1a1c/);
   assert.match(stylesheet, /--paper:#f1ede4/);
   assert.match(stylesheet, /--card:#ded7ca/);
-  assert.match(stylesheet, /--orange:#ff6645/);
+  assert.match(stylesheet, /--cta:#2f5d55/);
+  assert.match(stylesheet, /--cta-hover:#244a45/);
+  assert.match(stylesheet, /--cta-foreground:#f5f1e8/);
+  assert.doesNotMatch(stylesheet, /--orange:#ff6645/);
   assert.match(stylesheet, /--brass:#6a4f2c/);
   assert.match(stylesheet, /--steel:#789094/);
   assert.doesNotMatch(stylesheet, /255,122,26|#10100f/);
