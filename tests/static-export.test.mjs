@@ -85,7 +85,7 @@ test("exports the approved contact and canonical metadata", () => {
 });
 
 test("exports a budgeted production-canonical Open Graph JPEG", async () => {
-  const ogImagePath = "/images/og-bike-manager-v2.jpg";
+  const ogImagePath = "/images/og-bike-manager-v3.jpg";
   const ogImage = new URL(`../out${ogImagePath}`, import.meta.url);
   const [{ size }, metadata, pixels] = await Promise.all([
     stat(ogImage),
@@ -100,7 +100,7 @@ test("exports a budgeted production-canonical Open Graph JPEG", async () => {
   assert.ok(size <= 180 * 1024, `the exported Open Graph JPEG is ${Math.ceil(size / 1024)}KB`);
   assert.match(
     html,
-    /<meta property="og:image" content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v2\.jpg"\/>/,
+    /<meta property="og:image" content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v3\.jpg"\/>/,
     "Open Graph metadata must use the production canonical origin",
   );
   assert.doesNotMatch(html, /og:image" content="https?:\/\/[^\"]*(?:pages\.dev|localhost|127\.0\.0\.1)/);
@@ -111,7 +111,7 @@ test("rejects a truncated Open Graph JPEG even when its header metadata is reada
   const fixturePath = join(fixtureDirectory, "truncated-og.jpg");
 
   try {
-    const exportedOgImage = await readFile(new URL("../out/images/og-bike-manager-v2.jpg", import.meta.url));
+    const exportedOgImage = await readFile(new URL("../out/images/og-bike-manager-v3.jpg", import.meta.url));
     await writeFile(fixturePath, exportedOgImage.subarray(0, 500));
 
     const metadata = await sharp(fixturePath).metadata();
@@ -129,15 +129,15 @@ test("rejects a truncated Open Graph JPEG even when its header metadata is reada
 });
 
 test("exports versioned local hero assets within the approved budgets", async () => {
-  assert.match(html, /src="\/images\/hero-bg-v2\.webp"/);
-  assert.match(html, /srcSet="\/images\/hero-mobile-v2\.webp"/);
-  assert.match(html, /content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v2\.jpg"/);
-  assert.doesNotMatch(html, /src="\/images\/hero-bg\.webp"|srcSet="\/images\/hero-mobile\.webp"/);
+  assert.match(html, /src="\/images\/hero-bg-v3\.webp"/);
+  assert.match(html, /srcSet="\/images\/hero-mobile-v3\.webp"/);
+  assert.match(html, /content="https:\/\/www\.bike-manager\.com\/images\/og-bike-manager-v3\.jpg"/);
+  assert.doesNotMatch(html, /src="\/images\/hero-bg(?:-v2)?\.webp"|srcSet="\/images\/hero-mobile(?:-v2)?\.webp"/);
 
   for (const contract of [
-    { path: "hero-bg-v2.webp", width: 1440, height: 900, max: 300 * 1024, format: "webp" },
-    { path: "hero-mobile-v2.webp", width: 640, height: 1100, max: 180 * 1024, format: "webp" },
-    { path: "og-bike-manager-v2.jpg", width: 1200, height: 630, max: 180 * 1024, format: "jpeg" },
+    { path: "hero-bg-v3.webp", width: 1440, height: 900, max: 300 * 1024, format: "webp" },
+    { path: "hero-mobile-v3.webp", width: 640, height: 1100, max: 180 * 1024, format: "webp" },
+    { path: "og-bike-manager-v3.jpg", width: 1200, height: 630, max: 180 * 1024, format: "jpeg" },
   ]) {
     const asset = new URL(`../out/images/${contract.path}`, import.meta.url);
     const [{ size }, metadata, pixels] = await Promise.all([

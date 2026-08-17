@@ -170,8 +170,8 @@ export const site = {
       "경기오토바이매입",
       "바이크매니저",
     ],
-    ogImage: "/images/og-bike-manager-v2.jpg",
-    ogImageAlt: "밝은 검수 작업장에 세워진 무표식 맥시 스쿠터",
+    ogImage: "/images/og-bike-manager-v3.jpg",
+    ogImageAlt: "밝은 검수 작업장에 세워진 무표식 스포츠 맥시 스쿠터",
   },
   hero: {
     eyebrow: "인천·서울·경기 중고 바이크 방문 매입",

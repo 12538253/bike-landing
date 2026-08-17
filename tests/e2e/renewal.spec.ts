@@ -1235,8 +1235,8 @@ test("full light mineral gallery keeps every major frame calm and readable", asy
 
     const heroImage = page.locator(".hero__image");
     await expect(heroImage).toHaveJSProperty("complete", true);
-    expect(await heroImage.getAttribute("src")).toBe("/images/hero-bg-v2.webp");
-    expect(await page.locator(".hero source").getAttribute("srcset")).toBe("/images/hero-mobile-v2.webp");
+    expect(await heroImage.getAttribute("src")).toBe("/images/hero-bg-v3.webp");
+    expect(await page.locator(".hero source").getAttribute("srcset")).toBe("/images/hero-mobile-v3.webp");
 
     for (const key of ["header", "hero", "contact", "footer"] as const) {
       expect(surfaces[key].background, `${viewport.width}px ${key} must not remain a dark frame`).not.toBe("rgb(12, 26, 28)");

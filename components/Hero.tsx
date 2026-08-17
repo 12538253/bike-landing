@@ -9,10 +9,10 @@ export default function Hero() {
     <section className="hero" id="top" data-testid="hero">
       <div className="hero__media" data-testid="hero-media" aria-hidden="true">
         <picture>
-          <source media="(max-width: 760px)" srcSet="/images/hero-mobile-v2.webp" type="image/webp" />
+          <source media="(max-width: 760px)" srcSet="/images/hero-mobile-v3.webp" type="image/webp" />
           {/* The static picture element lets mobile download a smaller, art-directed LCP asset. */}
           <img
-            src="/images/hero-bg-v2.webp"
+            src="/images/hero-bg-v3.webp"
             alt=""
             width="1440"
             height="900"
