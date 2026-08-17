@@ -620,6 +620,41 @@ test("390px visibly renders all four compact trust facts", async ({ page }) => {
   }
 });
 
+test("channel proof keeps three factual badges in one responsive row", async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+
+    const proof = page.locator(".channel-proof");
+    const items = proof.locator(".channel-proof__item");
+    await expect(items).toHaveCount(3);
+    await expect(proof.getByText("네이버 플레이스", { exact: true })).toBeVisible();
+    await expect(proof.getByText("카카오 공식채널", { exact: true })).toBeVisible();
+    await expect(proof.getByText("당근 거래 활동", { exact: true })).toBeVisible();
+
+    const boxes = await items.evaluateAll((nodes) => nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { top: box.top, right: box.right, bottom: box.bottom, left: box.left };
+    }));
+    expect(Math.max(...boxes.map((box) => box.top)) - Math.min(...boxes.map((box) => box.top))).toBeLessThan(2);
+
+    const links = await proof.locator("a.channel-proof__item").all();
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      const box = await link.boundingBox();
+      expect(box?.height ?? 0, `${viewport.width}px channel link height`).toBeGreaterThanOrEqual(44);
+    }
+
+    const daangn = proof.locator(".channel-proof__item--daangn");
+    await expect(daangn).toHaveCount(1);
+    expect(await daangn.evaluate((element) => element.tagName)).toBe("SPAN");
+    expect(await daangn.getAttribute("href")).toBeNull();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+  }
+});
+
 test("390px visibly renders the sequential visit stages and neutral safety advice", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

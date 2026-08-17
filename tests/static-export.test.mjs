@@ -194,6 +194,18 @@ test("renders the benefit-led hero and trackable contact links", () => {
   assert.doesNotMatch(html, /구독자 660/);
 });
 
+test("exports three factual channel proof badges", () => {
+  const trust = html.match(/<section class="trust-bar"[\s\S]*?<\/section>/)?.[0] ?? "";
+
+  assert.match(trust, />네이버 플레이스</);
+  assert.match(trust, />카카오 공식채널</);
+  assert.match(trust, />당근 거래 활동</);
+  assert.match(trust, /href="https:\/\/naver\.me\/F1rPbAcV"/);
+  assert.match(trust, /href="https:\/\/pf\.kakao\.com\/_MzgSn"/);
+  assert.doesNotMatch(trust, /<a[^>]*>[\s\S]*?당근 거래 활동[\s\S]*?<\/a>/);
+  assert.doesNotMatch(marketingSurface(html), /인증\s*업체|공식\s*인증|플랫폼\s*추천|es1y136zzsue/);
+});
+
 test("exports the official KakaoTalk mark in the mobile photo contact action", async () => {
   const stickyInquiry = html.match(
     /<aside\b(?=[^>]*data-testid="sticky-inquiry")[^>]*>[\s\S]*?<\/aside>/,
