@@ -567,7 +567,7 @@ test("exports the approved petrol, ivory, brass, and copper palette", () => {
   assert.match(stylesheet, /--paper:#f1ede4/);
   assert.match(stylesheet, /--card:#ded7ca/);
   assert.match(stylesheet, /--orange:#ff6645/);
-  assert.match(stylesheet, /--brass:#b88a4a/);
+  assert.match(stylesheet, /--brass:#6a4f2c/);
   assert.match(stylesheet, /--steel:#789094/);
   assert.doesNotMatch(stylesheet, /255,122,26|#10100f/);
 });
@@ -579,5 +579,6 @@ test("exports the full light mineral gallery without large dark frame surfaces",
   assert.match(stylesheet, /--gallery-active:#d7d2c5/);
   assert.match(stylesheet, /--gallery-bridge:#c8ceca/);
   assert.match(stylesheet, /--gallery-footer:#b8bfbb/);
+  assert.doesNotMatch(stylesheet, /--surface-(?:bridge|base|alt|card|active):/);
   assert.doesNotMatch(stylesheet, /background:#071315/);
 });
