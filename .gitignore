@@ -43,6 +43,7 @@ next-env.d.ts
 # local writing and verification artifacts
 /_workspace/
 /.playwright-mcp/
+/.superpowers/
 /test-results/
 /playwright-report/
 /.worktrees/
