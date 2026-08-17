@@ -194,6 +194,17 @@ test("renders the benefit-led hero and trackable contact links", () => {
   assert.doesNotMatch(html, /구독자 660/);
 });
 
+test("exports one quiet phone action in the bright header", () => {
+  const header = html.match(/<header\b[^>]*class="site-header"[^>]*>[\s\S]*?<\/header>/)?.[0];
+  assert.ok(header, "expected the site header");
+  assert.match(header, /data-cta="header-phone"/);
+  assert.match(header, />전화 상담<\/span>/);
+  assert.match(header, /aria-label="전화 상담 010-7616-4949"/);
+  assert.doesNotMatch(header, /class="header-kakao"/);
+  assert.doesNotMatch(header, />카카오톡<\/span>/);
+  assert.doesNotMatch(header, />010-7616-4949<\/span>/);
+});
+
 test("exports three factual channel proof badges", () => {
   const trust = html.match(/<section class="trust-bar"[\s\S]*?<\/section>/)?.[0] ?? "";
 

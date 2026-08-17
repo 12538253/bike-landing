@@ -154,8 +154,7 @@ section[id] {
 .brand-mark,
 .brand-mark__badge,
 .site-header__actions,
-.header-phone,
-.header-kakao {
+.header-phone {
   display: flex;
   align-items: center;
 }
@@ -227,35 +226,26 @@ section[id] {
   gap: 10px;
 }
 
-.header-phone,
-.header-kakao {
+.header-phone {
   min-height: 44px;
   justify-content: center;
   gap: 8px;
-  border-radius: 999px;
+  border-radius: 12px;
   font-size: 0.82rem;
   font-weight: 750;
 }
 
-.header-kakao {
-  padding-inline: 15px;
-  border: 1px solid rgba(12, 26, 28, 0.24);
-  background: rgba(240, 239, 234, 0.58);
-  color: var(--ink);
-}
-
-.header-kakao svg {
-  color: var(--yellow);
-}
-
 .header-phone {
-  padding-inline: 17px;
-  border: 1px solid rgba(255, 102, 69, 0.52);
-  color: var(--ink);
+  padding-inline: 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--cta-foreground);
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.header-phone__hours {
-  color: var(--brass);
+.header-phone:hover {
+  border-color: var(--ink-soft);
+  background: var(--ink-soft);
 }
 
 .hero {
@@ -1251,11 +1241,6 @@ button.visit-flow__stage-summary {
 
   .site-shell {
     width: min(calc(100% - 34px), var(--shell));
-  }
-
-  .header-kakao,
-  .header-phone__hours {
-    display: none;
   }
 
   .header-phone {

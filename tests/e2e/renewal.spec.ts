@@ -1396,32 +1396,47 @@ test("case-action overlap moves focus out of sticky inquiry before making it ine
   await expect(stickyKakao).not.toBeFocused();
 });
 
-test("761px through 960px header preserves navigation without exposing the Kakao header action early", async ({ page }) => {
-  for (const width of [761, 768, 960, 1440]) {
+test("bright header keeps one quiet phone action without crowding navigation", async ({ page }) => {
+  for (const width of [320, 390, 761, 768, 960, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/");
 
-    const nav = page.getByRole("navigation", { name: "주요 메뉴" });
+    const nav = page.locator(".site-nav");
     const header = page.locator(".site-header__inner");
-    await expect(nav, `${width}px navigation must be visible from the 761px breakpoint`).toBeVisible();
+    if (width >= 761) await expect(nav, `${width}px navigation must be visible from the 761px breakpoint`).toBeVisible();
+    else await expect(nav).toBeHidden();
     const [headerBox, navBox, dimensions] = await Promise.all([
       header.boundingBox(),
       nav.boundingBox(),
       page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth })),
     ]);
-    expect(headerBox && navBox, `${width}px header and navigation must render`).toBeTruthy();
-    if (!headerBox || !navBox) continue;
-    expect(navBox.x).toBeGreaterThanOrEqual(headerBox.x - 1);
-    expect(navBox.x + navBox.width).toBeLessThanOrEqual(headerBox.x + headerBox.width + 1);
+    expect(headerBox, `${width}px header must render`).not.toBeNull();
+    if (width >= 761) {
+      expect(navBox, `${width}px navigation must render`).not.toBeNull();
+      expect(navBox?.x ?? -1).toBeGreaterThanOrEqual((headerBox?.x ?? 0) - 1);
+      expect((navBox?.x ?? 0) + (navBox?.width ?? 0)).toBeLessThanOrEqual((headerBox?.x ?? 0) + (headerBox?.width ?? 0) + 1);
+    }
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 
-    const kakao = page.locator(".header-kakao");
-    if (width < 960) await expect(kakao).toBeHidden();
-    else await expect(kakao).toBeVisible();
+    await expect(page.locator(".header-kakao")).toHaveCount(0);
+    const actions = page.locator(".site-header__actions");
+    await expect(actions.getByRole("link")).toHaveCount(1);
+    const phone = actions.locator('[data-cta="header-phone"]');
+    await expect(phone).toHaveText("전화 상담");
+    await expect(phone).toHaveAttribute("aria-label", "전화 상담 010-7616-4949");
+    const phoneState = await phone.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const box = element.getBoundingClientRect();
+      return { background: style.backgroundColor, color: style.color, width: box.width, height: box.height };
+    });
+    expect(phoneState.background).toBe("rgb(12, 26, 28)");
+    expect(phoneState.color).toBe("rgb(245, 241, 232)");
+    expect(phoneState.width).toBeGreaterThanOrEqual(44);
+    expect(phoneState.height).toBeGreaterThanOrEqual(44);
 
     const regions = [
       { label: "brand", locator: page.locator(".brand-mark") },
-      { label: "navigation", locator: nav },
+      ...(width >= 761 ? [{ label: "navigation", locator: nav }] : []),
       { label: "header actions", locator: page.locator(".site-header__actions") },
     ];
     const regionBoxes = await Promise.all(regions.map(async ({ label, locator }) => ({ label, box: await locator.boundingBox() })));
@@ -1441,6 +1456,9 @@ test("761px through 960px header preserves navigation without exposing the Kakao
       expect(box?.width ?? 0, `${width}px navigation link must be at least 44px wide`).toBeGreaterThanOrEqual(44);
       expect(box?.height ?? 0, `${width}px navigation link must be at least 44px tall`).toBeGreaterThanOrEqual(44);
     }
+
+    await expect(page.locator('[data-cta="hero-kakao"]')).toHaveCount(1);
+    await expect(page.locator('[data-cta="sticky-kakao"]')).toHaveCount(1);
   }
 });
 

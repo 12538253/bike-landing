@@ -1,4 +1,4 @@
-import { MessageCircle, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 
 import { site } from "@/content/site";
 
@@ -29,19 +29,13 @@ export default function Header() {
 
         <div className="site-header__actions">
           <a
-            className="header-kakao"
-            href={site.links.kakao}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="카카오톡으로 문의하기"
+            className="header-phone"
+            href={phone.href}
+            data-cta={phone.ctaId}
+            aria-label={`${phone.label} ${site.phone.display}`}
           >
-            <MessageCircle aria-hidden="true" size={18} />
-            <span>카카오톡</span>
-          </a>
-          <a className="header-phone" href={phone.href} data-cta={phone.ctaId}>
             <Phone aria-hidden="true" size={17} />
-            <span className="header-phone__hours">{phone.label}</span>
-            <span>{site.phone.display}</span>
+            <span>{phone.label}</span>
           </a>
         </div>
       </div>
