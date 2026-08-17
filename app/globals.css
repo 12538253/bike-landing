@@ -16,7 +16,9 @@
   --line-light: rgba(255, 255, 255, 0.16);
   --muted: #4a595b;
   --muted-light: #a9b7b8;
-  --orange: #ff6645;
+  --cta: #2f5d55;
+  --cta-hover: #244a45;
+  --cta-foreground: #f5f1e8;
   --brass: #6a4f2c;
   --brass-deep: #6a4f2c;
   --steel: #789094;
@@ -101,7 +103,7 @@ address {
 }
 
 ::selection {
-  background: var(--orange);
+  background: rgba(47, 93, 85, 0.22);
   color: var(--ink);
 }
 
@@ -289,14 +291,14 @@ section[id] {
   height: 100%;
   object-fit: cover;
   object-position: 58% center;
-  filter: saturate(0.82) contrast(1) brightness(1.06);
+  filter: saturate(0.86) contrast(1.02) brightness(1.03);
 }
 
 .hero__shade {
   z-index: -2;
   background:
-    linear-gradient(90deg, rgba(218, 221, 216, 0.98) 0%, rgba(218, 221, 216, 0.94) 36%, rgba(218, 221, 216, 0.34) 64%, rgba(218, 221, 216, 0.05) 100%),
-    linear-gradient(0deg, rgba(218, 221, 216, 0.32) 0%, transparent 48%);
+    linear-gradient(90deg, rgba(218, 221, 216, 0.97) 0%, rgba(218, 221, 216, 0.9) 36%, rgba(218, 221, 216, 0.2) 64%, rgba(218, 221, 216, 0.02) 100%),
+    linear-gradient(0deg, rgba(218, 221, 216, 0.26) 0%, transparent 48%);
 }
 
 .hero__inner {
@@ -378,11 +380,12 @@ section[id] {
 }
 
 .button--primary {
-  background: var(--orange);
-  color: var(--ink);
+  background: var(--cta);
+  color: var(--cta-foreground);
 }
 
 .button--primary:hover {
+  background: var(--cta-hover);
   transform: translateY(-2px);
 }
 
@@ -810,10 +813,14 @@ button.visit-flow__stage-summary {
   gap: 8px;
   margin-top: 18px;
   padding-inline: 18px;
-  background: var(--orange);
-  color: var(--ink);
+  background: var(--cta);
+  color: var(--cta-foreground);
   font-size: 0.84rem;
   font-weight: 820;
+}
+
+.visit-flow__cta:hover {
+  background: var(--cta-hover);
 }
 
 .visit-flow__safety {
@@ -1209,8 +1216,8 @@ button.visit-flow__stage-summary {
 
   .hero__shade {
     background:
-      linear-gradient(90deg, rgba(218, 221, 216, 0.97) 0%, rgba(218, 221, 216, 0.88) 62%, rgba(218, 221, 216, 0.56) 100%),
-      linear-gradient(0deg, rgba(218, 221, 216, 0.86) 0%, rgba(218, 221, 216, 0.24) 64%);
+      linear-gradient(90deg, rgba(218, 221, 216, 0.96) 0%, rgba(218, 221, 216, 0.84) 58%, rgba(218, 221, 216, 0.4) 100%),
+      linear-gradient(0deg, rgba(218, 221, 216, 0.78) 0%, rgba(218, 221, 216, 0.18) 64%);
   }
 
   .trust-bar__grid {
@@ -1297,8 +1304,8 @@ button.visit-flow__stage-summary {
 
   .hero__shade {
     background:
-      linear-gradient(0deg, rgba(218, 221, 216, 0.99) 0%, rgba(218, 221, 216, 0.94) 42%, rgba(218, 221, 216, 0.54) 76%, rgba(218, 221, 216, 0.26) 100%),
-      linear-gradient(90deg, rgba(218, 221, 216, 0.82) 0%, rgba(218, 221, 216, 0.38) 100%);
+      linear-gradient(0deg, rgba(218, 221, 216, 0.96) 0%, rgba(218, 221, 216, 0.9) 46%, rgba(218, 221, 216, 0.45) 78%, rgba(218, 221, 216, 0.18) 100%),
+      linear-gradient(90deg, rgba(218, 221, 216, 0.7) 0%, rgba(218, 221, 216, 0.22) 100%);
   }
 
   .hero__description {
