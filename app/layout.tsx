@@ -77,14 +77,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link
           rel="preload"
           as="image"
-          href="/images/hero-mobile.webp"
+          href="/images/hero-mobile-v2.webp"
           type="image/webp"
           media="(max-width: 760px)"
         />
         <link
           rel="preload"
           as="image"
-          href="/images/hero-bg.webp"
+          href="/images/hero-bg-v2.webp"
           type="image/webp"
           media="(min-width: 761px)"
         />

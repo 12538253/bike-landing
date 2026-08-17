@@ -1,22 +1,23 @@
 import { rename, stat } from "node:fs/promises";
 import sharp from "sharp";
 
-const source = "public/images/hero-bg.png";
+const desktopSource = "public/images/hero-source-v2.png";
+const mobileSource = "public/images/hero-mobile-source-v2.png";
 
-await sharp(source)
+await sharp(desktopSource)
   .resize(1440, 900, { fit: "cover", position: "centre", withoutEnlargement: false })
-  .webp({ quality: 68, effort: 6 })
-  .toFile("public/images/hero-bg.webp");
+  .webp({ quality: 72, effort: 6 })
+  .toFile("public/images/hero-bg-v2.webp");
 
-await sharp(source)
+await sharp(mobileSource)
   .resize(640, 1100, { fit: "cover", position: "centre", withoutEnlargement: false })
-  .webp({ quality: 64, effort: 6 })
-  .toFile("public/images/hero-mobile.webp");
+  .webp({ quality: 70, effort: 6 })
+  .toFile("public/images/hero-mobile-v2.webp");
 
-await sharp(source)
+await sharp(desktopSource)
   .resize(1200, 630, { fit: "cover", position: "centre", withoutEnlargement: false })
   .jpeg({ quality: 80, progressive: true, mozjpeg: true })
-  .toFile("public/images/og-bike-manager.jpg");
+  .toFile("public/images/og-bike-manager-v2.jpg");
 
 await sharp("public/favicon.png")
   .resize(96, 96, { fit: "cover" })
@@ -26,9 +27,9 @@ await sharp("public/favicon.png")
 await rename("public/favicon.optimized.png", "public/favicon.png");
 
 const files = [
-  "public/images/hero-bg.webp",
-  "public/images/hero-mobile.webp",
-  "public/images/og-bike-manager.jpg",
+  "public/images/hero-bg-v2.webp",
+  "public/images/hero-mobile-v2.webp",
+  "public/images/og-bike-manager-v2.jpg",
   "public/favicon.png",
 ];
 
