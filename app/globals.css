@@ -949,6 +949,10 @@ button.visit-flow__stage-summary {
   margin-bottom: 0;
 }
 
+.support-guide-link {
+  margin-top: 16px;
+}
+
 .support-section {
   border-top: 1px solid var(--line);
   background: var(--gallery-alt);

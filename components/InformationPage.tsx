@@ -20,7 +20,7 @@ export default function InformationPage({ page, children }: Readonly<{
           <a href="/">홈</a><span aria-hidden="true">/</span><span aria-current="page">{page.label}</span>
         </nav>
         <header className="information-heading">
-          <p className="information-eyebrow">BIKE MANAGER · {page.label}</p>
+          <p className="information-eyebrow">BIKE MANAGER, {page.label}</p>
           <h1>{page.title}</h1>
           <p>{page.description}</p>
         </header>
