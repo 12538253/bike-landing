@@ -16,6 +16,8 @@ const contentTypes = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".webp": "image/webp",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8",
 };
 
 const compressibleExtensions = new Set([".css", ".html", ".js", ".json", ".svg", ".txt", ".xml"]);
@@ -31,10 +33,21 @@ createServer(async (request, response) => {
   }
 
   try {
-    const fileStat = await stat(filePath);
-    const resolvedPath = fileStat.isDirectory() ? join(filePath, "index.html") : filePath;
+    let resolvedPath = filePath;
+    try {
+      const fileStat = await stat(filePath);
+      if (fileStat.isDirectory()) {
+        resolvedPath = join(filePath, "index.html");
+        await stat(resolvedPath);
+      }
+    } catch (error) {
+      if (error.code !== "ENOENT" || extname(filePath)) throw error;
+      resolvedPath = `${filePath}.html`;
+      await stat(resolvedPath);
+    }
     const extension = extname(resolvedPath);
     response.setHeader("Content-Type", contentTypes[extension] ?? "application/octet-stream");
+    response.setHeader("X-Robots-Tag", "noindex");
     response.setHeader(
       "Cache-Control",
       resolvedPath.includes("/_next/static/")

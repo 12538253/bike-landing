@@ -146,12 +146,34 @@ export const site = {
     country: "KR",
   },
   business: {
+    owner: "유동영",
+    registrationNumber: "341-05-00319",
     copyrightYear: "2026",
+    description:
+      "바이크매니저는 인천 남동구에 오프라인 매장을 둔 중고 오토바이 방문 매입 업체입니다. 인천·서울·경기에서 사진 상담과 방문 일정을 안내하고, 약속한 장소에서 차량 확인과 거래를 진행합니다.",
   },
+  serviceAreas: ["인천광역시", "서울특별시", "경기도"],
   links: {
     kakao: kakaoChatUrl,
+    kakaoChannel: kakaoChannelUrl,
     naverPlace: naverPlaceUrl,
     officialBlog: officialBlogUrl,
+  },
+  informationPages: {
+    about: {
+      path: "/about",
+      label: "업체 소개",
+      title: "바이크매니저 소개",
+      description:
+        "인천 남동구 바이크매니저의 매장 위치, 방문 매입 지역과 공식 연락처를 확인하세요. 인천·서울·경기 중고 오토바이 방문 매입을 상담합니다.",
+    },
+    visitPurchase: {
+      path: "/visit-purchase",
+      label: "방문 매입 안내",
+      title: "중고 오토바이 방문 매입 안내",
+      description:
+        "중고 오토바이 방문 매입에 필요한 사진과 차량 정보, 예상 견적, 방문 일정, 현장 확인과 입금 순서를 바이크매니저에서 안내합니다.",
+    },
   },
   navigation: [
     { label: "진행 방법", href: "#process" },

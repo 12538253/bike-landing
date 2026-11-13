@@ -32,7 +32,17 @@
 
 ## 장애 복구
 
-운영 반영 뒤 문제가 생기면 Cloudflare Pages에서 이전 성공 배포 `d36c2e5`를 우선 롤백합니다. 이어서 Git에서 리뉴얼 병합 커밋을 `revert`하고 검증한 뒤 `main`에 push합니다. 이 과정에서 DNS를 바꾸거나 기록을 삭제하지 않습니다.
+2026-11-13 AI 검색 안내와 보안 업데이트 직전의 운영 기준은 다음과 같습니다.
+
+- 운영 커밋: `5fed4563d737d1ef373c95c2a79fa8a1d7178838`
+- 성공한 production 배포: `56828ddd-c50a-4071-a23f-a97a1d30d00a`
+- [Cloudflare 배포 상세](https://dash.cloudflare.com/?to=/1db0ef443261ec647952b10096f1fbe0/pages/view/bike-manager/56828ddd-c50a-4071-a23f-a97a1d30d00a)
+
+운영 반영 뒤 문제가 생기면 Pages 프로젝트의 **Deployments**에서 위 production 배포의 **Rollback to this deployment**를 선택합니다. 성공한 production 배포만 롤백 대상으로 사용할 수 있습니다.
+
+이어서 이번 업데이트 PR의 squash 병합 커밋을 `git revert`하고 검증한 뒤 `main`에 push합니다. 이렇게 해야 다음 자동 배포도 복구한 소스를 유지합니다. Cloudflare에 접근할 수 없다면 Git 되돌림과 자동 재배포로 복구합니다. 이 방법은 빌드와 배포가 끝날 때까지 시간이 걸립니다.
+
+복구 후 운영 홈페이지와 연락 링크를 확인합니다. DNS를 바꾸거나 Git 기록을 삭제하지 않습니다.
 
 ## 운영 점검
 

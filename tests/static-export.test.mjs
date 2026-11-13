@@ -80,7 +80,7 @@ test("exports the approved contact and canonical metadata", () => {
   assert.match(html, /tel:010-7616-4949/);
   assert.doesNotMatch(html, /010-5712-0080/);
   assert.doesNotMatch(html, /G-XXXXXXXXXX/);
-  assert.doesNotMatch(html, /유동영|341-05-00319/);
+  assert.match(html, /341-05-00319/);
   assert.match(html, /<meta name="theme-color" content="#0C1A1C"\/>/);
 });
 
@@ -575,6 +575,7 @@ test("keeps JSON-LD factual and free of unverified hours", () => {
 
   const data = JSON.parse(scripts[0][1]);
   assert.equal(data.telephone, "010-7616-4949");
+  assert.equal(data.taxID, "341-05-00319");
   assert.equal(data.url, "https://www.bike-manager.com");
   assert.equal(data.address.streetAddress, "백범로 411 1층");
   assert.equal(data.priceRange, undefined);

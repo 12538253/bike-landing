@@ -57,8 +57,12 @@ const jsonLd = {
   "@type": "LocalBusiness",
   "@id": `${site.canonicalUrl}/#business`,
   name: site.name,
+  alternateName: site.englishName,
+  description: site.business.description,
+  sameAs: [site.links.officialBlog, site.links.naverPlace, site.links.kakaoChannel],
   image: `${site.canonicalUrl}${site.metadata.ogImage}`,
   telephone: site.phone.display,
+  taxID: site.business.registrationNumber,
   url: site.canonicalUrl,
   address: {
     "@type": "PostalAddress",
@@ -67,7 +71,7 @@ const jsonLd = {
     addressRegion: site.address.region,
     addressCountry: site.address.country,
   },
-  areaServed: ["인천광역시", "서울특별시", "경기도"],
+  areaServed: site.serviceAreas,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
