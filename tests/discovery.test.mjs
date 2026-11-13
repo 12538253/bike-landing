@@ -10,6 +10,8 @@ test("search engines can discover the information pages from home and the sitema
     assert.ok(home.includes(`href="${path}"`), `home must link to ${path}`);
     assert.ok(sitemap.includes(`<loc>https://www.bike-manager.com${path}</loc>`));
   }
+  const support = home.match(/<section\b(?=[^>]*id="faq")[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(support?.includes('href="/visit-purchase"'), "visitors reading the FAQ must be able to open the full purchase guide");
 });
 
 for (const { path, title } of [

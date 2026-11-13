@@ -83,6 +83,7 @@ export type CaseStudySectionCopy = SectionCopy & Readonly<{
 
 export type SupportSectionCopy = SectionCopy & Readonly<{
   description: string;
+  guideLinkLabel: string;
   disclosure: DisclosureCopy;
   items: readonly FaqItem[];
 }>;
@@ -150,7 +151,7 @@ export const site = {
     registrationNumber: "341-05-00319",
     copyrightYear: "2026",
     description:
-      "바이크매니저는 인천 남동구에 오프라인 매장을 둔 중고 오토바이 방문 매입 업체입니다. 인천·서울·경기에서 사진 상담과 방문 일정을 안내하고, 약속한 장소에서 차량 확인과 거래를 진행합니다.",
+      "바이크매니저는 인천 남동구에 오프라인 매장이 있는 중고 오토바이 방문 매입 업체입니다. 인천, 서울, 경기에서 사진으로 상담하고 방문 일정을 잡습니다. 약속한 장소에서 차량을 확인하고 거래합니다.",
   },
   serviceAreas: ["인천광역시", "서울특별시", "경기도"],
   links: {
@@ -165,14 +166,14 @@ export const site = {
       label: "업체 소개",
       title: "바이크매니저 소개",
       description:
-        "인천 남동구 바이크매니저의 매장 위치, 방문 매입 지역과 공식 연락처를 확인하세요. 인천·서울·경기 중고 오토바이 방문 매입을 상담합니다.",
+        "인천 남동구 바이크매니저의 매장 위치, 방문 매입 지역과 공식 연락처를 확인하세요. 인천, 서울, 경기 중고 오토바이 방문 매입을 상담합니다.",
     },
     visitPurchase: {
       path: "/visit-purchase",
       label: "방문 매입 안내",
       title: "중고 오토바이 방문 매입 안내",
       description:
-        "중고 오토바이 방문 매입에 필요한 사진과 차량 정보, 예상 견적, 방문 일정, 현장 확인과 입금 순서를 바이크매니저에서 안내합니다.",
+        "바이크매니저의 중고 오토바이 방문 매입은 사진 상담부터 시작합니다. 견적에 필요한 정보와 방문 일정, 차량 확인부터 입금까지의 순서를 알아보세요.",
     },
   },
   navigation: [
@@ -181,9 +182,9 @@ export const site = {
     { label: "자주 묻는 질문", href: "#faq" },
   ] satisfies readonly NavigationLink[],
   metadata: {
-    title: "바이크매니저 | 인천·서울·경기 중고 바이크 방문 매입",
+    title: "바이크매니저 | 인천, 서울, 경기 중고 바이크 방문 매입",
     description:
-      "인천·서울·경기 중고 바이크를 직접 방문해 매입합니다. 사진으로 예상 견적과 방문 일정을 빠르게 안내하고, 판매대금 입금 확인 후 상차합니다. 문의 010-7616-4949",
+      "인천, 서울, 경기 중고 바이크를 직접 방문해 매입합니다. 사진으로 예상 견적과 방문 일정을 빠르게 안내하고 판매대금 입금 확인 후 상차합니다. 문의 010-7616-4949",
     keywords: [
       "중고오토바이매입",
       "중고바이크매입",
@@ -196,14 +197,14 @@ export const site = {
     ogImageAlt: "밝은 검수 작업장에 세워진 무표식 스포츠 맥시 스쿠터",
   },
   hero: {
-    eyebrow: "인천·서울·경기 중고 바이크 방문 매입",
+    eyebrow: "인천, 서울, 경기 중고 바이크 방문 매입",
     titleLines: [
       "바이크는 그대로 두세요.",
       "직접 찾아가 매입합니다.",
     ],
     description:
-      "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 약속한 장소에서 차량과 최종 금액을 함께 확인하고, 판매대금 전액 입금 후 상차합니다.",
-    note: "경력 10년 이상 · 입금 확인 후 상차",
+      "사진으로 예상 견적과 방문 시간을 먼저 안내합니다. 약속한 장소에서 차량과 최종 금액을 함께 확인하고 판매대금 전액 입금 후 상차합니다.",
+    note: "경력 10년 이상, 입금 확인 후 상차",
     scrollLabel: "진행 방법 보기",
   },
   contact: {
@@ -238,17 +239,17 @@ export const site = {
   },
   visitFlow: {
     eyebrow: "사진 확인부터 현장 거래까지",
-    title: "바이크는 그대로 두고, 사진만 보내주세요.",
+    title: "바이크는 그대로 두고 사진만 보내주세요.",
     description: "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
     stages: {
       photoGuide: {
         title: "사진으로 먼저 안내",
-        description: "기종·연식·주행거리·지역과 사진을 보내주시면 예상 견적과 방문 가능한 시간을 안내합니다.",
+        description: "기종, 연식, 주행거리, 지역과 사진을 보내주시면 예상 견적과 방문 가능한 시간을 안내합니다.",
         facts: ["예상 견적", "방문 시간"],
       } satisfies VisitStage,
       onsiteDeal: {
         title: "약속한 장소에서 함께 확인",
-        description: "차량과 서류를 함께 확인하고, 최종 금액과 판매대금 전액 입금을 확인한 뒤 상차합니다.",
+        description: "차량과 서류를 함께 확인하고 최종 금액과 판매대금 전액 입금을 확인한 뒤 상차합니다.",
         facts: ["차량 상태", "최종 금액", "전액 입금", "상차"],
         confirmation: {
           label: "입금 확인",
@@ -269,7 +270,7 @@ export const site = {
   } satisfies VisitFlowCopy,
   trustSection: {
     title: "거래 원칙",
-    points: ["24시간 문의 접수", "인천·서울·경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"],
+    points: ["24시간 문의 접수", "인천, 서울, 경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"],
     channelLabel: "바이크매니저 채널",
     channels: [
       { id: "naver", label: "네이버 플레이스", icon: "/images/naver-icon.png", href: naverPlaceUrl },
@@ -294,7 +295,7 @@ export const site = {
       external: true,
     } satisfies ContactLink,
     placeLink: {
-      label: "네이버 플레이스·리뷰 보기",
+      label: "네이버 플레이스에서 리뷰 보기",
       href: naverPlaceUrl,
       external: true,
     } satisfies ExternalLink,
@@ -304,7 +305,7 @@ export const site = {
       layout: "featured",
       region: "서울 은평구",
       model: "ADV350",
-      proof: "늦은 저녁 자택 방문 · 현장 확인 후 대금 지급",
+      proof: "늦은 저녁 자택 방문, 현장 확인 후 대금 지급",
       sourceUrl: "https://m.blog.naver.com/bikemanager4949/224355424035",
       sourceLabel: "공식 블로그에서 서울 은평구 ADV350 매입 기록 보기",
       image: "/images/cases/adv350.webp",
@@ -335,37 +336,38 @@ export const site = {
     },
   ] satisfies readonly CaseStudy[],
   supportSection: {
-    eyebrow: "상담·서류 안내",
+    eyebrow: "상담과 서류 안내",
     title: "스쿠터부터 대형 바이크까지 상담합니다.",
-    description: "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
+    description: "차량 상태와 등록 정보를 살펴보고 매입 가능 여부와 필요한 서류를 안내합니다.",
+    guideLinkLabel: "방문 매입 순서 자세히 보기 →",
     disclosure: {
-      summary: "명의·서류가 다른 경우",
+      summary: "명의나 서류가 다른 경우",
       answer:
-        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인·법인·외국인 명의, 미성년자 소유, 서류 분실, 차대번호 훼손·재타각 차량은 현재 상태를 알려주시면 필요한 확인 사항과 서류를 안내합니다.",
+        "보통 신분증과 이륜자동차 사용신고필증 또는 폐지증명서를 확인합니다. 타인, 법인, 외국인 명의나 미성년자 소유, 서류 분실, 차대번호 훼손이나 재타각 이력이 있다면 현재 상태를 알려주세요. 필요한 확인 사항과 서류를 안내합니다.",
     },
     items: [
       {
         question: "최종 금액은 어떻게 정하나요?",
         answer:
-          "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고, 변동 사유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
+          "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고 금액이 달라지는 이유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
       },
       {
         question: "방문 시간은 어떻게 정하나요?",
         answer:
-          "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
+          "문의는 24시간 접수합니다. 인천, 서울, 경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하고 늦은 시간도 일정에 맞춰 조율합니다.",
       },
       {
         question: "개인 거래와 업체 매입은 어떻게 다른가요?",
         answer:
-          "일정 조율과 현장 처리를 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격을 가장 우선한다면 개인 거래도 함께 비교해 보세요.",
+          "방문 일정부터 현장 거래까지 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격이 가장 중요하다면 개인 거래도 함께 비교해 보세요.",
       },
     ],
   } satisfies SupportSectionCopy,
   locationSection: {
     storeLabel: "인천 오프라인 매장",
-    hours: "24시간 문의 접수 · 방문 전 연락",
+    hours: "24시간 문의 접수, 방문 전 연락",
     mapLink: {
-      label: "네이버 지도에서 위치·리뷰 보기",
+      label: "네이버 지도에서 위치와 리뷰 보기",
       href: naverPlaceUrl,
       external: true,
     },
@@ -375,7 +377,7 @@ export const site = {
   footer: {
     name: "바이크매니저",
     englishName: "BIKE MANAGER",
-    service: "중고 바이크 직접 방문·현장 거래",
+    service: "중고 바이크 직접 방문 매입과 현장 거래",
     business: "상호명 바이크매니저",
     address: "인천광역시 남동구 백범로 411 1층(간석동)",
     contact: "문의 010-7616-4949",

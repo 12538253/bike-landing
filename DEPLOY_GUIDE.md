@@ -18,7 +18,7 @@
 3. 작업 브랜치만 push합니다.
 4. Cloudflare Pages의 브랜치 미리보기 주소와 `X-Robots-Tag: noindex`를 확인합니다.
 5. 전화·카카오톡 링크, 320·390·768·1440px 화면을 점검합니다.
-6. 업체 승인을 받은 뒤에만 pull request를 `main`에 병합합니다.
+6. 사용자가 해당 변경의 운영 반영을 명시적으로 요청한 뒤에만 pull request를 `main`에 병합합니다.
 7. 운영 도메인의 HTTP 상태와 주요 CTA를 다시 확인합니다.
 
 ## 운영에서 변경하지 않는 항목
@@ -32,15 +32,18 @@
 
 ## 장애 복구
 
-2026-11-13 AI 검색 안내와 보안 업데이트 직전의 운영 기준은 다음과 같습니다.
+2026-11-13 GEO/AEO 문구 교정과 FAQ 안내 링크 추가 직전의 운영 기준은 다음과 같습니다. 이 버전은 기존 보안 의존성 업데이트와 업체 소개, 방문 매입 안내를 포함합니다.
 
-- 운영 커밋: `5fed4563d737d1ef373c95c2a79fa8a1d7178838`
-- 성공한 production 배포: `56828ddd-c50a-4071-a23f-a97a1d30d00a`
-- [Cloudflare 배포 상세](https://dash.cloudflare.com/?to=/1db0ef443261ec647952b10096f1fbe0/pages/view/bike-manager/56828ddd-c50a-4071-a23f-a97a1d30d00a)
+- 운영 커밋: `0683a542ea7cb075735cf6c83115ce146edb7286`
+- 성공한 production 배포: `bd0a35f9-6fae-458d-97dd-d576058d6c08`
+- 배포 보관 주소: `https://bd0a35f9.bike-manager.pages.dev`
+- [Cloudflare 배포 상세](https://dash.cloudflare.com/?to=/1db0ef443261ec647952b10096f1fbe0/pages/view/bike-manager/bd0a35f9-6fae-458d-97dd-d576058d6c08)
 
 운영 반영 뒤 문제가 생기면 Pages 프로젝트의 **Deployments**에서 위 production 배포의 **Rollback to this deployment**를 선택합니다. 성공한 production 배포만 롤백 대상으로 사용할 수 있습니다.
 
 이어서 이번 업데이트 PR의 squash 병합 커밋을 `git revert`하고 검증한 뒤 `main`에 push합니다. 이렇게 해야 다음 자동 배포도 복구한 소스를 유지합니다. Cloudflare에 접근할 수 없다면 Git 되돌림과 자동 재배포로 복구합니다. 이 방법은 빌드와 배포가 끝날 때까지 시간이 걸립니다.
+
+되돌릴 커밋은 이번 운영 반영 PR의 `mergeCommit`으로 확인합니다. `git reset --hard`나 강제 push 대신 새 되돌림 커밋을 사용합니다. 즉시 복구에는 위 Cloudflare 보관 배포를 사용하며, 전체 재빌드가 필요한 Git 복구와 구분합니다.
 
 복구 후 운영 홈페이지와 연락 링크를 확인합니다. DNS를 바꾸거나 Git 기록을 삭제하지 않습니다.
 

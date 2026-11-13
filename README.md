@@ -70,6 +70,6 @@ GitHub Actions도 브랜치 push와 `main` 대상 pull request에서 같은 검�
 2. `npm run verify`와 `npm audit --omit=dev`를 실행합니다.
 3. 작업 브랜치만 push하고 Cloudflare Pages 미리보기를 확인합니다.
 4. 미리보기의 `X-Robots-Tag: noindex`, 전화·카카오톡 링크, 모바일 화면을 점검합니다.
-5. 업체가 확인한 뒤에만 `main`에 병합합니다.
+5. 사용자가 해당 변경의 운영 반영을 명시적으로 요청한 뒤 `main`에 병합합니다.
 
 Cloudflare DNS, 도메인 결제, production 브랜치와 롤백 절차는 [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md)에 정리돼 있습니다.

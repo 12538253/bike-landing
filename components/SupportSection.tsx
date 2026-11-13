@@ -12,6 +12,9 @@ export default function SupportSection() {
           <p>{support.eyebrow}</p>
           <h2 id="faq-title">{support.title}</h2>
           <span>{support.description}</span>
+          <a className="information-text-link support-guide-link" href={site.informationPages.visitPurchase.path}>
+            {support.guideLinkLabel}
+          </a>
         </div>
         <div className="support-list">
           <details className="support-list__documents">

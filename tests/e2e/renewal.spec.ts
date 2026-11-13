@@ -6,20 +6,20 @@ const faqAnswerContracts = [
   {
     question: "최종 금액은 어떻게 정하나요?",
     answer:
-      "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고, 변동 사유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
-    facts: ["사진으로 예상 금액", "차량과 서류", "변동 사유", "최종 금액", "동의하신 금액"],
+      "사진으로 예상 금액을 먼저 안내합니다. 현장에서 차량과 서류를 함께 확인하고 금액이 달라지는 이유와 최종 금액을 설명드린 뒤 동의하신 금액으로 거래합니다.",
+    facts: ["사진으로 예상 금액", "차량과 서류", "금액이 달라지는 이유", "최종 금액", "동의하신 금액"],
   },
   {
     question: "방문 시간은 어떻게 정하나요?",
     answer:
-      "문의는 24시간 접수합니다. 인천·서울·경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하며, 늦은 시간도 일정에 맞춰 조율합니다.",
-    facts: ["24시간", "인천·서울·경기", "당일 일정", "방문 가능한 시간", "늦은 시간"],
+      "문의는 24시간 접수합니다. 인천, 서울, 경기 지역과 당일 일정을 확인해 방문 가능한 시간을 안내하고 늦은 시간도 일정에 맞춰 조율합니다.",
+    facts: ["24시간", "인천, 서울, 경기", "당일 일정", "방문 가능한 시간", "늦은 시간"],
   },
   {
     question: "개인 거래와 업체 매입은 어떻게 다른가요?",
     answer:
-      "일정 조율과 현장 처리를 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격을 가장 우선한다면 개인 거래도 함께 비교해 보세요.",
-    facts: ["일정 조율", "현장 처리", "업체 매입", "가격", "개인 거래"],
+      "방문 일정부터 현장 거래까지 한 번에 마치고 싶다면 업체 매입이 잘 맞습니다. 가격이 가장 중요하다면 개인 거래도 함께 비교해 보세요.",
+    facts: ["방문 일정", "현장 거래", "업체 매입", "가격", "개인 거래"],
   },
 ] as const;
 
@@ -568,7 +568,7 @@ test("390px first view exposes the seller decision facts and contact paths", asy
   await page.goto("/");
 
   const heroText = (await page.locator("#top").innerText()).replace(/\s/gu, "");
-  for (const fact of ["인천·서울·경기", "바이크는 그대로", "직접 찾아가 매입합니다"]) {
+  for (const fact of ["인천, 서울, 경기", "바이크는 그대로", "직접 찾아가 매입합니다"]) {
     expect(heroText, `expected first-view fact: ${fact}`).toContain(fact.replace(/\s/gu, ""));
   }
 
@@ -600,7 +600,7 @@ test("390px visibly renders the approved hero facts and contact links", async ({
   const hero = page.locator("#top");
 
   for (const copy of [
-    "인천·서울·경기 중고 바이크 방문 매입",
+    "인천, 서울, 경기 중고 바이크 방문 매입",
     "바이크는 그대로 두세요.",
     "직접 찾아가 매입합니다.",
   ]) {
@@ -615,7 +615,7 @@ test("390px visibly renders all four compact trust facts", async ({ page }) => {
   await page.goto("/");
   const trust = page.locator("#trust");
 
-  for (const fact of ["24시간 문의 접수", "인천·서울·경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"]) {
+  for (const fact of ["24시간 문의 접수", "인천, 서울, 경기 직접 방문", "스쿠터부터 대형 바이크까지", "공식 블로그 실제 사례"]) {
     await expectUserVisible(trust.getByText(fact, { exact: true }), `trust fact: ${fact}`);
   }
 });
@@ -663,7 +663,7 @@ test("390px visibly renders the sequential visit stages and neutral safety advic
 
   for (const copy of [
     "사진 확인부터 현장 거래까지",
-    "바이크는 그대로 두고, 사진만 보내주세요.",
+    "바이크는 그대로 두고 사진만 보내주세요.",
     "바이크매니저가 약속한 장소로 직접 찾아갑니다.",
     "사진으로 먼저 안내",
     "예상 견적",
@@ -875,7 +875,7 @@ test("390px visibly renders cases and the moved official destinations", async ({
 
   for (const copy of [
     "공식 블로그에 남긴 실제 매입 기록입니다.",
-    "늦은 저녁 자택 방문 · 현장 확인 후 대금 지급",
+    "늦은 저녁 자택 방문, 현장 확인 후 대금 지급",
     "공식 블로그 매입 기록",
     "ADV350",
     "PCX125",
@@ -885,7 +885,7 @@ test("390px visibly renders cases and the moved official destinations", async ({
   }
 
   const blog = cases.getByRole("link", { name: "공식 블로그에서 더 많은 사례 보기", exact: true });
-  const place = cases.getByRole("link", { name: "네이버 플레이스·리뷰 보기", exact: true });
+  const place = cases.getByRole("link", { name: "네이버 플레이스에서 리뷰 보기", exact: true });
   await expectUserVisible(blog, "CaseStudies official blog index link");
   await expect(blog).toHaveAttribute("href", "https://m.blog.naver.com/bikemanager4949");
   await expect(blog).toHaveAttribute("data-cta", "naver-proof");
@@ -921,21 +921,21 @@ test("390px opens the merged support document disclosure and renders its facts",
 
   for (const copy of [
     "스쿠터부터 대형 바이크까지 상담합니다.",
-    "차량 상태와 등록 정보를 확인해 진행 가능 여부와 필요한 서류를 안내합니다.",
+    "차량 상태와 등록 정보를 살펴보고 매입 가능 여부와 필요한 서류를 안내합니다.",
   ]) {
     await expectUserVisible(guide.getByText(copy, { exact: true }), `guide copy: ${copy}`);
   }
 
-  const details = guide.locator("details").filter({ hasText: "명의·서류가 다른 경우" });
+  const details = guide.locator("details").filter({ hasText: "명의나 서류가 다른 경우" });
   await expect(guide.locator("details")).toHaveCount(4);
   const summary = details.locator(":scope > summary");
-  await expect(summary).toHaveText("명의·서류가 다른 경우");
+  await expect(summary).toHaveText("명의나 서류가 다른 경우");
   await expectUserVisible(summary, "purchase guide summary");
   await summary.click();
   await expect(details).toHaveAttribute("open", "");
   await expectUserVisible(details, "opened purchase guide disclosure");
   const answerText = await visibleDetailsContent(details, "purchase guide answer");
-  for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인·법인·외국인 명의", "미성년자", "서류 분실", "차대번호", "현재 상태", "필요한 확인 사항과 서류"]) {
+  for (const fact of ["신분증", "사용신고필증", "폐지증명서", "타인, 법인, 외국인 명의", "미성년자", "서류 분실", "차대번호", "현재 상태", "필요한 확인 사항과 서류"]) {
     expect(answerText, `purchase guide answer fact: ${fact}`).toContain(fact);
   }
 });
@@ -966,7 +966,7 @@ test("200% text zoom keeps representative VisitFlow and support detail text reac
   await expectUserVisible(visitDescription, "200% text zoom VisitFlow description");
   await expectExpandedTextToRemainReachableAtTextZoom(visitDescription, "200% text zoom VisitFlow description");
 
-  const guide = page.locator("#faq details").filter({ hasText: "명의·서류가 다른 경우" });
+  const guide = page.locator("#faq details").filter({ hasText: "명의나 서류가 다른 경우" });
   await guide.locator(":scope > summary").click();
   const supportAnswer = guide.locator(".support-answer > p");
   await expectUserVisible(supportAnswer, "200% text zoom expanded support answer");
@@ -1003,10 +1003,10 @@ test("390px renders final contact actions before location facts and links", asyn
   await page.goto("/");
   const location = page.locator("#contact");
 
-  for (const copy of ["예상 견적부터 방문 일정까지 빠르게 안내합니다.", "24시간 문의 접수 · 방문 전 연락"]) {
+  for (const copy of ["예상 견적부터 방문 일정까지 빠르게 안내합니다.", "24시간 문의 접수, 방문 전 연락"]) {
     await expectUserVisible(location.getByText(copy, { exact: true }), `location copy: ${copy}`);
   }
-  const map = location.getByRole("link", { name: "네이버 지도에서 위치·리뷰 보기", exact: true });
+  const map = location.getByRole("link", { name: "네이버 지도에서 위치와 리뷰 보기", exact: true });
   await expectUserVisible(map, "final Naver map/review link");
   await expect(map).toHaveAttribute("href", "https://naver.me/F1rPbAcV");
   const finalKakao = location.getByRole("link", { name: "사진 보내고 예상 견적 확인", exact: true });
@@ -1114,7 +1114,7 @@ test("downstream hash targets remain visible below the fixed header after settli
     const target = page.locator(`#${id}`);
     if (id === "process") {
       await expect(target).toHaveAttribute("data-testid", "visit-flow");
-      await expect(target.locator("#method-title")).toHaveText("바이크는 그대로 두고, 사진만 보내주세요.");
+      await expect(target.locator("#method-title")).toHaveText("바이크는 그대로 두고 사진만 보내주세요.");
     }
     await waitForStablePosition(target);
     const top = await target.evaluate((element) => element.getBoundingClientRect().top);
@@ -1268,6 +1268,19 @@ test("case cards load distinct local images", async ({ page }) => {
   }
 });
 
+async function scrollFaqControlsAboveInquiry(page: Page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    const bar = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']");
+    const controls = [...document.querySelectorAll<HTMLElement>("#faq a[href], #faq button, #faq summary")];
+    if (!bar || !controls.length) throw new Error("Expected FAQ controls and the inquiry bar");
+    const bottom = Number.parseFloat(getComputedStyle(bar).bottom) || 0;
+    const fixedSlotTop = window.innerHeight - bottom - bar.offsetHeight;
+    const lastControlBottom = Math.max(...controls.map((element) => element.getBoundingClientRect().bottom + window.scrollY));
+    window.scrollTo(0, lastControlBottom - (fixedSlotTop - 24));
+  });
+}
+
 test("mobile inquiry bar appears after hero actions and stays available through ordinary content", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -1283,7 +1296,7 @@ test("mobile inquiry bar appears after hero actions and stays available through 
   await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#process")!.offsetTop - 40));
   await expect(bar, "the visit-flow section alone must not suppress contact actions").toHaveClass(/is-visible/);
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
+  await scrollFaqControlsAboveInquiry(page);
   await expect(bar, "the FAQ section alone must not suppress contact actions").toHaveClass(/is-visible/);
 
   await page.getByTestId("final-cta").scrollIntoViewIfNeeded();
@@ -1321,27 +1334,29 @@ test("sticky inquiry yields only when a real FAQ control overlaps its fixed slot
   const bar = page.getByTestId("sticky-inquiry");
   const stickyKakao = bar.locator('[data-cta="sticky-kakao"]');
   const faq = page.locator("#faq");
-  const summary = faq.locator("summary").first();
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
+  const guide = faq.getByRole("link", { name: "방문 매입 순서 자세히 보기 →", exact: true });
+  await scrollFaqControlsAboveInquiry(page);
   await expect(bar, "FAQ presence without geometric overlap must keep the sticky inquiry visible").toHaveClass(/is-visible/);
 
-  await stickyKakao.focus();
-  const overlapScrollTop = await summary.evaluate((element) => {
-    const bar = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']")!;
-    const targetDocumentTop = element.getBoundingClientRect().top + window.scrollY;
-    const bottom = Number.parseFloat(getComputedStyle(bar).bottom) || 0;
-    const fixedSlotTop = window.innerHeight - bottom - bar.offsetHeight;
-    return targetDocumentTop - (fixedSlotTop + 4);
-  });
-  await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), overlapScrollTop);
-  await expect(bar).toHaveAttribute("inert", "");
-  await expect(bar).toHaveAttribute("aria-hidden", "true");
-  await expect(faq).toBeFocused();
-  await page.locator('[data-cta="header-phone"]').focus();
-  await expect(faq).not.toHaveAttribute("tabindex");
+  for (const control of [guide, faq.locator("summary").first()]) {
+    await stickyKakao.focus();
+    const overlapScrollTop = await control.evaluate((element) => {
+      const bar = document.querySelector<HTMLElement>("[data-testid='sticky-inquiry']")!;
+      const targetDocumentTop = element.getBoundingClientRect().top + window.scrollY;
+      const bottom = Number.parseFloat(getComputedStyle(bar).bottom) || 0;
+      const fixedSlotTop = window.innerHeight - bottom - bar.offsetHeight;
+      return targetDocumentTop - (fixedSlotTop + 4);
+    });
+    await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), overlapScrollTop);
+    await expect(bar).toHaveAttribute("inert", "");
+    await expect(bar).toHaveAttribute("aria-hidden", "true");
+    await expect(faq).toBeFocused();
+    await page.locator('[data-cta="header-phone"]').focus();
+    await expect(faq).not.toHaveAttribute("tabindex");
 
-  await page.evaluate(() => window.scrollTo(0, document.querySelector<HTMLElement>("#faq")!.offsetTop - 140));
-  await expect(bar, "the sticky inquiry must return after the control leaves its slot").toHaveClass(/is-visible/);
+    await scrollFaqControlsAboveInquiry(page);
+    await expect(bar, "the sticky inquiry must return after the control leaves its slot").toHaveClass(/is-visible/);
+  }
 });
 
 test("Kakao contact uses the official local mark and yellow photo action", async ({ page }) => {
