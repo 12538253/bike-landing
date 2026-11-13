@@ -3,7 +3,7 @@
 바이크매니저 홈페이지 소스입니다.
 
 - 운영 사이트: [https://www.bike-manager.com](https://www.bike-manager.com)
-- 사용 환경: Node.js 22.x, Next.js 16.3.1, React 19.2.8, Tailwind CSS 4.3.3
+- 사용 환경: Node.js 22.x, Next.js 16.4.6, React 19.2.8, Tailwind CSS 4.3.3
 - 배포 방식: Cloudflare Pages 정적 배포 (`out`)
 
 `main`에 push하면 운영 사이트가 자동으로 배포됩니다. 확인이 끝나기 전에는 작업 브랜치만 push합니다.
@@ -48,6 +48,8 @@ npm run verify
 ```bash
 npm audit --omit=dev
 ```
+
+개발 도구까지 확인하려면 `npm audit`를 실행합니다. `package.json`의 `overrides`는 `@typescript-eslint/typescript-estree`가 사용하는 `minimatch`만 `11.0.1`로 고정합니다. [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) 수정용이며, 상위 패키지가 수정 버전을 사용하면 제거합니다.
 
 GitHub Actions도 브랜치 push와 `main` 대상 pull request에서 같은 검증을 실행합니다.
 

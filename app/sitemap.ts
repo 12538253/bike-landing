@@ -8,9 +8,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: site.canonicalUrl,
-      lastModified: new Date("2026-08-15"),
+      lastModified: new Date("2026-11-13"),
       changeFrequency: "monthly",
       priority: 1,
     },
+    ...Object.values(site.informationPages).map((page) => ({
+      url: `${site.canonicalUrl}${page.path}`,
+      lastModified: new Date("2026-11-13"),
+    })),
   ];
 }

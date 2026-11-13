@@ -2,13 +2,13 @@ import { Phone } from "lucide-react";
 
 import { site } from "@/content/site";
 
-export default function Header() {
+export default function Header({ home = true }: Readonly<{ home?: boolean }>) {
   const phone = site.contact.headerPhone;
 
   return (
     <header className="site-header">
       <div className="site-shell site-header__inner">
-        <a className="brand-mark" href="#top">
+        <a className="brand-mark" href={home ? "#top" : "/"}>
           <span className="brand-mark__badge" aria-hidden="true">
             BM
           </span>
@@ -21,7 +21,7 @@ export default function Header() {
 
         <nav className="site-nav" aria-label="주요 메뉴">
           {site.navigation.map((item) => (
-            <a href={item.href} key={item.href}>
+            <a href={home ? item.href : `/${item.href}`} key={item.href}>
               {item.label}
             </a>
           ))}

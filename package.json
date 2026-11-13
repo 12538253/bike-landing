@@ -10,16 +10,21 @@
     "build": "next build --webpack",
     "preview": "node tests/serve-static.mjs",
     "lint": "eslint",
-    "test:static": "node --test tests/static-export.test.mjs tests/client-budget.test.mjs",
+    "test:static": "node --test tests/static-export.test.mjs tests/client-budget.test.mjs tests/discovery.test.mjs",
     "test:e2e": "playwright test",
     "test": "npm run test:static && npm run test:e2e",
     "verify": "npm run lint && npm run build && npm run test"
   },
   "dependencies": {
     "lucide-react": "0.559.0",
-    "next": "16.3.1",
+    "next": "16.4.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    }
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
@@ -28,9 +33,9 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.3.1",
+    "eslint-config-next": "16.4.6",
     "lighthouse": "^13.4.1",
-    "sharp": "0.35.3",
+    "sharp": "0.35.5",
     "tailwindcss": "4.3.3",
     "typescript": "^5"
   }
